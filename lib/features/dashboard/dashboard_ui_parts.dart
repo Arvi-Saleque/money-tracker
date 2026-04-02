@@ -31,7 +31,7 @@ class HeroBadge extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '+8.2%',
+            'Live',
             style: theme.textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w700,
@@ -94,10 +94,19 @@ class HeroMetric extends StatelessWidget {
   }
 }
 
-class WalletSummaryCard extends StatelessWidget {
-  const WalletSummaryCard({super.key, required this.wallet});
+class WalletOverviewCard extends StatelessWidget {
+  const WalletOverviewCard({
+    super.key,
+    required this.name,
+    required this.balance,
+    required this.icon,
+    required this.color,
+  });
 
-  final WalletSummary wallet;
+  final String name;
+  final String balance;
+  final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +118,9 @@ class WalletSummaryCard extends StatelessWidget {
         children: <Widget>[
           CircleAvatar(
             radius: 24,
-            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
-            foregroundColor: theme.colorScheme.primary,
-            child: Icon(wallet.icon),
+            backgroundColor: color.withValues(alpha: 0.14),
+            foregroundColor: color,
+            child: Icon(icon),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -119,93 +128,15 @@ class WalletSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  wallet.name,
+                  name,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(wallet.balance, style: theme.textTheme.bodyLarge),
+                Text(balance, style: theme.textTheme.bodyLarge),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class RecentTransactionsCard extends StatelessWidget {
-  const RecentTransactionsCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return buildPremiumCard(
-      context: context,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Recent transactions',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 10),
-          ...mockTransactions
-              .take(4)
-              .map(
-                (transaction) => Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: TransactionTile(transaction: transaction),
-                ),
-              ),
-        ],
-      ),
-    );
-  }
-}
-
-class BudgetSnapshotCard extends StatelessWidget {
-  const BudgetSnapshotCard({super.key, required this.onThemeToggle});
-
-  final Future<void> Function() onThemeToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return buildPremiumCard(
-      context: context,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Budget snapshot',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'March spending is at 63% of the planned monthly budget.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.74),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const ProgressBarRow(label: 'Overall', value: 0.63),
-          const SizedBox(height: 12),
-          const ProgressBarRow(label: 'Food', value: 0.78),
-          const SizedBox(height: 12),
-          const ProgressBarRow(label: 'Transport', value: 0.44),
-          const SizedBox(height: 18),
-          OutlinedButton.icon(
-            onPressed: onThemeToggle,
-            icon: const Icon(Icons.palette_outlined),
-            label: const Text('Try theme switch'),
           ),
         ],
       ),
@@ -272,19 +203,28 @@ class QuickActionsCard extends StatelessWidget {
   }
 }
 
-class TransactionTile extends StatelessWidget {
-  const TransactionTile({super.key, required this.transaction});
+class FinanceTransactionTile extends StatelessWidget {
+  const FinanceTransactionTile({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.amount,
+    required this.icon,
+    required this.color,
+    this.onTap,
+  });
 
-  final MockTransaction transaction;
+  final String title;
+  final String subtitle;
+  final String amount;
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final amountColor = transaction.isIncome
-        ? const Color(0xFF2ECC9A)
-        : const Color(0xFFE85D5D);
-
-    return Container(
+    final content = Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface.withValues(alpha: 0.6),
@@ -295,9 +235,9 @@ class TransactionTile extends StatelessWidget {
         children: <Widget>[
           CircleAvatar(
             radius: 22,
-            backgroundColor: amountColor.withValues(alpha: 0.14),
-            foregroundColor: amountColor,
-            child: Icon(transaction.icon),
+            backgroundColor: color.withValues(alpha: 0.14),
+            foregroundColor: color,
+            child: Icon(icon),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -305,14 +245,14 @@ class TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  transaction.title,
+                  title,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${transaction.subtitle}  •  ${transaction.timeLabel}',
+                  subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.textTheme.bodySmall?.color?.withValues(
                       alpha: 0.72,
@@ -324,12 +264,68 @@ class TransactionTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            '${transaction.isIncome ? '+' : '-'}${transaction.amount}',
+            amount,
             style: theme.textTheme.titleMedium?.copyWith(
-              color: amountColor,
+              color: color,
               fontWeight: FontWeight.w700,
             ),
           ),
+        ],
+      ),
+    );
+
+    if (onTap == null) {
+      return content;
+    }
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: content,
+    );
+  }
+}
+
+class EmptyFinanceCard extends StatelessWidget {
+  const EmptyFinanceCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final String title;
+  final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.74),
+            ),
+          ),
+          if (actionLabel != null && onAction != null) ...<Widget>[
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
         ],
       ),
     );
@@ -543,87 +539,6 @@ class CalendarDayTile extends StatelessWidget {
   }
 }
 
-class SectionLabel extends StatelessWidget {
-  const SectionLabel(this.label, {super.key});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-    );
-  }
-}
-
-class ChoicePreviewChip extends StatelessWidget {
-  const ChoicePreviewChip({
-    super.key,
-    required this.label,
-    this.selected = false,
-  });
-
-  final String label;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Chip(
-      label: Text(label),
-      backgroundColor: selected
-          ? theme.colorScheme.primary.withValues(alpha: 0.14)
-          : theme.chipTheme.backgroundColor,
-      side: BorderSide(
-        color: selected ? theme.colorScheme.primary : theme.dividerColor,
-      ),
-      labelStyle: theme.textTheme.bodyMedium?.copyWith(
-        color: selected
-            ? theme.colorScheme.primary
-            : theme.textTheme.bodyMedium?.color,
-        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-      ),
-    );
-  }
-}
-
-class CategoryPreviewChip extends StatelessWidget {
-  const CategoryPreviewChip({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
-    );
-  }
-}
-
 class DaySummaryRow extends StatelessWidget {
   const DaySummaryRow({super.key, required this.label, required this.value});
 
@@ -645,45 +560,4 @@ class DaySummaryRow extends StatelessWidget {
       ],
     );
   }
-}
-
-List<Widget> buildTransactionSections(
-  BuildContext context,
-  List<MockTransaction> transactions,
-) {
-  final grouped = <String, List<MockTransaction>>{};
-
-  for (final transaction in transactions) {
-    grouped.putIfAbsent(transaction.group, () => <MockTransaction>[]);
-    grouped[transaction.group]!.add(transaction);
-  }
-
-  return grouped.entries
-      .map(
-        (entry) => Padding(
-          padding: const EdgeInsets.only(bottom: 18),
-          child: buildPremiumCard(
-            context: context,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  entry.key,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 12),
-                ...entry.value.map(
-                  (transaction) => Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: TransactionTile(transaction: transaction),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      )
-      .toList();
 }

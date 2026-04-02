@@ -6,7 +6,7 @@ abstract final class AppConstants {
   static const String themePreferenceKey = 'selected_theme';
   static const String localePreferenceKey = 'selected_locale';
   static const String defaultLanguageCode = 'en';
-  static const String defaultCurrency = '৳';
+  static const String defaultCurrency = '\u09F3';
   static const String googleWebClientId =
       '116585083047-s8o950mrd9urbobmbgea3peag75dohum.apps.googleusercontent.com';
 
@@ -30,7 +30,11 @@ abstract final class AppConstants {
 
   static const List<String> supportedLanguageCodes = <String>['en', 'bn'];
 
-  static const List<String> supportedCurrencies = <String>['৳', '\$', '€'];
+  static const List<String> supportedCurrencies = <String>[
+    '\u09F3',
+    '\$',
+    '\u20AC',
+  ];
 
   static String themeLabel(String themeName) {
     switch (themeName) {

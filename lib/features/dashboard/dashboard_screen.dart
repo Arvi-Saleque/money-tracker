@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../shared/providers/theme_provider.dart';
+import '../transactions/transaction_editor_sheet.dart';
 import 'dashboard_tabs.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -28,7 +29,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         subtitle: 'Overview of balance, budgets, and recent activity.',
         icon: Icons.home_rounded,
         selectedIcon: Icons.home_filled,
-        child: HomeTab(onThemeToggle: themeController.toggleTheme),
+        child: const HomeTab(),
       ),
       const _ShellTab(
         title: 'Transactions',
@@ -103,7 +104,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showQuickAddSheet(context),
+        onPressed: () => showTransactionEditorSheet(context),
         icon: const Icon(Icons.add_rounded),
         label: const Text('Add'),
       ),

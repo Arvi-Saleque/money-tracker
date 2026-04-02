@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/models/user_model.dart';
@@ -34,6 +33,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
+    final bootstrapAsync = ref.watch(authProfileBootstrapProvider);
     final isSaving = ref.watch(profileControllerProvider).isLoading;
     final currentTheme = ref.watch(themeProvider);
     final currentLocale = ref.watch(localeProvider);
@@ -43,7 +43,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: profileAsync.when(
         data: (profile) {
           if (profile == null) {
-            return const Center(child: Text('No profile found.'));
+            if (bootstrapAsync.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (bootstrapAsync.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(authErrorMessage(bootstrapAsync.error!)),
+                ),
+              );
+            }
+
+            return const Center(
+              child: Text('No profile found yet. Try reopening the screen.'),
+            );
           }
 
           if (!_initialized) {
@@ -73,30 +88,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               children: <Widget>[
                                 CircleAvatar(
                                   radius: 48,
-                                  backgroundImage: profile.avatarUrl.isNotEmpty
-                                      ? NetworkImage(profile.avatarUrl)
-                                      : null,
-                                  child: profile.avatarUrl.isEmpty
-                                      ? Text(
-                                          initials,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineSmall
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                        )
-                                      : null,
+                                  child: Text(
+                                    initials,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
                                 ),
                                 Positioned(
                                   bottom: 0,
                                   right: 0,
-                                  child: IconButton.filled(
-                                    onPressed: isSaving
-                                        ? null
-                                        : () => _pickAvatar(profile.uid),
-                                    icon: const Icon(
-                                      Icons.photo_camera_outlined,
+                                  child: CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withValues(alpha: 0.14),
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    child: const Icon(
+                                      Icons.person_outline_rounded,
+                                      size: 16,
                                     ),
                                   ),
                                 ),
@@ -217,38 +231,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _pickAvatar(String uid) async {
-    try {
-      final picker = ImagePicker();
-      final file = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 82,
-      );
-
-      if (file == null) {
-        return;
-      }
-
-      final profile = ref.read(currentUserProfileProvider).value;
-      if (profile == null) {
-        return;
-      }
-
-      await ref
-          .read(profileControllerProvider.notifier)
-          .uploadAvatar(currentProfile: profile, file: file);
-      if (!mounted) {
-        return;
-      }
-      showAppSnackBar(context, 'Profile photo updated.');
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      showAppSnackBar(context, authErrorMessage(error));
-    }
   }
 
   Future<void> _saveProfile(UserModel profile) async {

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../shared/models/user_model.dart';
 import '../../shared/providers/firebase_providers.dart';
@@ -11,10 +10,7 @@ import '../auth/auth_providers.dart';
 import 'profile_service.dart';
 
 final profileServiceProvider = Provider<ProfileService>((ref) {
-  return ProfileService(
-    firestore: ref.watch(firestoreProvider),
-    storage: ref.watch(firebaseStorageProvider),
-  );
+  return ProfileService(firestore: ref.watch(firestoreProvider));
 });
 
 final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
@@ -78,24 +74,6 @@ class ProfileController extends AsyncNotifier<void> {
       await _service.updateUserProfile(updated);
       await ref.read(themeProvider.notifier).setTheme(themeName);
       await ref.read(localeProvider.notifier).setLocaleCode(language);
-    });
-
-    if (state.hasError) {
-      throw state.error!;
-    }
-  }
-
-  Future<void> uploadAvatar({
-    required UserModel currentProfile,
-    required XFile file,
-  }) async {
-    state = const AsyncLoading<void>();
-    state = await AsyncValue.guard(() async {
-      final url = await _service.uploadAvatar(
-        uid: currentProfile.uid,
-        file: file,
-      );
-      await _service.updateUserProfile(currentProfile.copyWith(avatarUrl: url));
     });
 
     if (state.hasError) {

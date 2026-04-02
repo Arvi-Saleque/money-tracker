@@ -17,12 +17,25 @@ final authServiceProvider = Provider<AuthService>((ref) {
 });
 
 final authStateProvider = StreamProvider<User?>((ref) {
-  return ref.watch(authServiceProvider).authStateChanges;
+  try {
+    return ref.watch(authServiceProvider).authStateChanges;
+  } catch (_) {
+    return Stream<User?>.value(null);
+  }
 });
 
 final authControllerProvider = AsyncNotifierProvider<AuthController, void>(
   AuthController.new,
 );
+
+final authProfileBootstrapProvider = FutureProvider<void>((ref) async {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) {
+    return;
+  }
+
+  await ref.read(authServiceProvider).ensureUserDocument(firebaseUser: user);
+});
 
 final authRefreshListenableProvider = Provider<StreamAuthRefreshNotifier>((
   ref,
