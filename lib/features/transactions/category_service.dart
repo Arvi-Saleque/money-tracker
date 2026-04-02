@@ -13,17 +13,22 @@ class CategoryService {
   }
 
   Stream<List<CategoryModel>> watchCategories(String uid, {String? type}) {
-    Query<Map<String, dynamic>> query = _categoriesRef(uid);
-    if (type != null) {
-      query = query.where('type', isEqualTo: type);
-    }
+    return _categoriesRef(uid).snapshots().map((snapshot) {
+      final categories = snapshot.docs.map(CategoryModel.fromDocument).toList()
+        ..sort((left, right) {
+          final createdAtCompare = left.createdAt.compareTo(right.createdAt);
+          if (createdAtCompare != 0) {
+            return createdAtCompare;
+          }
+          return left.name.toLowerCase().compareTo(right.name.toLowerCase());
+        });
 
-    return query
-        .orderBy('createdAt')
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs.map(CategoryModel.fromDocument).toList(),
-        );
+      if (type == null) {
+        return categories;
+      }
+
+      return categories.where((category) => category.type == type).toList();
+    });
   }
 
   Future<void> addCategory(String uid, CategoryModel category) async {

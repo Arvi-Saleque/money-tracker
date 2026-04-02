@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
-import '../../shared/models/wallet_model.dart';
 import 'finance_catalog.dart';
 
 class TransactionService {
@@ -104,32 +102,31 @@ class TransactionService {
   }
 
   Future<void> ensureStarterData(String uid) async {
-    final existingWallets = await _walletsRef(uid).limit(1).get();
-    if (existingWallets.docs.isEmpty) {
-      final wallet = WalletModel(
-        id: 'wallet_cash',
-        name: 'Cash',
-        type: 'cash',
-        balance: 0,
-        iconKey: 'account_balance_wallet',
-        colorValue: 0xFF3D6BE4,
-        isDefault: true,
-        createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+    final existingWalletIds = (await _walletsRef(
+      uid,
+    ).get()).docs.map((doc) => doc.id).toSet();
+    final batch = _firestore.batch();
+
+    for (var index = 0; index < FinanceCatalog.starterWallets.length; index++) {
+      final walletTemplate = FinanceCatalog.starterWallets[index];
+      if (existingWalletIds.contains(walletTemplate.id)) {
+        continue;
+      }
+      final wallet = walletTemplate.toWalletModel(
+        createdAt: DateTime.fromMillisecondsSinceEpoch(index * 1000),
       );
-      await _walletsRef(uid).doc(wallet.id).set(wallet.toMap());
+      batch.set(_walletsRef(uid).doc(wallet.id), wallet.toMap());
     }
 
-    final batch = _firestore.batch();
-    for (final raw in FinanceCatalog.defaultCategories) {
-      final category = CategoryModel(
-        id: raw['id']! as String,
-        name: raw['name']! as String,
-        nameBn: raw['nameBn']! as String,
-        iconKey: raw['iconKey']! as String,
-        colorValue: raw['colorValue']! as int,
-        type: raw['type']! as String,
+    for (
+      var index = 0;
+      index < FinanceCatalog.defaultCategoryTemplates.length;
+      index++
+    ) {
+      final template = FinanceCatalog.defaultCategoryTemplates[index];
+      final category = template.toCategoryModel(
         isDefault: true,
-        createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+        createdAt: DateTime.fromMillisecondsSinceEpoch(index * 1000),
       );
       batch.set(
         _categoriesRef(uid).doc(category.id),

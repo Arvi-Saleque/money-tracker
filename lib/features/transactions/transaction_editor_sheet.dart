@@ -67,18 +67,22 @@ class _TransactionEditorSheetState
   @override
   Widget build(BuildContext context) {
     final walletsAsync = ref.watch(walletsProvider);
-    final categoriesAsync = ref.watch(categoriesByTypeProvider(_selectedType));
+    final allCategoriesAsync = ref.watch(allCategoriesProvider);
+    final categories = ref.watch(categoriesByTypeProvider(_selectedType));
     final transactionState = ref.watch(transactionActionControllerProvider);
     final categoryState = ref.watch(categoryActionControllerProvider);
     final theme = Theme.of(context);
     final viewInsets = MediaQuery.viewInsetsOf(context);
 
     final wallets = walletsAsync.asData?.value ?? const <WalletModel>[];
-    final categories = categoriesAsync.asData?.value ?? const <CategoryModel>[];
     _syncSelections(wallets, categories);
 
     final isBusy = transactionState.isLoading || categoryState.isLoading;
+    final allCategories =
+        allCategoriesAsync.asData?.value ?? const <CategoryModel>[];
     final hasData = wallets.isNotEmpty && categories.isNotEmpty;
+    final isLoadingCategories =
+        allCategoriesAsync.isLoading && allCategories.isEmpty;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + viewInsets.bottom),
@@ -122,6 +126,18 @@ class _TransactionEditorSheetState
                   ),
                 ),
                 const SizedBox(height: 22),
+                _TopSummaryCard(
+                  type: _selectedType,
+                  selectedDate: _selectedDate,
+                  walletName: wallets
+                      .cast<WalletModel?>()
+                      .firstWhere(
+                        (wallet) => wallet?.id == _selectedWalletId,
+                        orElse: () => null,
+                      )
+                      ?.name,
+                ),
+                const SizedBox(height: 18),
                 _SectionTitle('Type'),
                 const SizedBox(height: 10),
                 Wrap(
@@ -186,7 +202,17 @@ class _TransactionEditorSheetState
                         .map(
                           (wallet) => DropdownMenuItem<String>(
                             value: wallet.id,
-                            child: Text(wallet.name),
+                            child: Row(
+                              children: <Widget>[
+                                Icon(
+                                  FinanceCatalog.iconForKey(wallet.iconKey),
+                                  size: 18,
+                                  color: Color(wallet.colorValue),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(wallet.name),
+                              ],
+                            ),
                           ),
                         )
                         .toList(),
@@ -202,38 +228,48 @@ class _TransactionEditorSheetState
                 Row(
                   children: <Widget>[
                     const Expanded(child: _SectionTitle('Category')),
-                    TextButton.icon(
-                      onPressed: isBusy ? null : _openCategoryDialog,
+                    FilledButton.tonalIcon(
+                      onPressed: isBusy
+                          ? null
+                          : () => _openCategoryDialog(allCategories),
                       icon: const Icon(Icons.add_circle_outline_rounded),
                       label: const Text('New category'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                if (categoriesAsync.isLoading && categories.isEmpty)
+                if (isLoadingCategories)
                   const Center(child: CircularProgressIndicator())
                 else if (categories.isEmpty)
                   _InlineInfoCard(
                     title: 'No category available',
-                    subtitle: 'Create one and it will appear here right away.',
+                    subtitle:
+                        'Starter categories are still syncing. You can also create one right now.',
                   )
                 else
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: categories
-                        .map(
-                          (category) => _CategoryChoiceCard(
-                            category: category,
-                            selected: category.id == _selectedCategoryId,
-                            onTap: () {
-                              setState(() {
-                                _selectedCategoryId = category.id;
-                              });
-                            },
-                          ),
-                        )
-                        .toList(),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 1.08,
+                        ),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return _CategoryChoiceCard(
+                        category: category,
+                        selected: category.id == _selectedCategoryId,
+                        onTap: () {
+                          setState(() {
+                            _selectedCategoryId = category.id;
+                          });
+                        },
+                      );
+                    },
                   ),
                 const SizedBox(height: 18),
                 Row(
@@ -313,7 +349,15 @@ class _TransactionEditorSheetState
     String? nextWalletId = _selectedWalletId;
     if (wallets.isNotEmpty &&
         wallets.every((wallet) => wallet.id != nextWalletId)) {
-      nextWalletId = wallets.first.id;
+      nextWalletId =
+          wallets
+              .cast<WalletModel?>()
+              .firstWhere(
+                (wallet) => wallet?.isDefault == true,
+                orElse: () => null,
+              )
+              ?.id ??
+          wallets.first.id;
     }
 
     String? nextCategoryId = _selectedCategoryId;
@@ -354,10 +398,15 @@ class _TransactionEditorSheetState
     });
   }
 
-  Future<void> _openCategoryDialog() async {
+  Future<void> _openCategoryDialog(
+    List<CategoryModel> existingCategories,
+  ) async {
     final category = await showDialog<CategoryModel>(
       context: context,
-      builder: (context) => _CategoryEditorDialog(initialType: _selectedType),
+      builder: (context) => _CategoryEditorDialog(
+        initialType: _selectedType,
+        existingCategories: existingCategories,
+      ),
     );
 
     if (category == null || !mounted) {
@@ -463,9 +512,13 @@ class _TransactionEditorSheetState
 }
 
 class _CategoryEditorDialog extends ConsumerStatefulWidget {
-  const _CategoryEditorDialog({required this.initialType});
+  const _CategoryEditorDialog({
+    required this.initialType,
+    required this.existingCategories,
+  });
 
   final String initialType;
+  final List<CategoryModel> existingCategories;
 
   @override
   ConsumerState<_CategoryEditorDialog> createState() =>
@@ -474,24 +527,23 @@ class _CategoryEditorDialog extends ConsumerStatefulWidget {
 
 class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
   late final TextEditingController _nameController;
-  late final TextEditingController _nameBnController;
-
-  late String _selectedType;
+  _CategoryCreationMode _creationMode = _CategoryCreationMode.template;
   String _selectedIconKey = FinanceCatalog.categoryIcons.first.key;
   int _selectedColorValue = FinanceCatalog.colorChoices.first;
+  FinanceCategoryTemplate? _selectedTemplate;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _nameBnController = TextEditingController();
-    _selectedType = widget.initialType;
+    _selectedTemplate = FinanceCatalog.templatesForType(
+      widget.initialType,
+    ).first;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _nameBnController.dispose();
     super.dispose();
   }
 
@@ -499,128 +551,78 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final state = ref.watch(categoryActionControllerProvider);
+    final isIncome = widget.initialType == FinanceCatalog.incomeType;
+    final typeLabel = isIncome ? 'Income' : 'Expense';
+    final accent = isIncome ? const Color(0xFF2ECC9A) : const Color(0xFFE85D5D);
+    final templates = FinanceCatalog.templatesForType(widget.initialType);
 
     return AlertDialog(
       backgroundColor: theme.colorScheme.surface,
-      title: const Text('Create category'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      title: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              'Create $typeLabel category',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          _TypeBadge(label: typeLabel, color: accent),
+        ],
+      ),
       content: SizedBox(
-        width: 520,
+        width: 560,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: <Widget>[
-                  _TypeChip(
-                    label: 'Expense',
-                    selected: _selectedType == FinanceCatalog.expenseType,
-                    color: const Color(0xFFE85D5D),
-                    onTap: () {
-                      setState(() {
-                        _selectedType = FinanceCatalog.expenseType;
-                      });
-                    },
+              Text(
+                'The new category will be selected automatically after you save it.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withValues(
+                    alpha: 0.72,
                   ),
-                  _TypeChip(
-                    label: 'Income',
-                    selected: _selectedType == FinanceCatalog.incomeType,
-                    color: const Color(0xFF2ECC9A),
-                    onTap: () {
-                      setState(() {
-                        _selectedType = FinanceCatalog.incomeType;
-                      });
-                    },
+                ),
+              ),
+              const SizedBox(height: 18),
+              DropdownButtonFormField<_CategoryCreationMode>(
+                initialValue: _creationMode,
+                decoration: const InputDecoration(
+                  labelText: 'Create with',
+                  prefixIcon: Icon(Icons.auto_awesome_mosaic_outlined),
+                ),
+                items: const <DropdownMenuItem<_CategoryCreationMode>>[
+                  DropdownMenuItem(
+                    value: _CategoryCreationMode.template,
+                    child: Text('Template'),
+                  ),
+                  DropdownMenuItem(
+                    value: _CategoryCreationMode.manual,
+                    child: Text('Manual'),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Category name (English)',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _nameBnController,
-                decoration: const InputDecoration(
-                  labelText: 'Category name (Bangla)',
-                ),
+                onChanged: state.isLoading
+                    ? null
+                    : (value) {
+                        if (value == null) {
+                          return;
+                        }
+                        setState(() {
+                          _creationMode = value;
+                        });
+                      },
               ),
               const SizedBox(height: 18),
-              const _SectionTitle('Pick an icon'),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: FinanceCatalog.categoryIcons
-                    .map(
-                      (option) => InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          setState(() {
-                            _selectedIconKey = option.key;
-                          });
-                        },
-                        child: Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: option.key == _selectedIconKey
-                                ? theme.colorScheme.primary.withValues(
-                                    alpha: 0.16,
-                                  )
-                                : theme.colorScheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: option.key == _selectedIconKey
-                                  ? theme.colorScheme.primary
-                                  : theme.dividerColor,
-                            ),
-                          ),
-                          child: Icon(option.icon),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 18),
-              const _SectionTitle('Pick a color'),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: FinanceCatalog.colorChoices
-                    .map(
-                      (colorValue) => InkWell(
-                        borderRadius: BorderRadius.circular(999),
-                        onTap: () {
-                          setState(() {
-                            _selectedColorValue = colorValue;
-                          });
-                        },
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: Color(colorValue),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorValue == _selectedColorValue
-                                  ? theme.colorScheme.onSurface
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
+              if (_creationMode == _CategoryCreationMode.template)
+                _buildTemplateSection(context, templates)
+              else
+                _buildManualSection(context),
             ],
           ),
         ),
@@ -630,34 +632,230 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
           onPressed: state.isLoading ? null : () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        FilledButton(
+        FilledButton.icon(
           onPressed: state.isLoading ? null : _submit,
-          child: const Text('Save'),
+          icon: state.isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.check_rounded),
+          label: Text(
+            _creationMode == _CategoryCreationMode.template
+                ? 'Use template'
+                : 'Create category',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTemplateSection(
+    BuildContext context,
+    List<FinanceCategoryTemplate> templates,
+  ) {
+    final template = _selectedTemplate;
+    final existingIds = widget.existingCategories
+        .map((category) => category.id)
+        .toSet();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        DropdownButtonFormField<String>(
+          initialValue: template?.id,
+          decoration: const InputDecoration(
+            labelText: 'Template',
+            prefixIcon: Icon(Icons.bolt_outlined),
+          ),
+          items: templates
+              .map(
+                (item) => DropdownMenuItem<String>(
+                  value: item.id,
+                  child: Text(item.name),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value == null) {
+              return;
+            }
+            setState(() {
+              _selectedTemplate = templates.firstWhere(
+                (template) => template.id == value,
+              );
+            });
+          },
+        ),
+        if (template != null) ...<Widget>[
+          const SizedBox(height: 16),
+          _PreviewCard(
+            iconKey: template.iconKey,
+            colorValue: template.colorValue,
+            title: template.name,
+            subtitle: template.nameBn,
+          ),
+          const SizedBox(height: 12),
+          _InlineInfoCard(
+            title: existingIds.contains(template.id)
+                ? 'Already available'
+                : 'Quick create',
+            subtitle: existingIds.contains(template.id)
+                ? 'This template already exists. Saving will just select it.'
+                : 'This template is ready to create instantly for faster entry.',
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildManualSection(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        TextField(
+          controller: _nameController,
+          onChanged: (_) {
+            setState(() {});
+          },
+          decoration: const InputDecoration(
+            labelText: 'Category name',
+            hintText: 'Write in English or Bangla',
+            helperText:
+                'We will fill the opposite language automatically when possible.',
+            prefixIcon: Icon(Icons.edit_outlined),
+          ),
+        ),
+        const SizedBox(height: 18),
+        _PreviewCard(
+          iconKey: _selectedIconKey,
+          colorValue: _selectedColorValue,
+          title: _nameController.text.trim().isEmpty
+              ? 'Category preview'
+              : _nameController.text.trim(),
+          subtitle: 'Manual category',
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Choose icon',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 1,
+          ),
+          itemCount: FinanceCatalog.categoryIcons.length,
+          itemBuilder: (context, index) {
+            final option = FinanceCatalog.categoryIcons[index];
+            final selected = option.key == _selectedIconKey;
+
+            return InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () {
+                setState(() {
+                  _selectedIconKey = option.key;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? theme.colorScheme.primary.withValues(alpha: 0.14)
+                      : theme.colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.32,
+                        ),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: selected
+                        ? theme.colorScheme.primary
+                        : theme.dividerColor,
+                  ),
+                ),
+                child: Icon(option.icon),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Choose color',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: FinanceCatalog.colorChoices.map((colorValue) {
+            final selected = colorValue == _selectedColorValue;
+
+            return InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () {
+                setState(() {
+                  _selectedColorValue = colorValue;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Color(colorValue),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected
+                        ? theme.colorScheme.onSurface
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );
   }
 
   Future<void> _submit() async {
-    if (_nameController.text.trim().isEmpty) {
-      _showMessage('Enter an English name for the category.');
-      return;
-    }
-    if (_nameBnController.text.trim().isEmpty) {
-      _showMessage('Enter a Bangla name for the category.');
-      return;
-    }
-
     try {
-      final category = await ref
-          .read(categoryActionControllerProvider.notifier)
-          .create(
-            name: _nameController.text,
-            nameBn: _nameBnController.text,
-            iconKey: _selectedIconKey,
-            colorValue: _selectedColorValue,
-            type: _selectedType,
-          );
+      final controller = ref.read(categoryActionControllerProvider.notifier);
+      final CategoryModel category;
+
+      if (_creationMode == _CategoryCreationMode.template) {
+        if (_selectedTemplate == null) {
+          _showMessage('Choose a template first.');
+          return;
+        }
+        category = await controller.createFromTemplate(
+          template: _selectedTemplate!,
+          existingCategories: widget.existingCategories,
+        );
+      } else {
+        if (_nameController.text.trim().isEmpty) {
+          _showMessage('Write a category name in English or Bangla.');
+          return;
+        }
+        category = await controller.createManual(
+          inputName: _nameController.text,
+          iconKey: _selectedIconKey,
+          colorValue: _selectedColorValue,
+          type: widget.initialType,
+        );
+      }
 
       if (!mounted) {
         return;
@@ -672,6 +870,154 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+enum _CategoryCreationMode { manual, template }
+
+class _TopSummaryCard extends StatelessWidget {
+  const _TopSummaryCard({
+    required this.type,
+    required this.selectedDate,
+    required this.walletName,
+  });
+
+  final String type;
+  final DateTime selectedDate;
+  final String? walletName;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = type == FinanceCatalog.incomeType
+        ? const Color(0xFF2ECC9A)
+        : const Color(0xFFE85D5D);
+    final label = type == FinanceCatalog.incomeType ? 'Income' : 'Expense';
+
+    return buildPremiumCard(
+      context: context,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: <Widget>[
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: accent.withValues(alpha: 0.14),
+            foregroundColor: accent,
+            child: Icon(
+              type == FinanceCatalog.incomeType
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '$label transaction',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${DateFormat('dd MMM yyyy').format(selectedDate)}${walletName == null ? '' : '  |  $walletName'}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodySmall?.color?.withValues(
+                      alpha: 0.72,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewCard extends StatelessWidget {
+  const _PreviewCard({
+    required this.iconKey,
+    required this.colorValue,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String iconKey;
+  final int colorValue;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = Color(colorValue);
+
+    return buildPremiumCard(
+      context: context,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: <Widget>[
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: accent.withValues(alpha: 0.14),
+            foregroundColor: accent,
+            child: Icon(FinanceCatalog.iconForKey(iconKey)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodySmall?.color?.withValues(
+                      alpha: 0.72,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypeBadge extends StatelessWidget {
+  const _TypeBadge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }
 
@@ -732,37 +1078,31 @@ class _CategoryChoiceCard extends StatelessWidget {
     final theme = Theme.of(context);
     final accent = Color(category.colorValue);
 
-    return SizedBox(
-      width: 108,
-      child: buildPremiumInkCard(
-        context: context,
-        onTap: onTap,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: accent.withValues(alpha: 0.14),
-              foregroundColor: accent,
-              child: Icon(
-                FinanceCatalog.iconForKey(category.iconKey),
-                size: 18,
-              ),
+    return buildPremiumInkCard(
+      context: context,
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: accent.withValues(alpha: 0.14),
+            foregroundColor: accent,
+            child: Icon(FinanceCatalog.iconForKey(category.iconKey), size: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            category.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: selected ? theme.colorScheme.primary : null,
             ),
-            const SizedBox(height: 8),
-            Text(
-              category.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: selected ? theme.colorScheme.primary : null,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

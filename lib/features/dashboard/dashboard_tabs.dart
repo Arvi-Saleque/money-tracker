@@ -296,21 +296,46 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                children: <Widget>[
-                  Text(
-                    '${filteredTransactions.length} transaction${filteredTransactions.length == 1 ? '' : 's'}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                  OutlinedButton.icon(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final summaryText =
+                      '${filteredTransactions.length} transaction${filteredTransactions.length == 1 ? '' : 's'}';
+                  final button = OutlinedButton.icon(
                     onPressed: () => showTransactionEditorSheet(context),
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('Add new'),
-                  ),
-                ],
+                  );
+
+                  if (constraints.maxWidth < 340) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          summaryText,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 12),
+                        button,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          summaryText,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      button,
+                    ],
+                  );
+                },
               ),
             ],
           ),
@@ -664,20 +689,34 @@ class _RecentTransactionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final title = Text(
                 'Recent transactions',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
-              ),
-              const Spacer(),
-              TextButton(
+              );
+              final button = TextButton(
                 onPressed: () => showTransactionEditorSheet(context),
                 child: const Text('Add new'),
-              ),
-            ],
+              );
+
+              if (constraints.maxWidth < 320) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[title, const SizedBox(height: 8), button],
+                );
+              }
+
+              return Row(
+                children: <Widget>[
+                  Expanded(child: title),
+                  const SizedBox(width: 12),
+                  button,
+                ],
+              );
+            },
           ),
           if (transactions.isEmpty) ...<Widget>[
             const SizedBox(height: 8),

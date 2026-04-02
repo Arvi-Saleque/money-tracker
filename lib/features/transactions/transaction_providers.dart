@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:translator/translator.dart';
 
 import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
@@ -34,18 +35,6 @@ final walletsProvider = StreamProvider<List<WalletModel>>((ref) {
   return ref.watch(walletServiceProvider).watchWallets(uid);
 });
 
-final categoriesByTypeProvider =
-    StreamProvider.family<List<CategoryModel>, String>((ref, type) {
-      final uid = ref.watch(currentUserIdProvider);
-      if (uid == null) {
-        return Stream<List<CategoryModel>>.value(const <CategoryModel>[]);
-      }
-
-      return ref
-          .watch(categoryServiceProvider)
-          .watchCategories(uid, type: type);
-    });
-
 final allCategoriesProvider = StreamProvider<List<CategoryModel>>((ref) {
   final uid = ref.watch(currentUserIdProvider);
   if (uid == null) {
@@ -53,6 +42,16 @@ final allCategoriesProvider = StreamProvider<List<CategoryModel>>((ref) {
   }
 
   return ref.watch(categoryServiceProvider).watchCategories(uid);
+});
+
+final categoriesByTypeProvider = Provider.family<List<CategoryModel>, String>((
+  ref,
+  type,
+) {
+  final categories =
+      ref.watch(allCategoriesProvider).asData?.value ?? const <CategoryModel>[];
+
+  return categories.where((category) => category.type == type).toList();
 });
 
 final recentTransactionsProvider = StreamProvider<List<TransactionModel>>((
@@ -197,22 +196,23 @@ class TransactionActionController extends AsyncNotifier<void> {
 
 class CategoryActionController extends AsyncNotifier<void> {
   CategoryService get _service => ref.read(categoryServiceProvider);
+  final GoogleTranslator _translator = GoogleTranslator();
 
   @override
   Future<void> build() async {}
 
-  Future<CategoryModel> create({
-    required String name,
-    required String nameBn,
+  Future<CategoryModel> createManual({
+    required String inputName,
     required String iconKey,
     required int colorValue,
     required String type,
   }) async {
     final uid = _requireUserId();
+    final names = await _resolveNames(inputName);
     final category = CategoryModel(
       id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
-      name: name.trim(),
-      nameBn: nameBn.trim(),
+      name: names.$1,
+      nameBn: names.$2,
       iconKey: iconKey,
       colorValue: colorValue,
       type: type,
@@ -227,6 +227,60 @@ class CategoryActionController extends AsyncNotifier<void> {
     }
 
     return category;
+  }
+
+  Future<CategoryModel> createFromTemplate({
+    required FinanceCategoryTemplate template,
+    required List<CategoryModel> existingCategories,
+  }) async {
+    for (final category in existingCategories) {
+      if (category.id == template.id ||
+          category.name.toLowerCase() == template.name.toLowerCase()) {
+        return category;
+      }
+    }
+
+    final uid = _requireUserId();
+    final category = template.toCategoryModel(
+      isDefault: false,
+      createdAt: DateTime.now(),
+    );
+
+    state = const AsyncLoading<void>();
+    state = await AsyncValue.guard(() => _service.addCategory(uid, category));
+    if (state.hasError) {
+      throw state.error!;
+    }
+
+    return category;
+  }
+
+  Future<(String, String)> _resolveNames(String inputName) async {
+    final trimmed = inputName.trim();
+    if (trimmed.isEmpty) {
+      throw StateError('Category name cannot be empty.');
+    }
+
+    final isBangla = RegExp(r'[\u0980-\u09FF]').hasMatch(trimmed);
+    final sourceLanguage = isBangla ? 'bn' : 'en';
+    final targetLanguage = isBangla ? 'en' : 'bn';
+
+    try {
+      final translated = await _translator.translate(
+        trimmed,
+        from: sourceLanguage,
+        to: targetLanguage,
+      );
+      final translatedText = translated.text.trim();
+
+      if (isBangla) {
+        return (translatedText.isEmpty ? trimmed : translatedText, trimmed);
+      }
+
+      return (trimmed, translatedText.isEmpty ? trimmed : translatedText);
+    } catch (_) {
+      return (trimmed, trimmed);
+    }
   }
 
   String _requireUserId() {
