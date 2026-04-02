@@ -3,226 +3,246 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
-import '../../core/theme/gradient_colors.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../shared/providers/theme_provider.dart';
-import '../../shared/widgets/premium_card.dart';
+import 'dashboard_tabs.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final gradients = theme.extension<GradientColors>()!;
-    final selectedTheme = ref.watch(themeProvider);
-    final themeController = ref.read(themeProvider.notifier);
-    final localizations = AppLocalizations.of(context);
-
-    final quickLinks = <_QuickLink>[
-      const _QuickLink('Auth', Icons.login_rounded, AppConstants.authRoute),
-      const _QuickLink(
-        'Transactions',
-        Icons.receipt_long_rounded,
-        AppConstants.transactionsRoute,
-      ),
-      const _QuickLink(
-        'Calendar',
-        Icons.calendar_month_rounded,
-        AppConstants.calendarRoute,
-      ),
-      const _QuickLink(
-        'Reports',
-        Icons.bar_chart_rounded,
-        AppConstants.reportsRoute,
-      ),
-      const _QuickLink(
-        'Wallets',
-        Icons.account_balance_wallet_rounded,
-        AppConstants.walletsRoute,
-      ),
-      const _QuickLink(
-        'Budgets',
-        Icons.track_changes_rounded,
-        AppConstants.budgetsRoute,
-      ),
-      const _QuickLink('Goals', Icons.flag_rounded, AppConstants.goalsRoute),
-      const _QuickLink(
-        'Bills',
-        Icons.notifications_active_rounded,
-        AppConstants.subscriptionsRoute,
-      ),
-      const _QuickLink(
-        'Profile',
-        Icons.person_outline_rounded,
-        AppConstants.profileRoute,
-      ),
-    ];
-
-    return Scaffold(
-      appBar: AppBar(title: Text(localizations.appTitle)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                buildPremiumCard(
-                  context: context,
-                  gradient: gradients.heroGradient,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        localizations.appTitle,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Phase 1 foundation is ready with Firebase, Riverpod, GoRouter, and a reusable theme system.',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.92),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: const <Widget>[
-                          _HeroStatChip(label: 'Themes', value: '2 ready'),
-                          _HeroStatChip(
-                            label: 'Routes',
-                            value: '9 placeholders',
-                          ),
-                          _HeroStatChip(label: 'Firebase', value: 'Connected'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                buildPremiumCard(
-                  context: context,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'Theme system',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Theme changes persist with SharedPreferences and flow through ThemeExtension-based colors.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.textTheme.bodyMedium?.color?.withValues(
-                            alpha: 0.78,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      SegmentedButton<String>(
-                        segments: AppConstants.availableThemes
-                            .map(
-                              (themeName) => ButtonSegment<String>(
-                                value: themeName,
-                                label: Text(AppConstants.themeLabel(themeName)),
-                              ),
-                            )
-                            .toList(),
-                        selected: <String>{selectedTheme},
-                        onSelectionChanged: (selection) {
-                          themeController.setTheme(selection.first);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Feature placeholders',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: quickLinks
-                      .map(
-                        (link) => SizedBox(
-                          width: 220,
-                          child: buildPremiumInkCard(
-                            context: context,
-                            onTap: () => context.go(link.route),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  link.icon,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    link.label,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                const Icon(Icons.arrow_forward_rounded),
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _QuickLink {
-  const _QuickLink(this.label, this.icon, this.route);
-
-  final String label;
-  final IconData icon;
-  final String route;
-}
-
-class _HeroStatChip extends StatelessWidget {
-  const _HeroStatChip({required this.label, required this.value});
-
-  final String label;
-  final String value;
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+    final localizations = AppLocalizations.of(context);
+    final currentTheme = ref.watch(themeProvider);
+    final themeController = ref.read(themeProvider.notifier);
+    final tabs = <_ShellTab>[
+      _ShellTab(
+        title: localizations.appTitle,
+        subtitle: 'Overview of balance, budgets, and recent activity.',
+        icon: Icons.home_rounded,
+        selectedIcon: Icons.home_filled,
+        child: HomeTab(onThemeToggle: themeController.toggleTheme),
       ),
-      child: Text(
-        '$label: $value',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
+      const _ShellTab(
+        title: 'Transactions',
+        subtitle: 'Review recent income and expenses.',
+        icon: Icons.receipt_long_outlined,
+        selectedIcon: Icons.receipt_long_rounded,
+        child: TransactionsTab(),
+      ),
+      const _ShellTab(
+        title: 'Calendar',
+        subtitle: 'Track your month with a quick overview.',
+        icon: Icons.calendar_month_outlined,
+        selectedIcon: Icons.calendar_month_rounded,
+        child: CalendarTab(),
+      ),
+      const _ShellTab(
+        title: 'Reports',
+        subtitle: 'See spending patterns and summary insights.',
+        icon: Icons.bar_chart_outlined,
+        selectedIcon: Icons.bar_chart_rounded,
+        child: ReportsTab(),
+      ),
+    ];
+    final activeTab = tabs[_currentIndex];
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 78,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(activeTab.title),
+            const SizedBox(height: 4),
+            Text(
+              activeTab.subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.68,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          if (_currentIndex == 0)
+            IconButton(
+              tooltip: 'Toggle theme',
+              onPressed: themeController.toggleTheme,
+              icon: Icon(
+                currentTheme == AppConstants.sapphireDarkTheme
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
+              ),
+            ),
+          IconButton(
+            tooltip: 'Profile',
+            onPressed: () => context.push(AppConstants.profileRoute),
+            icon: const Icon(Icons.person_outline_rounded),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SafeArea(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 240),
+          child: KeyedSubtree(
+            key: ValueKey<int>(_currentIndex),
+            child: activeTab.child,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => showQuickAddSheet(context),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add'),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _AppBottomBar(
+        currentIndex: _currentIndex,
+        tabs: tabs,
+        onSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+    );
+  }
+}
+
+class _AppBottomBar extends StatelessWidget {
+  const _AppBottomBar({
+    required this.currentIndex,
+    required this.tabs,
+    required this.onSelected,
+  });
+
+  final int currentIndex;
+  final List<_ShellTab> tabs;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomAppBar(
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: _BottomBarItem(
+              label: 'Home',
+              icon: currentIndex == 0 ? tabs[0].selectedIcon : tabs[0].icon,
+              selected: currentIndex == 0,
+              onTap: () => onSelected(0),
+            ),
+          ),
+          Expanded(
+            child: _BottomBarItem(
+              label: 'Transactions',
+              icon: currentIndex == 1 ? tabs[1].selectedIcon : tabs[1].icon,
+              selected: currentIndex == 1,
+              onTap: () => onSelected(1),
+            ),
+          ),
+          const SizedBox(width: 72),
+          Expanded(
+            child: _BottomBarItem(
+              label: 'Calendar',
+              icon: currentIndex == 2 ? tabs[2].selectedIcon : tabs[2].icon,
+              selected: currentIndex == 2,
+              onTap: () => onSelected(2),
+            ),
+          ),
+          Expanded(
+            child: _BottomBarItem(
+              label: 'Reports',
+              icon: currentIndex == 3 ? tabs[3].selectedIcon : tabs[3].icon,
+              selected: currentIndex == 3,
+              onTap: () => onSelected(3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomBarItem extends StatelessWidget {
+  const _BottomBarItem({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 20,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.62),
+            ),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: selected
+                    ? theme.colorScheme.primary
+                    : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.62),
+                fontSize: 10,
+                height: 1,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _ShellTab {
+  const _ShellTab({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.selectedIcon,
+    required this.child,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final IconData selectedIcon;
+  final Widget child;
 }

@@ -4,9 +4,16 @@ abstract final class AppConstants {
   static const String sapphireDarkTheme = 'sapphire_dark';
   static const String sapphireLightTheme = 'sapphire_light';
   static const String themePreferenceKey = 'selected_theme';
+  static const String localePreferenceKey = 'selected_locale';
+  static const String defaultLanguageCode = 'en';
+  static const String defaultCurrency = '৳';
+  static const String googleWebClientId =
+      '116585083047-s8o950mrd9urbobmbgea3peag75dohum.apps.googleusercontent.com';
 
   static const String homeRoute = '/';
   static const String authRoute = '/auth';
+  static const String signUpRoute = '/auth/signup';
+  static const String forgotPasswordRoute = '/auth/forgot-password';
   static const String profileRoute = '/profile';
   static const String transactionsRoute = '/transactions';
   static const String calendarRoute = '/calendar';
@@ -20,6 +27,10 @@ abstract final class AppConstants {
     sapphireDarkTheme,
     sapphireLightTheme,
   ];
+
+  static const List<String> supportedLanguageCodes = <String>['en', 'bn'];
+
+  static const List<String> supportedCurrencies = <String>['৳', '\$', '€'];
 
   static String themeLabel(String themeName) {
     switch (themeName) {

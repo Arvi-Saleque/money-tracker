@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "249670635146",
-    "project_id": "money-tracker-codex-2026",
-    "storage_bucket": "money-tracker-codex-2026.firebasestorage.app"
+    "project_number": "116585083047",
+    "project_id": "money-tracker-13285",
+    "storage_bucket": "money-tracker-13285.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:249670635146:android:04a6d70b69a9ae43036773",
+        "mobilesdk_app_id": "1:116585083047:android:e160d18fd37d1e3aba6b82",
         "android_client_info": {
-          "package_name": "com.codex.moneytracker.money_tracker"
+          "package_name": "com.moneytracker.money_tracker"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDEi0EBjAkMp-648LlLOoM2Zl3IEytJ9oA"
+          "current_key": "AIzaSyCU5ErOE9Gbo54BZGrXv30qFrHF_9Eyhqc"
         }
       ],
       "services": {
