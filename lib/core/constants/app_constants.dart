@@ -1,0 +1,33 @@
+abstract final class AppConstants {
+  static const String appName = 'Money Tracker';
+
+  static const String sapphireDarkTheme = 'sapphire_dark';
+  static const String sapphireLightTheme = 'sapphire_light';
+  static const String themePreferenceKey = 'selected_theme';
+
+  static const String homeRoute = '/';
+  static const String authRoute = '/auth';
+  static const String profileRoute = '/profile';
+  static const String transactionsRoute = '/transactions';
+  static const String calendarRoute = '/calendar';
+  static const String reportsRoute = '/reports';
+  static const String walletsRoute = '/wallets';
+  static const String budgetsRoute = '/budgets';
+  static const String goalsRoute = '/goals';
+  static const String subscriptionsRoute = '/subscriptions';
+
+  static const List<String> availableThemes = <String>[
+    sapphireDarkTheme,
+    sapphireLightTheme,
+  ];
+
+  static String themeLabel(String themeName) {
+    switch (themeName) {
+      case sapphireLightTheme:
+        return 'Sapphire Light';
+      case sapphireDarkTheme:
+      default:
+        return 'Sapphire Dark';
+    }
+  }
+}
