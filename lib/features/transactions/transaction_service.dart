@@ -175,6 +175,37 @@ class TransactionService {
     );
   }
 
+  Future<List<TransactionModel>> fetchTransactionsForExport(
+    String uid, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    Query<Map<String, dynamic>> query = _userRef(uid);
+
+    if (startDate != null) {
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(
+          DateTime(startDate.year, startDate.month, startDate.day),
+        ),
+      );
+    }
+
+    if (endDate != null) {
+      final exclusiveEnd = DateTime(
+        endDate.year,
+        endDate.month,
+        endDate.day + 1,
+      );
+      query = query.where('date', isLessThan: Timestamp.fromDate(exclusiveEnd));
+    }
+
+    final snapshot = await query.orderBy('date', descending: false).get();
+    return snapshot.docs
+        .map(TransactionModel.fromDocument)
+        .toList(growable: false);
+  }
+
   Future<void> addTransaction(String uid, TransactionModel transaction) async {
     final batch = _firestore.batch();
     await stageAddTransaction(batch, uid, transaction);

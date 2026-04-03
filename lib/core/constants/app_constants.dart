@@ -22,6 +22,7 @@ abstract final class AppConstants {
   static const String budgetsRoute = '/budgets';
   static const String goalsRoute = '/goals';
   static const String subscriptionsRoute = '/subscriptions';
+  static const String exportRoute = '/export';
 
   static const List<String> availableThemes = <String>[
     sapphireDarkTheme,

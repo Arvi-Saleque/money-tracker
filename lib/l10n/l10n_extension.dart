@@ -30,162 +30,207 @@ extension AppL10nX on AppLocalizations {
     }
   }
 
-  String get openAction => isBangla ? 'খুলুন' : 'Open';
-  String get retryAction => isBangla ? 'আবার চেষ্টা করুন' : 'Retry';
-  String get dismissAction => isBangla ? 'বন্ধ করুন' : 'Dismiss';
-  String get clearAction => isBangla ? 'মুছুন' : 'Clear';
-  String get applyAction => isBangla ? 'প্রয়োগ করুন' : 'Apply';
-  String get addAction => isBangla ? 'যোগ করুন' : 'Add';
-  String get addTransactionAction =>
-      isBangla ? 'লেনদেন যোগ করুন' : 'Add transaction';
-  String get addNewAction => isBangla ? 'নতুন যোগ করুন' : 'Add new';
-  String get editAction => isBangla ? 'সম্পাদনা' : 'Edit';
-  String get saveAction => isBangla ? 'সংরক্ষণ করুন' : 'Save';
-  String get updateAction => isBangla ? 'আপডেট করুন' : 'Update';
-  String get allLabel => isBangla ? 'সব' : 'All';
-  String get otherLabel => isBangla ? 'অন্যান্য' : 'Other';
-  String get liveLabel => isBangla ? 'লাইভ' : 'Live';
-  String get shortcutsLabel => isBangla ? 'শর্টকাট' : 'Shortcuts';
-  String get todayLabel => isBangla ? 'আজ' : 'Today';
-  String get yesterdayLabel => isBangla ? 'গতকাল' : 'Yesterday';
-  String get transferLabel => isBangla ? 'ট্রান্সফার' : 'Transfer';
-  String get incomeTypeLabel => isBangla ? 'আয়' : 'Income';
-  String get expenseTypeLabel => isBangla ? 'ব্যয়' : 'Expense';
+  String get openAction => isBangla ? 'à¦–à§à¦²à§à¦¨' : 'Open';
+  String get retryAction =>
+      isBangla ? 'à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨' : 'Retry';
+  String get dismissAction =>
+      isBangla ? 'à¦¬à¦¨à§à¦§ à¦•à¦°à§à¦¨' : 'Dismiss';
+  String get clearAction => isBangla ? 'à¦®à§à¦›à§à¦¨' : 'Clear';
+  String get applyAction =>
+      isBangla ? 'à¦ªà§à¦°à§Ÿà§‹à¦— à¦•à¦°à§à¦¨' : 'Apply';
+  String get addAction => isBangla ? 'à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add';
+  String get addTransactionAction => isBangla
+      ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¯à§‹à¦— à¦•à¦°à§à¦¨'
+      : 'Add transaction';
+  String get addNewAction =>
+      isBangla ? 'à¦¨à¦¤à§à¦¨ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add new';
+  String get editAction => isBangla ? 'à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾' : 'Edit';
+  String get saveAction =>
+      isBangla ? 'à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à§à¦¨' : 'Save';
+  String get updateAction =>
+      isBangla ? 'à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨' : 'Update';
+  String get allLabel => isBangla ? 'à¦¸à¦¬' : 'All';
+  String get otherLabel => isBangla ? 'à¦…à¦¨à§à¦¯à¦¾à¦¨à§à¦¯' : 'Other';
+  String get liveLabel => isBangla ? 'à¦²à¦¾à¦‡à¦­' : 'Live';
+  String get shortcutsLabel => isBangla ? 'à¦¶à¦°à§à¦Ÿà¦•à¦¾à¦Ÿ' : 'Shortcuts';
+  String get todayLabel => isBangla ? 'à¦†à¦œ' : 'Today';
+  String get yesterdayLabel => isBangla ? 'à¦—à¦¤à¦•à¦¾à¦²' : 'Yesterday';
+  String get transferLabel =>
+      isBangla ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦°' : 'Transfer';
+  String get incomeTypeLabel => isBangla ? 'à¦†à§Ÿ' : 'Income';
+  String get expenseTypeLabel => isBangla ? 'à¦¬à§à¦¯à§Ÿ' : 'Expense';
 
   String get homeAvailableBalance =>
-      isBangla ? 'মোট ব্যালেন্স' : 'Available balance';
-  String get homeTodayIncome => isBangla ? 'আজকের আয়' : 'Today income';
-  String get homeTodayExpense => isBangla ? 'আজকের ব্যয়' : 'Today expense';
-  String get homeMonthExpense => isBangla ? 'মাসের ব্যয়' : 'Month expense';
-  String get homeNetToday => isBangla ? 'আজকের নেট' : 'Net today';
-  String get walletReadyTitle =>
-      isBangla ? 'আপনার ওয়ালেট প্রস্তুত হচ্ছে' : 'Your wallet is getting ready';
+      isBangla ? 'à¦®à§‹à¦Ÿ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸' : 'Available balance';
+  String get homeTodayIncome =>
+      isBangla ? 'à¦†à¦œà¦•à§‡à¦° à¦†à§Ÿ' : 'Today income';
+  String get homeTodayExpense =>
+      isBangla ? 'à¦†à¦œà¦•à§‡à¦° à¦¬à§à¦¯à§Ÿ' : 'Today expense';
+  String get homeMonthExpense =>
+      isBangla ? 'à¦®à¦¾à¦¸à§‡à¦° à¦¬à§à¦¯à§Ÿ' : 'Month expense';
+  String get homeNetToday =>
+      isBangla ? 'à¦†à¦œà¦•à§‡à¦° à¦¨à§‡à¦Ÿ' : 'Net today';
+  String get walletReadyTitle => isBangla
+      ? 'à¦†à¦ªà¦¨à¦¾à¦° à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤ à¦¹à¦šà§à¦›à§‡'
+      : 'Your wallet is getting ready';
   String get walletReadySubtitle => isBangla
-      ? 'সাইন ইন করার পর স্টার্টার ডাটা আসতে একটু সময় লাগে। একটু পরে আবার দেখুন।'
+      ? 'à¦¸à¦¾à¦‡à¦¨ à¦‡à¦¨ à¦•à¦°à¦¾à¦° à¦ªà¦° à¦¸à§à¦Ÿà¦¾à¦°à§à¦Ÿà¦¾à¦° à¦¡à¦¾à¦Ÿà¦¾ à¦†à¦¸à¦¤à§‡ à¦à¦•à¦Ÿà§ à¦¸à¦®à§Ÿ à¦²à¦¾à¦—à§‡à¥¤ à¦à¦•à¦Ÿà§ à¦ªà¦°à§‡ à¦†à¦¬à¦¾à¦° à¦¦à§‡à¦–à§à¦¨à¥¤'
       : 'Starter data usually appears right after sign-in. Give it a moment and reopen the screen if needed.';
-  String get walletBalancesTitle =>
-      isBangla ? 'ওয়ালেট ব্যালেন্স' : 'Wallet balances';
-  String get expenseTrendTitle => isBangla ? 'ব্যয়ের ট্রেন্ড' : 'Expense trend';
+  String get walletBalancesTitle => isBangla
+      ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸'
+      : 'Wallet balances';
+  String get expenseTrendTitle =>
+      isBangla ? 'à¦¬à§à¦¯à§Ÿà§‡à¦° à¦Ÿà§à¦°à§‡à¦¨à§à¦¡' : 'Expense trend';
   String get expenseTrendSubtitle => isBangla
-      ? 'চলতি মাসে প্রতিদিনের ব্যয়ের পরিবর্তন।'
+      ? 'à¦šà¦²à¦¤à¦¿ à¦®à¦¾à¦¸à§‡ à¦ªà§à¦°à¦¤à¦¿à¦¦à¦¿à¦¨à§‡à¦° à¦¬à§à¦¯à§Ÿà§‡à¦° à¦ªà¦°à¦¿à¦¬à¦°à§à¦¤à¦¨à¥¤'
       : 'Daily expense movement for the current month.';
-  String get monthPulseTitle =>
-      isBangla ? 'এই মাসের অবস্থা' : 'This month pulse';
+  String get monthPulseTitle => isBangla
+      ? 'à¦à¦‡ à¦®à¦¾à¦¸à§‡à¦° à¦…à¦¬à¦¸à§à¦¥à¦¾'
+      : 'This month pulse';
   String get monthPulseSubtitle => isBangla
-      ? 'লাইভ ব্যালেন্স আর ক্যাটাগরির ট্রেন্ড একসাথে দেখুন।'
+      ? 'à¦²à¦¾à¦‡à¦­ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸ à¦†à¦° à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿à¦° à¦Ÿà§à¦°à§‡à¦¨à§à¦¡ à¦à¦•à¦¸à¦¾à¦¥à§‡ à¦¦à§‡à¦–à§à¦¨à¥¤'
       : 'Your dashboard now blends live balances with category trends.';
-  String get monthIncomeLabel => isBangla ? 'মাসের আয়' : 'Month income';
-  String get waitingForSpending =>
-      isBangla ? 'খরচ শুরু হলে এখানে দেখা যাবে' : 'Waiting for spending';
-  String get analyticsLoadingTitle =>
-      isBangla ? 'অ্যানালিটিক্স প্রস্তুত হচ্ছে' : 'Analytics are catching up';
+  String get monthIncomeLabel =>
+      isBangla ? 'à¦®à¦¾à¦¸à§‡à¦° à¦†à§Ÿ' : 'Month income';
+  String get waitingForSpending => isBangla
+      ? 'à¦–à¦°à¦š à¦¶à§à¦°à§ à¦¹à¦²à§‡ à¦à¦–à¦¾à¦¨à§‡ à¦¦à§‡à¦–à¦¾ à¦¯à¦¾à¦¬à§‡'
+      : 'Waiting for spending';
+  String get analyticsLoadingTitle => isBangla
+      ? 'à¦…à§à¦¯à¦¾à¦¨à¦¾à¦²à¦¿à¦Ÿà¦¿à¦•à§à¦¸ à¦ªà§à¦°à¦¸à§à¦¤à§à¦¤ à¦¹à¦šà§à¦›à§‡'
+      : 'Analytics are catching up';
   String get upcomingBillsTitle =>
-      isBangla ? 'আসন্ন বিল' : 'Upcoming bills';
+      isBangla ? 'à¦†à¦¸à¦¨à§à¦¨ à¦¬à¦¿à¦²' : 'Upcoming bills';
   String get noBillsDueSoon => isBangla
-      ? 'শিগগির কোনো বিল বাকি নেই। একটি রিকারিং বিল যোগ করলে এখানে দেখা যাবে।'
+      ? 'à¦¶à¦¿à¦—à¦—à¦¿à¦° à¦•à§‹à¦¨à§‹ à¦¬à¦¿à¦² à¦¬à¦¾à¦•à¦¿ à¦¨à§‡à¦‡à¥¤ à¦à¦•à¦Ÿà¦¿ à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦¬à¦¿à¦² à¦¯à§‹à¦— à¦•à¦°à¦²à§‡ à¦à¦–à¦¾à¦¨à§‡ à¦¦à§‡à¦–à¦¾ à¦¯à¦¾à¦¬à§‡à¥¤'
       : 'Nothing is due soon. Add a recurring bill and it will show up here.';
 
   String dueLabel(int days) {
     if (days < 0) {
-      return isBangla ? '${days.abs()} দিন ওভারডিউ' : 'Overdue ${days.abs()}d';
+      return isBangla
+          ? '${days.abs()} à¦¦à¦¿à¦¨ à¦“à¦­à¦¾à¦°à¦¡à¦¿à¦‰'
+          : 'Overdue ${days.abs()}d';
     }
     if (days == 0) {
-      return isBangla ? 'আজ দিতে হবে' : 'Due today';
+      return isBangla ? 'à¦†à¦œ à¦¦à¦¿à¦¤à§‡ à¦¹à¦¬à§‡' : 'Due today';
     }
     if (days == 1) {
-      return isBangla ? 'আগামীকাল দিতে হবে' : 'Due tomorrow';
+      return isBangla
+          ? 'à¦†à¦—à¦¾à¦®à§€à¦•à¦¾à¦² à¦¦à¦¿à¦¤à§‡ à¦¹à¦¬à§‡'
+          : 'Due tomorrow';
     }
-    return isBangla ? '$days দিনের মধ্যে' : 'In $days days';
+    return isBangla ? '$days à¦¦à¦¿à¦¨à§‡à¦° à¦®à¦§à§à¦¯à§‡' : 'In $days days';
   }
 
   String dueWithWallet(int days, String walletName) =>
-      '${dueLabel(days)} • $walletName';
+      '${dueLabel(days)} â€¢ $walletName';
 
-  String get topGoalTitle => isBangla ? 'সেরা লক্ষ্য' : 'Top goal';
+  String get topGoalTitle =>
+      isBangla ? 'à¦¸à§‡à¦°à¦¾ à¦²à¦•à§à¦·à§à¦¯' : 'Top goal';
   String get noActiveGoalYet => isBangla
-      ? 'এখনও কোনো সক্রিয় সেভিংস লক্ষ্য নেই। একটি বানালে এখানে অগ্রগতি দেখা যাবে।'
+      ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦¸à¦•à§à¦°à¦¿à§Ÿ à¦¸à§‡à¦­à¦¿à¦‚à¦¸ à¦²à¦•à§à¦·à§à¦¯ à¦¨à§‡à¦‡à¥¤ à¦à¦•à¦Ÿà¦¿ à¦¬à¦¾à¦¨à¦¾à¦²à§‡ à¦à¦–à¦¾à¦¨à§‡ à¦…à¦—à§à¦°à¦—à¦¤à¦¿ à¦¦à§‡à¦–à¦¾ à¦¯à¦¾à¦¬à§‡à¥¤'
       : 'No active savings goal yet. Create one to see progress here.';
 
   String daysLeftLabel(int days) {
     if (days < 0) {
       return isBangla
-          ? '${days.abs()} দিন লক্ষ্য সময়ের পরে'
+          ? '${days.abs()} à¦¦à¦¿à¦¨ à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦®à§Ÿà§‡à¦° à¦ªà¦°à§‡'
           : 'Past target by ${days.abs()} days';
     }
-    return isBangla ? '$days দিন বাকি' : '$days days left';
+    return isBangla ? '$days à¦¦à¦¿à¦¨ à¦¬à¦¾à¦•à¦¿' : '$days days left';
   }
 
-  String get historyNeedsAttention =>
-      isBangla ? 'হিস্টরি লোড করতে সমস্যা হয়েছে' : 'History needs attention';
+  String get historyNeedsAttention => isBangla
+      ? 'à¦¹à¦¿à¦¸à§à¦Ÿà¦°à¦¿ à¦²à§‹à¦¡ à¦•à¦°à¦¤à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à§Ÿà§‡à¦›à§‡'
+      : 'History needs attention';
   String transactionEmptyTitle(bool hasSearch) => hasSearch
-      ? (isBangla ? 'মিল পাওয়া যায়নি' : 'No matching transaction')
-      : (isBangla ? 'এখনও কোনো লেনদেন নেই' : 'No transaction yet');
+      ? (isBangla
+            ? 'à¦®à¦¿à¦² à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿'
+            : 'No matching transaction')
+      : (isBangla
+            ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¨à§‡à¦‡'
+            : 'No transaction yet');
   String transactionEmptySubtitle(bool hasSearch) => hasSearch
       ? (isBangla
-            ? 'সার্চ, সাজানো বা ফিল্টার বদলে আবার চেষ্টা করুন।'
+            ? 'à¦¸à¦¾à¦°à§à¦š, à¦¸à¦¾à¦œà¦¾à¦¨à§‹ à¦¬à¦¾ à¦«à¦¿à¦²à§à¦Ÿà¦¾à¦° à¦¬à¦¦à¦²à§‡ à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤'
             : 'Try changing the search, sort, or filters to widen the result.')
       : (isBangla
-            ? 'প্রথম আয় বা ব্যয়ের এন্ট্রি যোগ করুন, তারপর হিস্টরি তৈরি হবে।'
+            ? 'à¦ªà§à¦°à¦¥à¦® à¦†à§Ÿ à¦¬à¦¾ à¦¬à§à¦¯à§Ÿà§‡à¦° à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨, à¦¤à¦¾à¦°à¦ªà¦° à¦¹à¦¿à¦¸à§à¦Ÿà¦°à¦¿ à¦¤à§ˆà¦°à¦¿ à¦¹à¦¬à§‡à¥¤'
             : 'Add your first entry and your full history will start building here.');
-  String get loadMoreAction => isBangla ? 'আরও দেখুন' : 'Load more';
+  String get loadMoreAction =>
+      isBangla ? 'à¦†à¦°à¦“ à¦¦à§‡à¦–à§à¦¨' : 'Load more';
   String get endOfHistoryLabel => isBangla
-      ? 'আপনার হিস্টরির শেষ প্রান্তে পৌঁছে গেছেন।'
+      ? 'à¦†à¦ªà¦¨à¦¾à¦° à¦¹à¦¿à¦¸à§à¦Ÿà¦°à¦¿à¦° à¦¶à§‡à¦· à¦ªà§à¦°à¦¾à¦¨à§à¦¤à§‡ à¦ªà§Œà¦à¦›à§‡ à¦—à§‡à¦›à§‡à¦¨à¥¤'
       : 'You\'ve reached the end of your history.';
   String get deleteTransactionTitle =>
-      isBangla ? 'লেনদেন মুছুন' : 'Delete transaction';
+      isBangla ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦®à§à¦›à§à¦¨' : 'Delete transaction';
   String get deleteTransactionPrompt => isBangla
-      ? 'এটি মুছে গেলে ওয়ালেট ব্যালেন্সও সাথে সাথে আপডেট হবে।'
+      ? 'à¦à¦Ÿà¦¿ à¦®à§à¦›à§‡ à¦—à§‡à¦²à§‡ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸à¦“ à¦¸à¦¾à¦¥à§‡ à¦¸à¦¾à¦¥à§‡ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à¦¬à§‡à¥¤'
       : 'This will remove the transaction and update the wallet balance immediately.';
-  String get transactionDeleted =>
-      isBangla ? 'লেনদেন মুছে ফেলা হয়েছে।' : 'Transaction deleted.';
+  String get transactionDeleted => isBangla
+      ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Transaction deleted.';
   String get sortTransactionsTitle =>
-      isBangla ? 'লেনদেন সাজান' : 'Sort transactions';
-  String get filterByCategoryTitle =>
-      isBangla ? 'ক্যাটাগরি দিয়ে ফিল্টার' : 'Filter by category';
-  String get filterByWalletTitle =>
-      isBangla ? 'ওয়ালেট দিয়ে ফিল্টার' : 'Filter by wallet';
-  String get transactionHistoryTitle =>
-      isBangla ? 'লেনদেনের হিস্টরি' : 'Transaction history';
+      isBangla ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¸à¦¾à¦œà¦¾à¦¨' : 'Sort transactions';
+  String get filterByCategoryTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¦à¦¿à§Ÿà§‡ à¦«à¦¿à¦²à§à¦Ÿà¦¾à¦°'
+      : 'Filter by category';
+  String get filterByWalletTitle => isBangla
+      ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¦à¦¿à§Ÿà§‡ à¦«à¦¿à¦²à§à¦Ÿà¦¾à¦°'
+      : 'Filter by wallet';
+  String get transactionHistoryTitle => isBangla
+      ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨à§‡à¦° à¦¹à¦¿à¦¸à§à¦Ÿà¦°à¦¿'
+      : 'Transaction history';
   String resultCountLabel(int count) => isBangla
-      ? 'বর্তমান ভিউতে $countটি ফলাফল'
+      ? 'à¦¬à¦°à§à¦¤à¦®à¦¾à¦¨ à¦­à¦¿à¦‰à¦¤à§‡ $countà¦Ÿà¦¿ à¦«à¦²à¦¾à¦«à¦²'
       : '$count result${count == 1 ? '' : 's'} in the current view';
-  String get searchNoteAmountHint =>
-      isBangla ? 'নোট বা পরিমাণ দিয়ে খুঁজুন' : 'Search by note or amount';
+  String get searchNoteAmountHint => isBangla
+      ? 'à¦¨à§‹à¦Ÿ à¦¬à¦¾ à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à§Ÿà§‡ à¦–à§à¦à¦œà§à¦¨'
+      : 'Search by note or amount';
   String categoryFilterLabel(int count) => count == 0
-      ? (isBangla ? 'ক্যাটাগরি' : 'Category')
-      : (isBangla ? 'ক্যাটাগরি ($count)' : 'Category ($count)');
+      ? (isBangla ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿' : 'Category')
+      : (isBangla
+            ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ ($count)'
+            : 'Category ($count)');
   String walletFilterLabel(int count) => count == 0
-      ? (isBangla ? 'ওয়ালেট' : 'Wallet')
-      : (isBangla ? 'ওয়ালেট ($count)' : 'Wallet ($count)');
-  String get dateRangeLabel => isBangla ? 'তারিখ সীমা' : 'Date range';
+      ? (isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ' : 'Wallet')
+      : (isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ ($count)' : 'Wallet ($count)');
+  String get dateRangeLabel =>
+      isBangla ? 'à¦¤à¦¾à¦°à¦¿à¦– à¦¸à§€à¦®à¦¾' : 'Date range';
   String get dateRangeSetLabel =>
-      isBangla ? 'তারিখ সীমা সেট' : 'Date range set';
-  String get topSpendingCategoryTitle =>
-      isBangla ? 'সবচেয়ে বেশি খরচের ক্যাটাগরি' : 'Top spending category';
+      isBangla ? 'à¦¤à¦¾à¦°à¦¿à¦– à¦¸à§€à¦®à¦¾ à¦¸à§‡à¦Ÿ' : 'Date range set';
+  String get topSpendingCategoryTitle => isBangla
+      ? 'à¦¸à¦¬à¦šà§‡à§Ÿà§‡ à¦¬à§‡à¦¶à¦¿ à¦–à¦°à¦šà§‡à¦° à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿'
+      : 'Top spending category';
   String get reportsIncomeVsExpenseTitle =>
-      isBangla ? 'আয় বনাম ব্যয়' : 'Income vs expense';
-  String get reportsCategoryBreakdownTitle =>
-      isBangla ? 'ক্যাটাগরি বিশ্লেষণ' : 'Category breakdown';
-  String get totalIncomeLabel => isBangla ? 'মোট আয়' : 'Total income';
-  String get reportTitle => isBangla ? 'আর্থিক রিপোর্ট' : 'Financial report';
-  String get totalExpenseLabel => isBangla ? 'মোট ব্যয়' : 'Total expense';
+      isBangla ? 'à¦†à§Ÿ à¦¬à¦¨à¦¾à¦® à¦¬à§à¦¯à§Ÿ' : 'Income vs expense';
+  String get reportsCategoryBreakdownTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¬à¦¿à¦¶à§à¦²à§‡à¦·à¦£'
+      : 'Category breakdown';
+  String get totalIncomeLabel => isBangla ? 'à¦®à§‹à¦Ÿ à¦†à§Ÿ' : 'Total income';
+  String get reportTitle => isBangla
+      ? 'à¦†à¦°à§à¦¥à¦¿à¦• à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ'
+      : 'Financial report';
+  String get totalExpenseLabel =>
+      isBangla ? 'à¦®à§‹à¦Ÿ à¦¬à§à¦¯à§Ÿ' : 'Total expense';
   String get netBalanceLabel =>
-      isBangla ? 'নেট ব্যালেন্স' : 'Net balance';
+      isBangla ? 'à¦¨à§‡à¦Ÿ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸' : 'Net balance';
   String get topCategoryLabel =>
-      isBangla ? 'সেরা ক্যাটাগরি' : 'Top category';
-  String get reportsLoadingTitle =>
-      isBangla ? 'রিপোর্ট লোড হচ্ছে' : 'Reports are loading';
-  String get noTopCategoryYet =>
-      isBangla ? 'এখনও সেরা ক্যাটাগরি নেই' : 'No top category yet';
+      isBangla ? 'à¦¸à§‡à¦°à¦¾ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿' : 'Top category';
+  String get reportsLoadingTitle => isBangla
+      ? 'à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡'
+      : 'Reports are loading';
+  String get noTopCategoryYet => isBangla
+      ? 'à¦à¦–à¦¨à¦“ à¦¸à§‡à¦°à¦¾ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¨à§‡à¦‡'
+      : 'No top category yet';
 
   String analyticsPeriodLabel(String key) {
     switch (key) {
       case 'weekly':
-        return isBangla ? 'এই সপ্তাহ' : 'This Week';
+        return isBangla ? 'à¦à¦‡ à¦¸à¦ªà§à¦¤à¦¾à¦¹' : 'This Week';
       case 'monthly':
-        return isBangla ? 'এই মাস' : 'This Month';
+        return isBangla ? 'à¦à¦‡ à¦®à¦¾à¦¸' : 'This Month';
       case 'yearly':
-        return isBangla ? 'এই বছর' : 'This Year';
+        return isBangla ? 'à¦à¦‡ à¦¬à¦›à¦°' : 'This Year';
       default:
         return key;
     }
@@ -193,485 +238,638 @@ extension AppL10nX on AppLocalizations {
 
   String averageExpenseLabel(String key) {
     if (key == 'yearly') {
-      return isBangla ? 'গড় মাসিক ব্যয়' : 'Avg monthly expense';
+      return isBangla
+          ? 'à¦—à§œ à¦®à¦¾à¦¸à¦¿à¦• à¦¬à§à¦¯à§Ÿ'
+          : 'Avg monthly expense';
     }
-    return isBangla ? 'গড় দৈনিক ব্যয়' : 'Avg daily expense';
+    return isBangla
+        ? 'à¦—à§œ à¦¦à§ˆà¦¨à¦¿à¦• à¦¬à§à¦¯à§Ÿ'
+        : 'Avg daily expense';
   }
 
   String peakExpenseLabel(String key) {
     if (key == 'yearly') {
-      return isBangla ? 'সর্বোচ্চ ব্যয়ের মাস' : 'Highest spending month';
+      return isBangla
+          ? 'à¦¸à¦°à§à¦¬à§‹à¦šà§à¦š à¦¬à§à¦¯à§Ÿà§‡à¦° à¦®à¦¾à¦¸'
+          : 'Highest spending month';
     }
-    return isBangla ? 'সর্বোচ্চ ব্যয়ের দিন' : 'Highest spending day';
+    return isBangla
+        ? 'à¦¸à¦°à§à¦¬à§‹à¦šà§à¦š à¦¬à§à¦¯à§Ÿà§‡à¦° à¦¦à¦¿à¦¨'
+        : 'Highest spending day';
   }
 
   String get budgetPulseTitle =>
-      isBangla ? 'বাজেট অবস্থা' : 'Budget pulse';
-  String get spentLabel => isBangla ? 'খরচ' : 'Spent';
-  String get limitLabel => isBangla ? 'সীমা' : 'Limit';
+      isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦…à¦¬à¦¸à§à¦¥à¦¾' : 'Budget pulse';
+  String get spentLabel => isBangla ? 'à¦–à¦°à¦š' : 'Spent';
+  String get limitLabel => isBangla ? 'à¦¸à§€à¦®à¦¾' : 'Limit';
   String get activeBudgetsLabel =>
-      isBangla ? 'সক্রিয় বাজেট' : 'Active budgets';
+      isBangla ? 'à¦¸à¦•à§à¦°à¦¿à§Ÿ à¦¬à¦¾à¦œà§‡à¦Ÿ' : 'Active budgets';
   String get monthlyProgressLabel =>
-      isBangla ? 'মাসিক অগ্রগতি' : 'Monthly progress';
-  String get notSetLabel => isBangla ? 'সেট নয়' : 'Not set';
+      isBangla ? 'à¦®à¦¾à¦¸à¦¿à¦• à¦…à¦—à§à¦°à¦—à¦¤à¦¿' : 'Monthly progress';
+  String get notSetLabel => isBangla ? 'à¦¸à§‡à¦Ÿ à¦¨à§Ÿ' : 'Not set';
   String budgetAlertsTitle(bool hasExceeded) => hasExceeded
-      ? (isBangla ? 'বাজেট সতর্কতা' : 'Budget alerts')
-      : (isBangla ? 'বাজেট সতর্কবার্তা' : 'Budget warnings');
+      ? (isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à¦¤à¦°à§à¦•à¦¤à¦¾' : 'Budget alerts')
+      : (isBangla
+            ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à¦¤à¦°à§à¦•à¦¬à¦¾à¦°à§à¦¤à¦¾'
+            : 'Budget warnings');
   String categoryExceededLabel(String category, String amount) => isBangla
-      ? '$category সীমার $amount বেশি হয়ে গেছে।'
+      ? '$category à¦¸à§€à¦®à¦¾à¦° $amount à¦¬à§‡à¦¶à¦¿ à¦¹à§Ÿà§‡ à¦—à§‡à¦›à§‡à¥¤'
       : '$category exceeded by $amount.';
   String categoryNearLimitLabel(String category, int percent) => isBangla
-      ? '$category তার সীমার $percent% এ পৌঁছেছে।'
+      ? '$category à¦¤à¦¾à¦° à¦¸à§€à¦®à¦¾à¦° $percent% à¦ à¦ªà§Œà¦à¦›à§‡à¦›à§‡à¥¤'
       : '$category is at $percent% of its limit.';
-  String get recentTransactionsTitle =>
-      isBangla ? 'সাম্প্রতিক লেনদেন' : 'Recent transactions';
-  String get noTransactionsYetTitle =>
-      isBangla ? 'এখনও কোনো লেনদেন নেই' : 'No transactions yet';
+  String get recentTransactionsTitle => isBangla
+      ? 'à¦¸à¦¾à¦®à§à¦ªà§à¦°à¦¤à¦¿à¦• à¦²à§‡à¦¨à¦¦à§‡à¦¨'
+      : 'Recent transactions';
+  String get noTransactionsYetTitle => isBangla
+      ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¨à§‡à¦‡'
+      : 'No transactions yet';
   String get noTransactionsYetSubtitle => isBangla
-      ? 'অ্যাড বাটন ব্যবহার করে প্রথম আয় বা ব্যয়ের এন্ট্রি দিন।'
+      ? 'à¦…à§à¦¯à¦¾à¦¡ à¦¬à¦¾à¦Ÿà¦¨ à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦•à¦°à§‡ à¦ªà§à¦°à¦¥à¦® à¦†à§Ÿ à¦¬à¦¾ à¦¬à§à¦¯à§Ÿà§‡à¦° à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦¦à¦¿à¦¨à¥¤'
       : 'Use the add button to save your first expense or income entry.';
   String get todaysPulseTitle =>
-      isBangla ? 'আজকের সারাংশ' : 'Today\'s pulse';
+      isBangla ? 'à¦†à¦œà¦•à§‡à¦° à¦¸à¦¾à¦°à¦¾à¦‚à¦¶' : 'Today\'s pulse';
   String get homeLiveSubtitle => isBangla
-      ? 'হোম স্ক্রিন এখন Firestore-এর লাইভ লেনদেন দেখায়।'
+      ? 'à¦¹à§‹à¦® à¦¸à§à¦•à§à¦°à¦¿à¦¨ à¦à¦–à¦¨ Firestore-à¦à¦° à¦²à¦¾à¦‡à¦­ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¦à§‡à¦–à¦¾à§Ÿà¥¤'
       : 'Your home screen now reflects live transaction data from Firestore.';
   String get incomeVsExpenseLabel =>
-      isBangla ? 'আয় বনাম ব্যয়' : 'Income vs expense';
-  String get todayNetLabel => isBangla ? 'আজকের নেট' : 'Today net';
-  String get monthNetLabel => isBangla ? 'মাসের নেট' : 'Month net';
-  String get recentItemsLabel =>
-      isBangla ? 'সাম্প্রতিক আইটেম' : 'Recent items';
+      isBangla ? 'à¦†à§Ÿ à¦¬à¦¨à¦¾à¦® à¦¬à§à¦¯à§Ÿ' : 'Income vs expense';
+  String get todayNetLabel =>
+      isBangla ? 'à¦†à¦œà¦•à§‡à¦° à¦¨à§‡à¦Ÿ' : 'Today net';
+  String get monthNetLabel =>
+      isBangla ? 'à¦®à¦¾à¦¸à§‡à¦° à¦¨à§‡à¦Ÿ' : 'Month net';
+  String get recentItemsLabel => isBangla
+      ? 'à¦¸à¦¾à¦®à§à¦ªà§à¦°à¦¤à¦¿à¦• à¦†à¦‡à¦Ÿà§‡à¦®'
+      : 'Recent items';
 
   String transactionEditorTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'লেনদেন সম্পাদনা' : 'Edit transaction')
-      : (isBangla ? 'লেনদেন যোগ করুন' : 'Add transaction');
+      ? (isBangla
+            ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾'
+            : 'Edit transaction')
+      : (isBangla
+            ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¯à§‹à¦— à¦•à¦°à§à¦¨'
+            : 'Add transaction');
   String get transactionEditorSubtitle => isBangla
-      ? 'একটি লেনদেন তৈরি করুন বা আপডেট করুন'
+      ? 'à¦à¦•à¦Ÿà¦¿ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨ à¦¬à¦¾ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨'
       : 'Create or update a transaction';
-  String get formBadge => isBangla ? 'ফর্ম' : 'Form';
-  String get typeLabel => isBangla ? 'ধরন' : 'Type';
-  String get amountFieldLabel => isBangla ? 'পরিমাণ' : 'Amount';
-  String get walletFieldLabel => isBangla ? 'ওয়ালেট' : 'Wallet';
-  String get categoryFieldLabel => isBangla ? 'ক্যাটাগরি' : 'Category';
+  String get formBadge => isBangla ? 'à¦«à¦°à§à¦®' : 'Form';
+  String get typeLabel => isBangla ? 'à¦§à¦°à¦¨' : 'Type';
+  String get amountFieldLabel => isBangla ? 'à¦ªà¦°à¦¿à¦®à¦¾à¦£' : 'Amount';
+  String get walletFieldLabel => isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ' : 'Wallet';
+  String get categoryFieldLabel =>
+      isBangla ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿' : 'Category';
   String get newCategoryAction =>
-      isBangla ? 'নতুন ক্যাটাগরি' : 'New category';
-  String get dateFieldLabel => isBangla ? 'তারিখ' : 'Date';
-  String get noteFieldLabel => isBangla ? 'নোট' : 'Note';
+      isBangla ? 'à¦¨à¦¤à§à¦¨ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿' : 'New category';
+  String get dateFieldLabel => isBangla ? 'à¦¤à¦¾à¦°à¦¿à¦–' : 'Date';
+  String get noteFieldLabel => isBangla ? 'à¦¨à§‹à¦Ÿ' : 'Note';
   String get optionalTransactionNoteHint => isBangla
-      ? 'এই লেনদেন সম্পর্কে ঐচ্ছিক নোট'
+      ? 'à¦à¦‡ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¸à¦®à§à¦ªà¦°à§à¦•à§‡ à¦à¦šà§à¦›à¦¿à¦• à¦¨à§‹à¦Ÿ'
       : 'Optional note about this transaction';
-  String get noWalletYetTitle =>
-      isBangla ? 'এখনও কোনো ওয়ালেট নেই' : 'No wallet yet';
+  String get noWalletYetTitle => isBangla
+      ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¨à§‡à¦‡'
+      : 'No wallet yet';
   String get noWalletYetSubtitle => isBangla
-      ? 'স্টার্টার ডাটা এখনও লোড হচ্ছে। একটু পরে আবার খুলুন।'
+      ? 'à¦¸à§à¦Ÿà¦¾à¦°à§à¦Ÿà¦¾à¦° à¦¡à¦¾à¦Ÿà¦¾ à¦à¦–à¦¨à¦“ à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡à¥¤ à¦à¦•à¦Ÿà§ à¦ªà¦°à§‡ à¦†à¦¬à¦¾à¦° à¦–à§à¦²à§à¦¨à¥¤'
       : 'Starter data is still loading. Reopen this sheet in a moment.';
-  String get noCategoryAvailableTitle =>
-      isBangla ? 'কোনো ক্যাটাগরি নেই' : 'No category available';
+  String get noCategoryAvailableTitle => isBangla
+      ? 'à¦•à§‹à¦¨à§‹ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¨à§‡à¦‡'
+      : 'No category available';
   String get noCategoryAvailableSubtitle => isBangla
-      ? 'স্টার্টার ক্যাটাগরি এখনও সিঙ্ক হচ্ছে। চাইলে এখনই একটি বানাতে পারেন।'
+      ? 'à¦¸à§à¦Ÿà¦¾à¦°à§à¦Ÿà¦¾à¦° à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦à¦–à¦¨à¦“ à¦¸à¦¿à¦™à§à¦• à¦¹à¦šà§à¦›à§‡à¥¤ à¦šà¦¾à¦‡à¦²à§‡ à¦à¦–à¦¨à¦‡ à¦à¦•à¦Ÿà¦¿ à¦¬à¦¾à¦¨à¦¾à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨à¥¤'
       : 'Starter categories are still syncing. You can also create one right now.';
   String get starterDataSyncingHint => isBangla
-      ? 'স্টার্টার ডাটা সিঙ্ক শেষ না হলেও আপনি এখানে থাকতে পারেন।'
+      ? 'à¦¸à§à¦Ÿà¦¾à¦°à§à¦Ÿà¦¾à¦° à¦¡à¦¾à¦Ÿà¦¾ à¦¸à¦¿à¦™à§à¦• à¦¶à§‡à¦· à¦¨à¦¾ à¦¹à¦²à§‡à¦“ à¦†à¦ªà¦¨à¦¿ à¦à¦–à¦¾à¦¨à§‡ à¦¥à¦¾à¦•à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¦¨à¥¤'
       : 'You can still stay here while starter data finishes syncing.';
   String get saveTransactionAction =>
-      isBangla ? 'সংরক্ষণ করুন' : 'Save';
+      isBangla ? 'à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à§à¦¨' : 'Save';
   String get updateTransactionAction =>
-      isBangla ? 'আপডেট করুন' : 'Update';
+      isBangla ? 'à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨' : 'Update';
   String get validAmountError => isBangla
-      ? '০ এর বেশি একটি সঠিক পরিমাণ দিন।'
+      ? 'à§¦ à¦à¦° à¦¬à§‡à¦¶à¦¿ à¦à¦•à¦Ÿà¦¿ à¦¸à¦ à¦¿à¦• à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤'
       : 'Enter a valid amount greater than 0.';
   String get chooseWalletError => isBangla
-      ? 'সংরক্ষণের আগে একটি ওয়ালেট বেছে নিন।'
+      ? 'à¦¸à¦‚à¦°à¦•à§à¦·à¦£à§‡à¦° à¦†à¦—à§‡ à¦à¦•à¦Ÿà¦¿ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤'
       : 'Choose a wallet before saving.';
   String get chooseCategoryError => isBangla
-      ? 'সংরক্ষণের আগে একটি ক্যাটাগরি বেছে নিন।'
+      ? 'à¦¸à¦‚à¦°à¦•à§à¦·à¦£à§‡à¦° à¦†à¦—à§‡ à¦à¦•à¦Ÿà¦¿ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤'
       : 'Choose a category before saving.';
-  String get transactionSaved =>
-      isBangla ? 'লেনদেন সংরক্ষণ হয়েছে।' : 'Transaction saved.';
-  String get transactionUpdated =>
-      isBangla ? 'লেনদেন আপডেট হয়েছে।' : 'Transaction updated.';
-  String get deleteCategoryTitle =>
-      isBangla ? 'ক্যাটাগরি মুছুন' : 'Delete category';
+  String get transactionSaved => isBangla
+      ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Transaction saved.';
+  String get transactionUpdated => isBangla
+      ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Transaction updated.';
+  String get deleteCategoryTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦®à§à¦›à§à¦¨'
+      : 'Delete category';
   String deleteCategoryPrompt(String name) => isBangla
-      ? '"$name" মুছবেন? পুরোনো লেনদেনগুলো আগের ক্যাটাগরি আইডি রেখেই থাকবে।'
+      ? '"$name" à¦®à§à¦›à¦¬à§‡à¦¨? à¦ªà§à¦°à§‹à¦¨à§‹ à¦²à§‡à¦¨à¦¦à§‡à¦¨à¦—à§à¦²à§‹ à¦†à¦—à§‡à¦° à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦†à¦‡à¦¡à¦¿ à¦°à§‡à¦–à§‡à¦‡ à¦¥à¦¾à¦•à¦¬à§‡à¥¤'
       : 'Delete "$name"? Existing transactions will still keep the old category id, so only remove categories you no longer need.';
-  String get categoryDeleted =>
-      isBangla ? 'ক্যাটাগরি মুছে ফেলা হয়েছে।' : 'Category deleted.';
+  String get categoryDeleted => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Category deleted.';
   String createCategoryTitle(String typeLabel) => isBangla
-      ? '$typeLabel ক্যাটাগরি তৈরি করুন'
+      ? '$typeLabel à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨'
       : 'Create $typeLabel category';
   String get categoryAutoSelectHint => isBangla
-      ? 'সংরক্ষণ করার পর নতুন ক্যাটাগরিটি নিজে থেকেই বেছে নেওয়া হবে।'
+      ? 'à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à¦¾à¦° à¦ªà¦° à¦¨à¦¤à§à¦¨ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿à¦Ÿà¦¿ à¦¨à¦¿à¦œà§‡ à¦¥à§‡à¦•à§‡à¦‡ à¦¬à§‡à¦›à§‡ à¦¨à§‡à¦“à§Ÿà¦¾ à¦¹à¦¬à§‡à¥¤'
       : 'The new category will be selected automatically after you save it.';
-  String get createWithLabel => isBangla ? 'তৈরির ধরন' : 'Create with';
-  String get templateLabel => isBangla ? 'টেমপ্লেট' : 'Template';
-  String get manualLabel => isBangla ? 'ম্যানুয়াল' : 'Manual';
-  String get categoryTemplateLabel =>
-      isBangla ? 'ক্যাটাগরি টেমপ্লেট' : 'Template';
+  String get createWithLabel =>
+      isBangla ? 'à¦¤à§ˆà¦°à¦¿à¦° à¦§à¦°à¦¨' : 'Create with';
+  String get templateLabel =>
+      isBangla ? 'à¦Ÿà§‡à¦®à¦ªà§à¦²à§‡à¦Ÿ' : 'Template';
+  String get manualLabel => isBangla ? 'à¦®à§à¦¯à¦¾à¦¨à§à§Ÿà¦¾à¦²' : 'Manual';
+  String get categoryTemplateLabel => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦Ÿà§‡à¦®à¦ªà§à¦²à§‡à¦Ÿ'
+      : 'Template';
   String get categoryNameLabel =>
-      isBangla ? 'ক্যাটাগরির নাম' : 'Category name';
-  String get categoryNameHint =>
-      isBangla ? 'ইংরেজি বা বাংলা লিখুন' : 'Write in English or Bangla';
+      isBangla ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿à¦° à¦¨à¦¾à¦®' : 'Category name';
+  String get categoryNameHint => isBangla
+      ? 'à¦‡à¦‚à¦°à§‡à¦œà¦¿ à¦¬à¦¾ à¦¬à¦¾à¦‚à¦²à¦¾ à¦²à¦¿à¦–à§à¦¨'
+      : 'Write in English or Bangla';
   String get categoryNameHelper => isBangla
-      ? 'সম্ভব হলে আমরা বিপরীত ভাষাটিও স্বয়ংক্রিয়ভাবে পূরণ করব।'
+      ? 'à¦¸à¦®à§à¦­à¦¬ à¦¹à¦²à§‡ à¦†à¦®à¦°à¦¾ à¦¬à¦¿à¦ªà¦°à§€à¦¤ à¦­à¦¾à¦·à¦¾à¦Ÿà¦¿à¦“ à¦¸à§à¦¬à§Ÿà¦‚à¦•à§à¦°à¦¿à§Ÿà¦­à¦¾à¦¬à§‡ à¦ªà§‚à¦°à¦£ à¦•à¦°à¦¬à¥¤'
       : 'We will fill the opposite language automatically when possible.';
-  String get chooseTemplateFirstError =>
-      isBangla ? 'আগে একটি টেমপ্লেট বেছে নিন।' : 'Choose a template first.';
+  String get chooseTemplateFirstError => isBangla
+      ? 'à¦†à¦—à§‡ à¦à¦•à¦Ÿà¦¿ à¦Ÿà§‡à¦®à¦ªà§à¦²à§‡à¦Ÿ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤'
+      : 'Choose a template first.';
   String get writeCategoryNameError => isBangla
-      ? 'ইংরেজি বা বাংলায় একটি ক্যাটাগরির নাম লিখুন।'
+      ? 'à¦‡à¦‚à¦°à§‡à¦œà¦¿ à¦¬à¦¾ à¦¬à¦¾à¦‚à¦²à¦¾à§Ÿ à¦à¦•à¦Ÿà¦¿ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿à¦° à¦¨à¦¾à¦® à¦²à¦¿à¦–à§à¦¨à¥¤'
       : 'Write a category name in English or Bangla.';
-  String get createCategoryAction =>
-      isBangla ? 'ক্যাটাগরি তৈরি করুন' : 'Create category';
-  String get useTemplateAction =>
-      isBangla ? 'টেমপ্লেট ব্যবহার করুন' : 'Use template';
-  String get chooseIconLabel => isBangla ? 'আইকন বেছে নিন' : 'Choose icon';
-  String get chooseColorLabel => isBangla ? 'রং বেছে নিন' : 'Choose color';
-  String get manualCategorySubtitle =>
-      isBangla ? 'ম্যানুয়াল ক্যাটাগরি' : 'Manual category';
-  String get categoryPreviewTitle =>
-      isBangla ? 'ক্যাটাগরি প্রিভিউ' : 'Category preview';
+  String get createCategoryAction => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨'
+      : 'Create category';
+  String get useTemplateAction => isBangla
+      ? 'à¦Ÿà§‡à¦®à¦ªà§à¦²à§‡à¦Ÿ à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦•à¦°à§à¦¨'
+      : 'Use template';
+  String get chooseIconLabel =>
+      isBangla ? 'à¦†à¦‡à¦•à¦¨ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨' : 'Choose icon';
+  String get chooseColorLabel =>
+      isBangla ? 'à¦°à¦‚ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨' : 'Choose color';
+  String get manualCategorySubtitle => isBangla
+      ? 'à¦®à§à¦¯à¦¾à¦¨à§à§Ÿà¦¾à¦² à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿'
+      : 'Manual category';
+  String get categoryPreviewTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦ªà§à¦°à¦¿à¦­à¦¿à¦‰'
+      : 'Category preview';
   String get alreadyAvailableTitle =>
-      isBangla ? 'ইতিমধ্যেই আছে' : 'Already available';
+      isBangla ? 'à¦‡à¦¤à¦¿à¦®à¦§à§à¦¯à§‡à¦‡ à¦†à¦›à§‡' : 'Already available';
   String get quickCreateTitle =>
-      isBangla ? 'দ্রুত তৈরি' : 'Quick create';
+      isBangla ? 'à¦¦à§à¦°à§à¦¤ à¦¤à§ˆà¦°à¦¿' : 'Quick create';
   String get templateExistsSubtitle => isBangla
-      ? 'এই টেমপ্লেটটি আগে থেকেই আছে। সংরক্ষণ করলে শুধু এটি নির্বাচন হবে।'
+      ? 'à¦à¦‡ à¦Ÿà§‡à¦®à¦ªà§à¦²à§‡à¦Ÿà¦Ÿà¦¿ à¦†à¦—à§‡ à¦¥à§‡à¦•à§‡à¦‡ à¦†à¦›à§‡à¥¤ à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à¦²à§‡ à¦¶à§à¦§à§ à¦à¦Ÿà¦¿ à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨ à¦¹à¦¬à§‡à¥¤'
       : 'This template already exists. Saving will just select it.';
   String get templateReadySubtitle => isBangla
-      ? 'দ্রুত এন্ট্রির জন্য এই টেমপ্লেটটি সঙ্গে সঙ্গে তৈরি করা যাবে।'
+      ? 'à¦¦à§à¦°à§à¦¤ à¦à¦¨à§à¦Ÿà§à¦°à¦¿à¦° à¦œà¦¨à§à¦¯ à¦à¦‡ à¦Ÿà§‡à¦®à¦ªà§à¦²à§‡à¦Ÿà¦Ÿà¦¿ à¦¸à¦™à§à¦—à§‡ à¦¸à¦™à§à¦—à§‡ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à¦¾ à¦¯à¦¾à¦¬à§‡à¥¤'
       : 'This template is ready to create instantly for faster entry.';
 
-  String get budgetsTitleText => isBangla ? 'বাজেট' : 'Budgets';
-  String get categoryBudgetsTitle =>
-      isBangla ? 'ক্যাটাগরি বাজেট' : 'Category budgets';
+  String get budgetsTitleText => isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ' : 'Budgets';
+  String get categoryBudgetsTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¬à¦¾à¦œà§‡à¦Ÿ'
+      : 'Category budgets';
   String get addBudgetAction =>
-      isBangla ? 'বাজেট যোগ করুন' : 'Add budget';
+      isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add budget';
   String get deleteBudgetTitle =>
-      isBangla ? 'বাজেট মুছুন' : 'Delete budget';
-  String get deleteBudgetPrompt =>
-      isBangla ? 'এই বাজেট সীমা মুছবেন?' : 'Delete this budget limit?';
-  String get budgetDeleted =>
-      isBangla ? 'বাজেট মুছে ফেলা হয়েছে।' : 'Budget deleted.';
+      isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦®à§à¦›à§à¦¨' : 'Delete budget';
+  String get deleteBudgetPrompt => isBangla
+      ? 'à¦à¦‡ à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à§€à¦®à¦¾ à¦®à§à¦›à¦¬à§‡à¦¨?'
+      : 'Delete this budget limit?';
+  String get budgetDeleted => isBangla
+      ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Budget deleted.';
   String get overallSpendingLabel =>
-      isBangla ? 'মোট খরচ' : 'Overall spending';
+      isBangla ? 'à¦®à§‹à¦Ÿ à¦–à¦°à¦š' : 'Overall spending';
   String budgetEditorTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'বাজেট সম্পাদনা' : 'Edit budget')
-      : (isBangla ? 'বাজেট যোগ করুন' : 'Add budget');
-  String get overallSpendingBudgetTitle =>
-      isBangla ? 'মোট খরচের বাজেট' : 'Overall spending budget';
-  String get categoryBudgetTitle =>
-      isBangla ? 'ক্যাটাগরি বাজেট' : 'Category budget';
+      ? (isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾' : 'Edit budget')
+      : (isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add budget');
+  String get overallSpendingBudgetTitle => isBangla
+      ? 'à¦®à§‹à¦Ÿ à¦–à¦°à¦šà§‡à¦° à¦¬à¦¾à¦œà§‡à¦Ÿ'
+      : 'Overall spending budget';
+  String get categoryBudgetTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¬à¦¾à¦œà§‡à¦Ÿ'
+      : 'Category budget';
   String get budgetsAutoUpdateSubtitle => isBangla
-      ? 'সম্পর্কিত ব্যয় বদলালে বাজেটের খরচ স্বয়ংক্রিয়ভাবে আপডেট হবে।'
+      ? 'à¦¸à¦®à§à¦ªà¦°à§à¦•à¦¿à¦¤ à¦¬à§à¦¯à§Ÿ à¦¬à¦¦à¦²à¦¾à¦²à§‡ à¦¬à¦¾à¦œà§‡à¦Ÿà§‡à¦° à¦–à¦°à¦š à¦¸à§à¦¬à§Ÿà¦‚à¦•à§à¦°à¦¿à§Ÿà¦­à¦¾à¦¬à§‡ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à¦¬à§‡à¥¤'
       : 'Budgets update their spent amount automatically whenever related expenses change.';
-  String get budgetTypeLabel => isBangla ? 'বাজেটের ধরন' : 'Budget type';
-  String get budgetLimitLabel => isBangla ? 'বাজেট সীমা' : 'Budget limit';
-  String get updateBudgetAction =>
-      isBangla ? 'বাজেট আপডেট করুন' : 'Update budget';
+  String get budgetTypeLabel =>
+      isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿà§‡à¦° à¦§à¦°à¦¨' : 'Budget type';
+  String get budgetLimitLabel =>
+      isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à§€à¦®à¦¾' : 'Budget limit';
+  String get updateBudgetAction => isBangla
+      ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨'
+      : 'Update budget';
   String get createBudgetAction =>
-      isBangla ? 'বাজেট তৈরি করুন' : 'Create budget';
+      isBangla ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨' : 'Create budget';
   String get validBudgetLimitError => isBangla
-      ? 'একটি সঠিক বাজেট সীমা দিন।'
+      ? 'à¦à¦•à¦Ÿà¦¿ à¦¸à¦ à¦¿à¦• à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à§€à¦®à¦¾ à¦¦à¦¿à¦¨à¥¤'
       : 'Enter a valid budget limit.';
-  String get budgetUpdated =>
-      isBangla ? 'বাজেট আপডেট হয়েছে।' : 'Budget updated.';
-  String get budgetCreated =>
-      isBangla ? 'বাজেট তৈরি হয়েছে।' : 'Budget created.';
-  String get overallMonthlyLimitLabel =>
-      isBangla ? 'মোট মাসিক সীমা' : 'Overall monthly limit';
-  String get categoryBudgetTotalLabel =>
-      isBangla ? 'ক্যাটাগরি বাজেট মোট' : 'Category budget total';
-  String percentUsedLabel(int percent) =>
-      isBangla ? '$percent% ব্যবহার হয়েছে' : '$percent% used';
-  String get exceededLabel => isBangla ? 'সীমা ছাড়িয়েছে' : 'Exceeded';
-  String get warningLabel => isBangla ? 'সতর্কতা' : 'Warning';
-  String get onTrackLabel => isBangla ? 'সঠিক পথে' : 'On track';
-  String get noBudgetsYetTitle =>
-      isBangla ? 'এখনও কোনো বাজেট নেই' : 'No budgets yet';
+  String get budgetUpdated => isBangla
+      ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Budget updated.';
+  String get budgetCreated => isBangla
+      ? 'à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Budget created.';
+  String get overallMonthlyLimitLabel => isBangla
+      ? 'à¦®à§‹à¦Ÿ à¦®à¦¾à¦¸à¦¿à¦• à¦¸à§€à¦®à¦¾'
+      : 'Overall monthly limit';
+  String get categoryBudgetTotalLabel => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¬à¦¾à¦œà§‡à¦Ÿ à¦®à§‹à¦Ÿ'
+      : 'Category budget total';
+  String percentUsedLabel(int percent) => isBangla
+      ? '$percent% à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦¹à§Ÿà§‡à¦›à§‡'
+      : '$percent% used';
+  String get exceededLabel =>
+      isBangla ? 'à¦¸à§€à¦®à¦¾ à¦›à¦¾à§œà¦¿à§Ÿà§‡à¦›à§‡' : 'Exceeded';
+  String get warningLabel => isBangla ? 'à¦¸à¦¤à¦°à§à¦•à¦¤à¦¾' : 'Warning';
+  String get onTrackLabel => isBangla ? 'à¦¸à¦ à¦¿à¦• à¦ªà¦¥à§‡' : 'On track';
+  String get noBudgetsYetTitle => isBangla
+      ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¨à§‡à¦‡'
+      : 'No budgets yet';
   String get noBudgetsYetSubtitle => isBangla
-      ? 'এই মাসের জন্য মোট বা ক্যাটাগরি বাজেট সেট করুন।'
+      ? 'à¦à¦‡ à¦®à¦¾à¦¸à§‡à¦° à¦œà¦¨à§à¦¯ à¦®à§‹à¦Ÿ à¦¬à¦¾ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦¬à¦¾à¦œà§‡à¦Ÿ à¦¸à§‡à¦Ÿ à¦•à¦°à§à¦¨à¥¤'
       : 'Set an overall or category budget for this month to start tracking spending progress.';
 
-  String get goalsTitleText => isBangla ? 'লক্ষ্য' : 'Goals';
+  String get goalsTitleText => isBangla ? 'à¦²à¦•à§à¦·à§à¦¯' : 'Goals';
   String get activeGoalsTitle =>
-      isBangla ? 'সক্রিয় লক্ষ্য' : 'Active goals';
-  String get addGoalAction => isBangla ? 'লক্ষ্য যোগ করুন' : 'Add goal';
-  String get noActiveGoalTitle =>
-      isBangla ? 'এখনও কোনো সক্রিয় লক্ষ্য নেই' : 'No active goal yet';
+      isBangla ? 'à¦¸à¦•à§à¦°à¦¿à§Ÿ à¦²à¦•à§à¦·à§à¦¯' : 'Active goals';
+  String get addGoalAction =>
+      isBangla ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add goal';
+  String get noActiveGoalTitle => isBangla
+      ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦¸à¦•à§à¦°à¦¿à§Ÿ à¦²à¦•à§à¦·à§à¦¯ à¦¨à§‡à¦‡'
+      : 'No active goal yet';
   String get noActiveGoalSubtitle => isBangla
-      ? 'ইমার্জেন্সি ফান্ড, ভ্রমণ, নতুন ডিভাইস বা যেকোনো কিছুর জন্য লক্ষ্য বানান।'
+      ? 'à¦‡à¦®à¦¾à¦°à§à¦œà§‡à¦¨à§à¦¸à¦¿ à¦«à¦¾à¦¨à§à¦¡, à¦­à§à¦°à¦®à¦£, à¦¨à¦¤à§à¦¨ à¦¡à¦¿à¦­à¦¾à¦‡à¦¸ à¦¬à¦¾ à¦¯à§‡à¦•à§‹à¦¨à§‹ à¦•à¦¿à¦›à§à¦° à¦œà¦¨à§à¦¯ à¦²à¦•à§à¦·à§à¦¯ à¦¬à¦¾à¦¨à¦¾à¦¨à¥¤'
       : 'Create a goal for emergency savings, a trip, a new device, or anything you want to save for.';
-  String completedGoalsTitle(int count) =>
-      isBangla ? 'সম্পন্ন লক্ষ্য ($count)' : 'Completed goals ($count)';
+  String completedGoalsTitle(int count) => isBangla
+      ? 'à¦¸à¦®à§à¦ªà¦¨à§à¦¨ à¦²à¦•à§à¦·à§à¦¯ ($count)'
+      : 'Completed goals ($count)';
   String get deleteGoalTitle =>
-      isBangla ? 'লক্ষ্য মুছুন' : 'Delete goal';
+      isBangla ? 'à¦²à¦•à§à¦·à§à¦¯ à¦®à§à¦›à§à¦¨' : 'Delete goal';
   String get deleteSavingsGoalPrompt => isBangla
-      ? 'এই সেভিংস লক্ষ্য মুছবেন?'
+      ? 'à¦à¦‡ à¦¸à§‡à¦­à¦¿à¦‚à¦¸ à¦²à¦•à§à¦·à§à¦¯ à¦®à§à¦›à¦¬à§‡à¦¨?'
       : 'Delete this savings goal?';
-  String get goalDeleted => isBangla ? 'লক্ষ্য মুছে ফেলা হয়েছে।' : 'Goal deleted.';
+  String get goalDeleted => isBangla
+      ? 'à¦²à¦•à§à¦·à§à¦¯ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Goal deleted.';
   String get savingsGoalsTitle =>
-      isBangla ? 'সেভিংস লক্ষ্য' : 'Savings goals';
+      isBangla ? 'à¦¸à§‡à¦­à¦¿à¦‚à¦¸ à¦²à¦•à§à¦·à§à¦¯' : 'Savings goals';
   String savingsGoalsSubtitle(String? topGoalName) => topGoalName == null
       ? (isBangla
-            ? 'যে জিনিসগুলোর জন্য সঞ্চয় করতে চান সেগুলোর লক্ষ্য বানান এবং অগ্রগতি দৃশ্যমান রাখুন।'
+            ? 'à¦¯à§‡ à¦œà¦¿à¦¨à¦¿à¦¸à¦—à§à¦²à§‹à¦° à¦œà¦¨à§à¦¯ à¦¸à¦žà§à¦šà§Ÿ à¦•à¦°à¦¤à§‡ à¦šà¦¾à¦¨ à¦¸à§‡à¦—à§à¦²à§‹à¦° à¦²à¦•à§à¦·à§à¦¯ à¦¬à¦¾à¦¨à¦¾à¦¨ à¦à¦¬à¦‚ à¦…à¦—à§à¦°à¦—à¦¤à¦¿ à¦¦à§ƒà¦¶à§à¦¯à¦®à¦¾à¦¨ à¦°à¦¾à¦–à§à¦¨à¥¤'
             : 'Create goals for the things you want to save toward and keep your progress visible.')
       : (isBangla
-            ? 'শীর্ষ সক্রিয় লক্ষ্য: $topGoalName'
+            ? 'à¦¶à§€à¦°à§à¦· à¦¸à¦•à§à¦°à¦¿à§Ÿ à¦²à¦•à§à¦·à§à¦¯: $topGoalName'
             : 'Top active goal: $topGoalName');
   String goalSavedOf(String saved, String target) => isBangla
-      ? '$saved সেভ হয়েছে, লক্ষ্য $target'
+      ? '$saved à¦¸à§‡à¦­ à¦¹à§Ÿà§‡à¦›à§‡, à¦²à¦•à§à¦·à§à¦¯ $target'
       : '$saved of $target saved';
-  String get completedStatus => isBangla ? 'সম্পন্ন' : 'Completed';
-  String get contributeAction => isBangla ? 'অবদান দিন' : 'Contribute';
+  String get completedStatus =>
+      isBangla ? 'à¦¸à¦®à§à¦ªà¦¨à§à¦¨' : 'Completed';
+  String get contributeAction =>
+      isBangla ? 'à¦…à¦¬à¦¦à¦¾à¦¨ à¦¦à¦¿à¦¨' : 'Contribute';
   String goalTargetSummary(String amount, String date) => isBangla
-      ? 'লক্ষ্য $amount • $date'
-      : 'Target $amount • $date';
+      ? 'à¦²à¦•à§à¦·à§à¦¯ $amount â€¢ $date'
+      : 'Target $amount â€¢ $date';
   String goalEditorTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'লক্ষ্য সম্পাদনা' : 'Edit goal')
-      : (isBangla ? 'লক্ষ্য যোগ করুন' : 'Add goal');
+      ? (isBangla ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾' : 'Edit goal')
+      : (isBangla ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add goal');
   String goalHeaderSubtitle(bool isEditing) => isEditing
-      ? (isBangla ? 'আপনার সেভিংস লক্ষ্য আপডেট করুন' : 'Update your savings target')
-      : (isBangla ? 'নতুন একটি সেভিংস লক্ষ্য তৈরি করুন' : 'Create a new savings target');
-  String get goalNameLabel => isBangla ? 'লক্ষ্যের নাম' : 'Goal name';
-  String get goalNameHint =>
-      isBangla ? 'ইমার্জেন্সি ফান্ড, ল্যাপটপ, ভ্রমণ, বাইক' : 'Emergency fund, Laptop, Trip, Bike';
-  String get targetAmountLabel =>
-      isBangla ? 'লক্ষ্যের পরিমাণ' : 'Target amount';
+      ? (isBangla
+            ? 'à¦†à¦ªà¦¨à¦¾à¦° à¦¸à§‡à¦­à¦¿à¦‚à¦¸ à¦²à¦•à§à¦·à§à¦¯ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨'
+            : 'Update your savings target')
+      : (isBangla
+            ? 'à¦¨à¦¤à§à¦¨ à¦à¦•à¦Ÿà¦¿ à¦¸à§‡à¦­à¦¿à¦‚à¦¸ à¦²à¦•à§à¦·à§à¦¯ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨'
+            : 'Create a new savings target');
+  String get goalNameLabel =>
+      isBangla ? 'à¦²à¦•à§à¦·à§à¦¯à§‡à¦° à¦¨à¦¾à¦®' : 'Goal name';
+  String get goalNameHint => isBangla
+      ? 'à¦‡à¦®à¦¾à¦°à§à¦œà§‡à¦¨à§à¦¸à¦¿ à¦«à¦¾à¦¨à§à¦¡, à¦²à§à¦¯à¦¾à¦ªà¦Ÿà¦ª, à¦­à§à¦°à¦®à¦£, à¦¬à¦¾à¦‡à¦•'
+      : 'Emergency fund, Laptop, Trip, Bike';
+  String get targetAmountLabel => isBangla
+      ? 'à¦²à¦•à§à¦·à§à¦¯à§‡à¦° à¦ªà¦°à¦¿à¦®à¦¾à¦£'
+      : 'Target amount';
   String get targetDateLabel =>
-      isBangla ? 'লক্ষ্যের তারিখ' : 'Target date';
-  String get changeAction => isBangla ? 'পরিবর্তন করুন' : 'Change';
-  String get iconLabel => isBangla ? 'আইকন' : 'Icon';
-  String get colorLabel => isBangla ? 'রং' : 'Color';
-  String get saveGoalAction =>
-      isBangla ? 'লক্ষ্য সংরক্ষণ করুন' : 'Save goal';
+      isBangla ? 'à¦²à¦•à§à¦·à§à¦¯à§‡à¦° à¦¤à¦¾à¦°à¦¿à¦–' : 'Target date';
+  String get changeAction =>
+      isBangla ? 'à¦ªà¦°à¦¿à¦¬à¦°à§à¦¤à¦¨ à¦•à¦°à§à¦¨' : 'Change';
+  String get iconLabel => isBangla ? 'à¦†à¦‡à¦•à¦¨' : 'Icon';
+  String get colorLabel => isBangla ? 'à¦°à¦‚' : 'Color';
+  String get saveGoalAction => isBangla
+      ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à§à¦¨'
+      : 'Save goal';
   String get createGoalAction =>
-      isBangla ? 'লক্ষ্য তৈরি করুন' : 'Create goal';
-  String get enterGoalNameError =>
-      isBangla ? 'লক্ষ্যের নাম লিখুন।' : 'Please enter a goal name.';
+      isBangla ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨' : 'Create goal';
+  String get enterGoalNameError => isBangla
+      ? 'à¦²à¦•à§à¦·à§à¦¯à§‡à¦° à¦¨à¦¾à¦® à¦²à¦¿à¦–à§à¦¨à¥¤'
+      : 'Please enter a goal name.';
   String get enterTargetAmountError => isBangla
-      ? 'সঠিক লক্ষ্য পরিমাণ দিন।'
+      ? 'à¦¸à¦ à¦¿à¦• à¦²à¦•à§à¦·à§à¦¯ à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤'
       : 'Please enter a valid target amount.';
   String get goalUpdated => isBangla
-      ? 'লক্ষ্য সফলভাবে আপডেট হয়েছে।'
+      ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
       : 'Goal updated successfully.';
   String get goalCreated => isBangla
-      ? 'লক্ষ্য সফলভাবে তৈরি হয়েছে।'
+      ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¤à§ˆà¦°à¦¿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
       : 'Goal created successfully.';
   String deleteNamedGoalPrompt(String name) =>
-      isBangla ? '"$name" মুছবেন?' : 'Delete "$name"?';
-  String get contributeToGoalTitle =>
-      isBangla ? 'লক্ষ্যে অবদান দিন' : 'Contribute to goal';
+      isBangla ? '"$name" à¦®à§à¦›à¦¬à§‡à¦¨?' : 'Delete "$name"?';
+  String get contributeToGoalTitle => isBangla
+      ? 'à¦²à¦•à§à¦·à§à¦¯à§‡ à¦…à¦¬à¦¦à¦¾à¦¨ à¦¦à¦¿à¦¨'
+      : 'Contribute to goal';
   String contributionSavedOf(String saved, String target) => isBangla
-      ? '$saved সেভ হয়েছে, লক্ষ্য $target'
+      ? '$saved à¦¸à§‡à¦­ à¦¹à§Ÿà§‡à¦›à§‡, à¦²à¦•à§à¦·à§à¦¯ $target'
       : '$saved saved of $target';
-  String get contributionAmountLabel =>
-      isBangla ? 'অবদানের পরিমাণ' : 'Contribution amount';
+  String get contributionAmountLabel => isBangla
+      ? 'à¦…à¦¬à¦¦à¦¾à¦¨à§‡à¦° à¦ªà¦°à¦¿à¦®à¦¾à¦£'
+      : 'Contribution amount';
   String get noWalletForGoalSubtitle => isBangla
-      ? 'লক্ষ্যে অবদান দেওয়ার আগে একটি ওয়ালেট তৈরি করুন।'
+      ? 'à¦²à¦•à§à¦·à§à¦¯à§‡ à¦…à¦¬à¦¦à¦¾à¦¨ à¦¦à§‡à¦“à§Ÿà¦¾à¦° à¦†à¦—à§‡ à¦à¦•à¦Ÿà¦¿ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨à¥¤'
       : 'Create a wallet before contributing to a goal.';
   String get sourceWalletLabel =>
-      isBangla ? 'উৎস ওয়ালেট' : 'Source wallet';
+      isBangla ? 'à¦‰à§Žà¦¸ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ' : 'Source wallet';
   String get contributionNoteHint => isBangla
-      ? 'এই অবদানের জন্য ঐচ্ছিক নোট।'
+      ? 'à¦à¦‡ à¦…à¦¬à¦¦à¦¾à¦¨à§‡à¦° à¦œà¦¨à§à¦¯ à¦à¦šà§à¦›à¦¿à¦• à¦¨à§‹à¦Ÿà¥¤'
       : 'Optional note for this contribution.';
   String get addContributionAction =>
-      isBangla ? 'অবদান যোগ করুন' : 'Add contribution';
+      isBangla ? 'à¦…à¦¬à¦¦à¦¾à¦¨ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add contribution';
   String get validContributionAmountError => isBangla
-      ? 'সঠিক অবদানের পরিমাণ দিন।'
+      ? 'à¦¸à¦ à¦¿à¦• à¦…à¦¬à¦¦à¦¾à¦¨à§‡à¦° à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤'
       : 'Please enter a valid contribution amount.';
   String get chooseSourceWalletError => isBangla
-      ? 'একটি উৎস ওয়ালেট বেছে নিন।'
+      ? 'à¦à¦•à¦Ÿà¦¿ à¦‰à§Žà¦¸ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤'
       : 'Please choose a source wallet.';
   String goalCompletedMessage(String name) => isBangla
-      ? 'লক্ষ্য সম্পন্ন! $name পুরোপুরি পূরণ হয়েছে।'
+      ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦®à§à¦ªà¦¨à§à¦¨! $name à¦ªà§à¦°à§‹à¦ªà§à¦°à¦¿ à¦ªà§‚à¦°à¦£ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
       : 'Goal completed! $name is fully funded.';
   String get contributionAdded => isBangla
-      ? 'অবদান সফলভাবে যোগ হয়েছে।'
+      ? 'à¦…à¦¬à¦¦à¦¾à¦¨ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¯à§‹à¦— à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
       : 'Contribution added successfully.';
   String get goalCompletedTitleText =>
-      isBangla ? 'লক্ষ্য সম্পন্ন' : 'Goal completed';
+      isBangla ? 'à¦²à¦•à§à¦·à§à¦¯ à¦¸à¦®à§à¦ªà¦¨à§à¦¨' : 'Goal completed';
   String goalCompletedDialog(String name) => isBangla
-      ? 'আপনি "$name" এর লক্ষ্য পূরণ করেছেন। দারুণ কাজ।'
+      ? 'à¦†à¦ªà¦¨à¦¿ "$name" à¦à¦° à¦²à¦•à§à¦·à§à¦¯ à¦ªà§‚à¦°à¦£ à¦•à¦°à§‡à¦›à§‡à¦¨à¥¤ à¦¦à¦¾à¦°à§à¦£ à¦•à¦¾à¦œà¥¤'
       : 'You reached your target for "$name". Nice work.';
-  String get greatAction => isBangla ? 'দারুণ' : 'Great';
+  String get greatAction => isBangla ? 'à¦¦à¦¾à¦°à§à¦£' : 'Great';
 
-  String get billsTitleText => isBangla ? 'বিল' : 'Bills';
-  String get upcomingTabLabel => isBangla ? 'আসন্ন' : 'Upcoming';
-  String get paidThisMonthTabLabel =>
-      isBangla ? 'এই মাসে পরিশোধিত' : 'Paid this month';
-  String get noBillDueSoonTitle =>
-      isBangla ? 'শিগগির কোনো বিল নেই' : 'No bill due soon';
+  String get billsTitleText => isBangla ? 'à¦¬à¦¿à¦²' : 'Bills';
+  String get upcomingTabLabel => isBangla ? 'à¦†à¦¸à¦¨à§à¦¨' : 'Upcoming';
+  String get paidThisMonthTabLabel => isBangla
+      ? 'à¦à¦‡ à¦®à¦¾à¦¸à§‡ à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤'
+      : 'Paid this month';
+  String get noBillDueSoonTitle => isBangla
+      ? 'à¦¶à¦¿à¦—à¦—à¦¿à¦° à¦•à§‹à¦¨à§‹ à¦¬à¦¿à¦² à¦¨à§‡à¦‡'
+      : 'No bill due soon';
   String get noBillDueSoonSubtitle => isBangla
-      ? 'ভাড়া, ইন্টারনেট, ইউটিলিটি বা যেকোনো রিকারিং বিল যোগ করুন।'
+      ? 'à¦­à¦¾à§œà¦¾, à¦‡à¦¨à§à¦Ÿà¦¾à¦°à¦¨à§‡à¦Ÿ, à¦‡à¦‰à¦Ÿà¦¿à¦²à¦¿à¦Ÿà¦¿ à¦¬à¦¾ à¦¯à§‡à¦•à§‹à¦¨à§‹ à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦¬à¦¿à¦² à¦¯à§‹à¦— à¦•à¦°à§à¦¨à¥¤'
       : 'Add recurring rent, internet, utilities, or any subscription you want to track.';
-  String get noBillCreatedYetTitle =>
-      isBangla ? 'এখনও কোনো বিল তৈরি হয়নি' : 'No bill created yet';
+  String get noBillCreatedYetTitle => isBangla
+      ? 'à¦à¦–à¦¨à¦“ à¦•à§‹à¦¨à§‹ à¦¬à¦¿à¦² à¦¤à§ˆà¦°à¦¿ à¦¹à§Ÿà¦¨à¦¿'
+      : 'No bill created yet';
   String get noBillCreatedYetSubtitle => isBangla
-      ? 'প্রথম রিকারিং বিল তৈরি করুন, অ্যাপ এটি গুছানো রাখবে।'
+      ? 'à¦ªà§à¦°à¦¥à¦® à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦¬à¦¿à¦² à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨, à¦…à§à¦¯à¦¾à¦ª à¦à¦Ÿà¦¿ à¦—à§à¦›à¦¾à¦¨à§‹ à¦°à¦¾à¦–à¦¬à§‡à¥¤'
       : 'Create your first recurring bill and the app will keep it organized here.';
-  String get nothingPaidThisMonthTitle =>
-      isBangla ? 'এই মাসে কিছুই পরিশোধ হয়নি' : 'Nothing paid this month';
+  String get nothingPaidThisMonthTitle => isBangla
+      ? 'à¦à¦‡ à¦®à¦¾à¦¸à§‡ à¦•à¦¿à¦›à§à¦‡ à¦ªà¦°à¦¿à¦¶à§‹à¦§ à¦¹à§Ÿà¦¨à¦¿'
+      : 'Nothing paid this month';
   String get nothingPaidThisMonthSubtitle => isBangla
-      ? 'যে বিলগুলো পরিশোধিত হিসেবে চিহ্নিত করবেন, সেগুলো এখানে দেখা যাবে।'
+      ? 'à¦¯à§‡ à¦¬à¦¿à¦²à¦—à§à¦²à§‹ à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤ à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦šà¦¿à¦¹à§à¦¨à¦¿à¦¤ à¦•à¦°à¦¬à§‡à¦¨, à¦¸à§‡à¦—à§à¦²à§‹ à¦à¦–à¦¾à¦¨à§‡ à¦¦à§‡à¦–à¦¾ à¦¯à¦¾à¦¬à§‡à¥¤'
       : 'Bills you mark as paid will show up here during the current month.';
-  String get addBillAction => isBangla ? 'বিল যোগ করুন' : 'Add bill';
-  String get recurringBillsSnapshotTitle =>
-      isBangla ? 'রিকারিং বিলের সারাংশ' : 'Recurring bills snapshot';
+  String get addBillAction =>
+      isBangla ? 'à¦¬à¦¿à¦² à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add bill';
+  String get recurringBillsSnapshotTitle => isBangla
+      ? 'à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦¬à¦¿à¦²à§‡à¦° à¦¸à¦¾à¦°à¦¾à¦‚à¦¶'
+      : 'Recurring bills snapshot';
   String get recurringBillsSnapshotSubtitle => isBangla
-      ? 'আসন্ন তারিখ দেখুন, রিকারিং খরচ গুছিয়ে রাখুন, আর এক ক্লিকে পরিশোধিত হিসেবে চিহ্নিত করুন।'
+      ? 'à¦†à¦¸à¦¨à§à¦¨ à¦¤à¦¾à¦°à¦¿à¦– à¦¦à§‡à¦–à§à¦¨, à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦–à¦°à¦š à¦—à§à¦›à¦¿à§Ÿà§‡ à¦°à¦¾à¦–à§à¦¨, à¦†à¦° à¦à¦• à¦•à§à¦²à¦¿à¦•à§‡ à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤ à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦šà¦¿à¦¹à§à¦¨à¦¿à¦¤ à¦•à¦°à§à¦¨à¥¤'
       : 'Track upcoming due dates, keep recurring expenses organized, and mark bills as paid in one move.';
-  String get dueSoonLabel => isBangla ? 'শিগগির বাকি' : 'Due soon';
+  String get dueSoonLabel =>
+      isBangla ? 'à¦¶à¦¿à¦—à¦—à¦¿à¦° à¦¬à¦¾à¦•à¦¿' : 'Due soon';
   String scheduledAmount(String amount) =>
-      isBangla ? '$amount নির্ধারিত' : '$amount scheduled';
+      isBangla ? '$amount à¦¨à¦¿à¦°à§à¦§à¦¾à¦°à¦¿à¦¤' : '$amount scheduled';
   String clearedAmount(String amount) =>
-      isBangla ? '$amount পরিশোধিত' : '$amount cleared';
-  String billMarkedPaid(String name) =>
-      isBangla ? '$name পরিশোধিত হিসেবে চিহ্নিত হয়েছে।' : '$name marked as paid.';
-  String get markAsPaidAction =>
-      isBangla ? 'পরিশোধিত চিহ্নিত করুন' : 'Mark as paid';
+      isBangla ? '$amount à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤' : '$amount cleared';
+  String billMarkedPaid(String name) => isBangla
+      ? '$name à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤ à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦šà¦¿à¦¹à§à¦¨à¦¿à¦¤ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : '$name marked as paid.';
+  String get markAsPaidAction => isBangla
+      ? 'à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤ à¦šà¦¿à¦¹à§à¦¨à¦¿à¦¤ à¦•à¦°à§à¦¨'
+      : 'Mark as paid';
   String get nextDueLabel =>
-      isBangla ? 'পরবর্তী তারিখ' : 'Next due';
+      isBangla ? 'à¦ªà¦°à¦¬à¦°à§à¦¤à§€ à¦¤à¦¾à¦°à¦¿à¦–' : 'Next due';
   String get deleteBillTitle =>
-      isBangla ? 'বিল মুছুন' : 'Delete bill';
+      isBangla ? 'à¦¬à¦¿à¦² à¦®à§à¦›à§à¦¨' : 'Delete bill';
   String deleteNamedBillPrompt(String name) =>
-      isBangla ? '"$name" মুছবেন?' : 'Delete "$name"?';
-  String get billDeleted => isBangla ? 'বিল মুছে ফেলা হয়েছে।' : 'Bill deleted.';
-  String get billNameLabel => isBangla ? 'বিলের নাম' : 'Bill name';
-  String get billNameHint =>
-      isBangla ? 'ইন্টারনেট, ভাড়া, নেটফ্লিক্স, বিদ্যুৎ' : 'Internet, Rent, Netflix, Electricity';
-  String get expenseCategoryLabel =>
-      isBangla ? 'ব্যয়ের ক্যাটাগরি' : 'Expense category';
-  String get nextDueDateLabel =>
-      isBangla ? 'পরবর্তী প্রদানের তারিখ' : 'Next due date';
-  String get reminderLabel => isBangla ? 'রিমাইন্ডার' : 'Reminder';
-  String get sameDayLabel => isBangla ? 'সেই দিন' : 'Same day';
+      isBangla ? '"$name" à¦®à§à¦›à¦¬à§‡à¦¨?' : 'Delete "$name"?';
+  String get billDeleted => isBangla
+      ? 'à¦¬à¦¿à¦² à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Bill deleted.';
+  String get billNameLabel =>
+      isBangla ? 'à¦¬à¦¿à¦²à§‡à¦° à¦¨à¦¾à¦®' : 'Bill name';
+  String get billNameHint => isBangla
+      ? 'à¦‡à¦¨à§à¦Ÿà¦¾à¦°à¦¨à§‡à¦Ÿ, à¦­à¦¾à§œà¦¾, à¦¨à§‡à¦Ÿà¦«à§à¦²à¦¿à¦•à§à¦¸, à¦¬à¦¿à¦¦à§à¦¯à§à§Ž'
+      : 'Internet, Rent, Netflix, Electricity';
+  String get expenseCategoryLabel => isBangla
+      ? 'à¦¬à§à¦¯à§Ÿà§‡à¦° à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿'
+      : 'Expense category';
+  String get nextDueDateLabel => isBangla
+      ? 'à¦ªà¦°à¦¬à¦°à§à¦¤à§€ à¦ªà§à¦°à¦¦à¦¾à¦¨à§‡à¦° à¦¤à¦¾à¦°à¦¿à¦–'
+      : 'Next due date';
+  String get reminderLabel =>
+      isBangla ? 'à¦°à¦¿à¦®à¦¾à¦‡à¦¨à§à¦¡à¦¾à¦°' : 'Reminder';
+  String get sameDayLabel => isBangla ? 'à¦¸à§‡à¦‡ à¦¦à¦¿à¦¨' : 'Same day';
   String get oneDayBeforeLabel =>
-      isBangla ? '১ দিন আগে' : '1 day before';
+      isBangla ? 'à§§ à¦¦à¦¿à¦¨ à¦†à¦—à§‡' : '1 day before';
   String get twoDaysBeforeLabel =>
-      isBangla ? '২ দিন আগে' : '2 days before';
+      isBangla ? 'à§¨ à¦¦à¦¿à¦¨ à¦†à¦—à§‡' : '2 days before';
   String get threeDaysBeforeLabel =>
-      isBangla ? '৩ দিন আগে' : '3 days before';
+      isBangla ? 'à§© à¦¦à¦¿à¦¨ à¦†à¦—à§‡' : '3 days before';
   String get sevenDaysBeforeLabel =>
-      isBangla ? '৭ দিন আগে' : '7 days before';
-  String get enterBillNameError =>
-      isBangla ? 'বিলের নাম লিখুন।' : 'Please enter a bill name.';
-  String get validBillAmountError =>
-      isBangla ? 'সঠিক পরিমাণ দিন।' : 'Please enter a valid amount.';
+      isBangla ? 'à§­ à¦¦à¦¿à¦¨ à¦†à¦—à§‡' : '7 days before';
+  String get enterBillNameError => isBangla
+      ? 'à¦¬à¦¿à¦²à§‡à¦° à¦¨à¦¾à¦® à¦²à¦¿à¦–à§à¦¨à¥¤'
+      : 'Please enter a bill name.';
+  String get validBillAmountError => isBangla
+      ? 'à¦¸à¦ à¦¿à¦• à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤'
+      : 'Please enter a valid amount.';
   String get chooseCategoryWalletError => isBangla
-      ? 'একটি ক্যাটাগরি ও ওয়ালেট বেছে নিন।'
+      ? 'à¦à¦•à¦Ÿà¦¿ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦“ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤'
       : 'Please choose a category and wallet.';
   String get billEditorNeedsDataTitle => isBangla
-      ? 'বিলের জন্য ক্যাটাগরি ও ওয়ালেট দরকার'
+      ? 'à¦¬à¦¿à¦²à§‡à¦° à¦œà¦¨à§à¦¯ à¦•à§à¦¯à¦¾à¦Ÿà¦¾à¦—à¦°à¦¿ à¦“ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¦à¦°à¦•à¦¾à¦°'
       : 'Bills need categories and wallets';
   String get billEditorNeedsDataSubtitle => isBangla
-      ? 'স্টার্টার ফাইন্যান্স ডাটা লোড হলে এই পেজ আবার খুলুন।'
+      ? 'à¦¸à§à¦Ÿà¦¾à¦°à§à¦Ÿà¦¾à¦° à¦«à¦¾à¦‡à¦¨à§à¦¯à¦¾à¦¨à§à¦¸ à¦¡à¦¾à¦Ÿà¦¾ à¦²à§‹à¦¡ à¦¹à¦²à§‡ à¦à¦‡ à¦ªà§‡à¦œ à¦†à¦¬à¦¾à¦° à¦–à§à¦²à§à¦¨à¥¤'
       : 'Make sure the starter finance data has loaded, then open this page again.';
   String billEditorTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'বিল সম্পাদনা' : 'Edit bill')
-      : (isBangla ? 'বিল যোগ করুন' : 'Add bill');
+      ? (isBangla ? 'à¦¬à¦¿à¦² à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾' : 'Edit bill')
+      : (isBangla ? 'à¦¬à¦¿à¦² à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add bill');
   String billHeaderSubtitle(bool isEditing) => isEditing
-      ? (isBangla ? 'রিকারিং বিল আপডেট করুন' : 'Update recurring bill')
-      : (isBangla ? 'রিকারিং বিল তৈরি করুন' : 'Create recurring bill');
+      ? (isBangla
+            ? 'à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦¬à¦¿à¦² à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨'
+            : 'Update recurring bill')
+      : (isBangla
+            ? 'à¦°à¦¿à¦•à¦¾à¦°à¦¿à¦‚ à¦¬à¦¿à¦² à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨'
+            : 'Create recurring bill');
   String get billAutoCreateHint => isBangla
-      ? 'আপনি এই বিল পরিশোধিত চিহ্নিত করলে অ্যাপ একটি বাস্তব ব্যয় লেনদেন তৈরি করবে এবং পরবর্তী তারিখ এগিয়ে দেবে।'
+      ? 'à¦†à¦ªà¦¨à¦¿ à¦à¦‡ à¦¬à¦¿à¦² à¦ªà¦°à¦¿à¦¶à§‹à¦§à¦¿à¦¤ à¦šà¦¿à¦¹à§à¦¨à¦¿à¦¤ à¦•à¦°à¦²à§‡ à¦…à§à¦¯à¦¾à¦ª à¦à¦•à¦Ÿà¦¿ à¦¬à¦¾à¦¸à§à¦¤à¦¬ à¦¬à§à¦¯à§Ÿ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à¦¬à§‡ à¦à¦¬à¦‚ à¦ªà¦°à¦¬à¦°à§à¦¤à§€ à¦¤à¦¾à¦°à¦¿à¦– à¦à¦—à¦¿à§Ÿà§‡ à¦¦à§‡à¦¬à§‡à¥¤'
       : 'When you mark this bill as paid, the app creates a real expense transaction and moves the next due date forward automatically.';
   String get billUpdated => isBangla
-      ? 'বিল সফলভাবে আপডেট হয়েছে।'
+      ? 'à¦¬à¦¿à¦² à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
       : 'Bill updated successfully.';
   String get billCreated => isBangla
-      ? 'বিল সফলভাবে তৈরি হয়েছে।'
+      ? 'à¦¬à¦¿à¦² à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¤à§ˆà¦°à¦¿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
       : 'Bill created successfully.';
 
   String transferEditorTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'ট্রান্সফার সম্পাদনা' : 'Edit transfer')
-      : (isBangla ? 'টাকা ট্রান্সফার' : 'Transfer money');
+      ? (isBangla
+            ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾'
+            : 'Edit transfer')
+      : (isBangla
+            ? 'à¦Ÿà¦¾à¦•à¦¾ à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦°'
+            : 'Transfer money');
   String transferHeaderTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'ওয়ালেট ট্রান্সফার আপডেট করুন' : 'Update wallet transfer')
-      : (isBangla ? 'ওয়ালেটের মধ্যে টাকা সরান' : 'Move money between wallets');
+      ? (isBangla
+            ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨'
+            : 'Update wallet transfer')
+      : (isBangla
+            ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà§‡à¦° à¦®à¦§à§à¦¯à§‡ à¦Ÿà¦¾à¦•à¦¾ à¦¸à¦°à¦¾à¦¨'
+            : 'Move money between wallets');
   String get transferHeaderSubtitle => isBangla
-      ? 'ট্রান্সফার একসাথে দুই ওয়ালেটের ব্যালেন্স আপডেট করে এবং হিস্টরিতে সংযুক্ত থাকে।'
+      ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦à¦•à¦¸à¦¾à¦¥à§‡ à¦¦à§à¦‡ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà§‡à¦° à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§‡ à¦à¦¬à¦‚ à¦¹à¦¿à¦¸à§à¦Ÿà¦°à¦¿à¦¤à§‡ à¦¸à¦‚à¦¯à§à¦•à§à¦¤ à¦¥à¦¾à¦•à§‡à¥¤'
       : 'Transfers update both wallet balances together and stay linked in history.';
   String get fromWalletLabel =>
-      isBangla ? 'যে ওয়ালেট থেকে' : 'From wallet';
-  String get toWalletLabel => isBangla ? 'যে ওয়ালেটে' : 'To wallet';
-  String get optionalTransferNoteHint =>
-      isBangla ? 'ঐচ্ছিক ট্রান্সফার নোট' : 'Optional transfer note';
+      isBangla ? 'à¦¯à§‡ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¥à§‡à¦•à§‡' : 'From wallet';
+  String get toWalletLabel =>
+      isBangla ? 'à¦¯à§‡ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà§‡' : 'To wallet';
+  String get optionalTransferNoteHint => isBangla
+      ? 'à¦à¦šà§à¦›à¦¿à¦• à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦¨à§‹à¦Ÿ'
+      : 'Optional transfer note';
   String get validTransferAmountError => isBangla
-      ? 'সঠিক ট্রান্সফার পরিমাণ দিন।'
+      ? 'à¦¸à¦ à¦¿à¦• à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤'
       : 'Enter a valid transfer amount.';
   String get chooseBothWalletsError => isBangla
-      ? 'এই ট্রান্সফারের জন্য দুটি ওয়ালেটই বেছে নিন।'
+      ? 'à¦à¦‡ à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦°à§‡à¦° à¦œà¦¨à§à¦¯ à¦¦à§à¦Ÿà¦¿ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà¦‡ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤'
       : 'Choose both wallets for this transfer.';
   String get differentWalletsError => isBangla
-      ? 'দুটি আলাদা ওয়ালেট হতে হবে।'
+      ? 'à¦¦à§à¦Ÿà¦¿ à¦†à¦²à¦¾à¦¦à¦¾ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¹à¦¤à§‡ à¦¹à¦¬à§‡à¥¤'
       : 'From and to wallets must be different.';
   String get transferDetailsLoadingError => isBangla
-      ? 'ট্রান্সফারের বিস্তারিত এখনও লোড হচ্ছে। আবার চেষ্টা করুন।'
+      ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦°à§‡à¦° à¦¬à¦¿à¦¸à§à¦¤à¦¾à¦°à¦¿à¦¤ à¦à¦–à¦¨à¦“ à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡à¥¤ à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤'
       : 'Transfer details are still loading. Try again.';
-  String get transferDeleted =>
-      isBangla ? 'ট্রান্সফার মুছে ফেলা হয়েছে।' : 'Transfer deleted.';
-  String get transferUpdated =>
-      isBangla ? 'ট্রান্সফার আপডেট হয়েছে।' : 'Transfer updated.';
-  String get transferCompleted =>
-      isBangla ? 'ট্রান্সফার সম্পন্ন হয়েছে।' : 'Transfer completed.';
+  String get transferDeleted => isBangla
+      ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Transfer deleted.';
+  String get transferUpdated => isBangla
+      ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Transfer updated.';
+  String get transferCompleted => isBangla
+      ? 'à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦¸à¦®à§à¦ªà¦¨à§à¦¨ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Transfer completed.';
 
   String walletEditorTitle(bool isEditing) => isEditing
-      ? (isBangla ? 'ওয়ালেট সম্পাদনা' : 'Edit wallet')
-      : (isBangla ? 'ওয়ালেট যোগ করুন' : 'Add wallet');
+      ? (isBangla
+            ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾'
+            : 'Edit wallet')
+      : (isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨' : 'Add wallet');
   String get walletPreviewTitle =>
-      isBangla ? 'ওয়ালেট প্রিভিউ' : 'Wallet preview';
+      isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦ªà§à¦°à¦¿à¦­à¦¿à¦‰' : 'Wallet preview';
   String get walletNameFieldLabel =>
-      isBangla ? 'ওয়ালেটের নাম' : 'Wallet name';
+      isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà§‡à¦° à¦¨à¦¾à¦®' : 'Wallet name';
   String get walletTypeFieldLabel =>
-      isBangla ? 'ওয়ালেটের ধরন' : 'Wallet type';
-  String get currentBalanceFieldLabel =>
-      isBangla ? 'বর্তমান ব্যালেন্স' : 'Current balance';
+      isBangla ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà§‡à¦° à¦§à¦°à¦¨' : 'Wallet type';
+  String get currentBalanceFieldLabel => isBangla
+      ? 'à¦¬à¦°à§à¦¤à¦®à¦¾à¦¨ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸'
+      : 'Current balance';
   String get currentBalanceFieldHint => isBangla
-      ? 'লেনদেন ও ট্রান্সফার অনুযায়ী ব্যালেন্স স্বয়ংক্রিয়ভাবে আপডেট হয়।'
+      ? 'à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦“ à¦Ÿà§à¦°à¦¾à¦¨à§à¦¸à¦«à¦¾à¦° à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸ à¦¸à§à¦¬à§Ÿà¦‚à¦•à§à¦°à¦¿à§Ÿà¦­à¦¾à¦¬à§‡ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà¥¤'
       : 'Balance follows transactions and transfers automatically.';
-  String get initialBalanceFieldLabel =>
-      isBangla ? 'শুরুর ব্যালেন্স' : 'Initial balance';
-  String get setAsDefaultWalletLabel =>
-      isBangla ? 'ডিফল্ট ওয়ালেট হিসেবে সেট করুন' : 'Set as default wallet';
-  String get walletNameRequired =>
-      isBangla ? 'একটি ওয়ালেটের নাম লিখুন।' : 'Please enter a wallet name.';
-  String get walletUpdated =>
-      isBangla ? 'ওয়ালেট আপডেট হয়েছে।' : 'Wallet updated.';
-  String get walletCreated =>
-      isBangla ? 'ওয়ালেট তৈরি হয়েছে।' : 'Wallet created.';
-  String get updateWalletAction =>
-      isBangla ? 'ওয়ালেট আপডেট করুন' : 'Update wallet';
-  String get createWalletAction =>
-      isBangla ? 'ওয়ালেট তৈরি করুন' : 'Create wallet';
+  String get initialBalanceFieldLabel => isBangla
+      ? 'à¦¶à§à¦°à§à¦° à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸'
+      : 'Initial balance';
+  String get setAsDefaultWalletLabel => isBangla
+      ? 'à¦¡à¦¿à¦«à¦²à§à¦Ÿ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦¸à§‡à¦Ÿ à¦•à¦°à§à¦¨'
+      : 'Set as default wallet';
+  String get walletNameRequired => isBangla
+      ? 'à¦à¦•à¦Ÿà¦¿ à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿà§‡à¦° à¦¨à¦¾à¦® à¦²à¦¿à¦–à§à¦¨à¥¤'
+      : 'Please enter a wallet name.';
+  String get walletUpdated => isBangla
+      ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Wallet updated.';
+  String get walletCreated => isBangla
+      ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦¹à§Ÿà§‡à¦›à§‡à¥¤'
+      : 'Wallet created.';
+  String get updateWalletAction => isBangla
+      ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨'
+      : 'Update wallet';
+  String get createWalletAction => isBangla
+      ? 'à¦“à§Ÿà¦¾à¦²à§‡à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§à¦¨'
+      : 'Create wallet';
   String walletTypeName(String type) {
     switch (type) {
       case 'cash':
-        return isBangla ? 'ক্যাশ' : 'Cash';
+        return isBangla ? 'à¦•à§à¦¯à¦¾à¦¶' : 'Cash';
       case 'bank':
-        return isBangla ? 'ব্যাংক' : 'Bank';
+        return isBangla ? 'à¦¬à§à¦¯à¦¾à¦‚à¦•' : 'Bank';
       case 'bkash':
         return 'bKash';
       case 'nagad':
         return 'Nagad';
       case 'savings':
-        return isBangla ? 'সেভিংস' : 'Savings';
+        return isBangla ? 'à¦¸à§‡à¦­à¦¿à¦‚à¦¸' : 'Savings';
       default:
         return type;
     }
   }
 
-  String get calendarMonthViewLabel => isBangla ? 'মাস' : 'Month';
-  String get calendarWeekViewLabel => isBangla ? 'সপ্তাহ' : 'Week';
-  String get calendarLoadingTitle =>
-      isBangla ? 'ক্যালেন্ডার লোড হচ্ছে' : 'Calendar is loading';
-  String get selectMonthHelp => isBangla ? 'মাস বেছে নিন' : 'Select month';
+  String get calendarMonthViewLabel => isBangla ? 'à¦®à¦¾à¦¸' : 'Month';
+  String get calendarWeekViewLabel => isBangla ? 'à¦¸à¦ªà§à¦¤à¦¾à¦¹' : 'Week';
+  String get calendarLoadingTitle => isBangla
+      ? 'à¦•à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¡à¦¾à¦° à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡'
+      : 'Calendar is loading';
+  String get selectMonthHelp =>
+      isBangla ? 'à¦®à¦¾à¦¸ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨' : 'Select month';
   String get calendarSelectedDaySubtitle => isBangla
-      ? 'নির্বাচিত দিনের আয়, ব্যয় ও লেনদেনের বিস্তারিত'
+      ? 'à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¿à¦¤ à¦¦à¦¿à¦¨à§‡à¦° à¦†à§Ÿ, à¦¬à§à¦¯à§Ÿ à¦“ à¦²à§‡à¦¨à¦¦à§‡à¦¨à§‡à¦° à¦¬à¦¿à¦¸à§à¦¤à¦¾à¦°à¦¿à¦¤'
       : 'Income, expense, and transaction details for the selected day.';
   String get noTransactionsOnDayTitle => isBangla
-      ? 'এই দিনে কোনো লেনদেন নেই'
+      ? 'à¦à¦‡ à¦¦à¦¿à¦¨à§‡ à¦•à§‹à¦¨à§‹ à¦²à§‡à¦¨à¦¦à§‡à¦¨ à¦¨à§‡à¦‡'
       : 'No transaction on this day';
   String get noTransactionsOnDaySubtitle => isBangla
-      ? 'অন্য একটি তারিখ বেছে নিন বা নতুন এন্ট্রি যোগ করুন।'
+      ? 'à¦…à¦¨à§à¦¯ à¦à¦•à¦Ÿà¦¿ à¦¤à¦¾à¦°à¦¿à¦– à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨ à¦¬à¦¾ à¦¨à¦¤à§à¦¨ à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨à¥¤'
       : 'Pick another date or add a new entry to start building your calendar.';
+  String get exportDataTitle => isBangla ? 'ডাটা এক্সপোর্ট' : 'Export data';
+  String get exportDataSubtitle => isBangla
+      ? 'CSV বা PDF আকারে আপনার আর্থিক ডাটা সংরক্ষণ বা শেয়ার করুন।'
+      : 'Save or share your finance data as CSV or PDF files.';
+  String get exportCsvTitle => isBangla ? 'CSV এক্সপোর্ট' : 'CSV export';
+  String get exportPdfTitle => isBangla ? 'PDF রিপোর্ট' : 'PDF report';
+  String get exportFromReportsTooltip =>
+      isBangla ? 'রিপোর্ট এক্সপোর্ট' : 'Export reports';
+  String get shareFileAction => isBangla ? 'শেয়ার করুন' : 'Share';
+  String get exportNowAction => isBangla ? 'এখন এক্সপোর্ট করুন' : 'Export now';
+  String get allDatesLabel => isBangla ? 'সব তারিখ' : 'All dates';
+  String get pickDateRangeAction =>
+      isBangla ? 'তারিখ বেছে নিন' : 'Pick date range';
+  String get clearDateRangeAction => isBangla ? 'তারিখ মুছুন' : 'Clear dates';
+  String get exportTypeLabel => isBangla ? 'এক্সপোর্ট ধরন' : 'Export type';
+  String get monthlyReportLabel =>
+      isBangla ? 'মাসিক রিপোর্ট' : 'Monthly report';
+  String get yearlyReportLabel =>
+      isBangla ? 'বার্ষিক রিপোর্ট' : 'Yearly report';
+  String get reportMonthLabel => isBangla ? 'রিপোর্ট মাস' : 'Report month';
+  String get reportYearLabel => isBangla ? 'রিপোর্ট বছর' : 'Report year';
+  String get csvFiltersLabel => isBangla ? 'CSV ফিল্টার' : 'CSV filters';
+  String get exportedFileSaved => isBangla
+      ? 'এক্সপোর্ট ফাইল সংরক্ষণ করা হয়েছে।'
+      : 'Export file saved successfully.';
+  String exportFailedMessage(String message) =>
+      isBangla ? 'এক্সপোর্ট করা যায়নি: $message' : 'Export failed: $message';
+  String get noTransactionsToExport => isBangla
+      ? 'এক্সপোর্ট করার মতো কোনো লেনদেন পাওয়া যায়নি।'
+      : 'No transactions found for export.';
+  String get exportSectionInProfile =>
+      isBangla ? 'ডাটা এক্সপোর্ট ও ব্যাকআপ' : 'Export and backup';
+  String get exportSectionProfileSubtitle => isBangla
+      ? 'CSV ডাউনলোড করুন অথবা PDF সারাংশ শেয়ার করুন।'
+      : 'Download CSV files or share PDF summaries.';
 }

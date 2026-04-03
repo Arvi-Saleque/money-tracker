@@ -88,6 +88,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     : Icons.dark_mode_rounded,
               ),
             ),
+          if (_currentIndex == 3)
+            IconButton(
+              tooltip: context.l10n.exportFromReportsTooltip,
+              onPressed: () => context.push(AppConstants.exportRoute),
+              icon: const Icon(Icons.ios_share_rounded),
+            ),
           IconButton(
             tooltip: context.l10n.profileTooltip,
             onPressed: () => context.push(AppConstants.profileRoute),

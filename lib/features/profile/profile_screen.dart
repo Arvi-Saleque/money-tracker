@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../l10n/l10n_extension.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/providers/locale_provider.dart';
 import '../../shared/providers/theme_provider.dart';
+import '../../shared/widgets/premium_card.dart';
 import '../auth/auth_providers.dart';
 import '../auth/auth_ui_helpers.dart';
 import 'profile_providers.dart';
@@ -60,9 +62,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               );
             }
 
-            return Center(
-              child: Text(l10n.profileMissing),
-            );
+            return Center(child: Text(l10n.profileMissing));
           }
 
           final safeCurrency = AppConstants.normalizeCurrency(profile.currency);
@@ -226,14 +226,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 });
                               },
                       ),
+                      const SizedBox(height: 20),
+                      buildPremiumCard(
+                        context: context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              l10n.exportSectionInProfile,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(l10n.exportSectionProfileSubtitle),
+                            const SizedBox(height: 14),
+                            OutlinedButton.icon(
+                              onPressed: isSaving
+                                  ? null
+                                  : () =>
+                                        context.push(AppConstants.exportRoute),
+                              icon: const Icon(Icons.ios_share_rounded),
+                              label: Text(l10n.exportDataTitle),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: isSaving
                             ? null
                             : () => _saveProfile(profile),
-                        child: Text(
-                          isSaving ? l10n.saving : l10n.saveChanges,
-                        ),
+                        child: Text(isSaving ? l10n.saving : l10n.saveChanges),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(

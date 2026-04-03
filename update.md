@@ -167,3 +167,17 @@
 - Centralized many finance-specific Bangla/English helper strings in `l10n_extension.dart` so dashboard cards, filters, dialogs, and transactional forms can stay in sync without duplicating text logic.
 - Switched more screens from raw `DateFormat`/`NumberFormat` calls to locale-aware helpers so Bangla mode also affects dates, counts, chart buckets, and currency formatting instead of only swapping a few labels.
 - Re-ran `flutter analyze`, `flutter test`, `flutter build apk --debug`, and `flutter build web` after the sweep to confirm the broader localization pass still compiles and ships cleanly.
+
+## Phase 12 - Export & Backup
+
+- Added a dedicated export feature with `ExportService`, export providers, and a full Export screen for generating CSV transaction exports and monthly or yearly PDF summaries.
+- Implemented CSV export with transaction-history-style filters for type, category, wallet, and date range, plus save/share flows using `share_plus`.
+- Implemented styled PDF reports with Sapphire-colored tables, summary totals, category breakdown, period breakdown, and recent transaction sections for both monthly and yearly report modes.
+- Wired export access into both the profile/settings area and the Reports tab app bar so users can reach export actions from the two planned entry points.
+- Added platform-aware export file saving so mobile/desktop builds save files locally while web builds still support in-memory sharing/download-style flows without `dart:io` crashes.
+- Localized export labels and PDF content for English and Bangla, including Bangla-friendly fonts in generated PDFs via `printing` font helpers.
+
+### Notes
+
+- CSV exports include the filtered transaction rows with localized category names and localized column headers.
+- PDF exports currently require at least one transaction in the selected range and surface a friendly message when no data exists to export.
