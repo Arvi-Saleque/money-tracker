@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../shared/models/transaction_model.dart';
 import 'finance_catalog.dart';
+import 'transaction_history_models.dart';
 
 class TransactionService {
   TransactionService({required FirebaseFirestore firestore})
@@ -49,6 +50,81 @@ class TransactionService {
           (snapshot) =>
               snapshot.docs.map(TransactionModel.fromDocument).toList(),
         );
+  }
+
+  Future<TransactionHistoryPage> fetchTransactionPage(
+    String uid, {
+    required TransactionHistoryFilter filter,
+    int limit = 24,
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+  }) async {
+    Query<Map<String, dynamic>> query = _userRef(uid);
+
+    if (filter.type != TransactionHistoryFilter.allTypes) {
+      query = query.where('type', isEqualTo: filter.type);
+    }
+
+    if (filter.usesServerWalletFilter) {
+      final walletIds = filter.walletIds.toList(growable: false);
+      if (walletIds.length == 1) {
+        query = query.where('walletId', isEqualTo: walletIds.single);
+      } else {
+        query = query.where('walletId', whereIn: walletIds);
+      }
+    }
+
+    if (filter.usesServerCategoryFilter) {
+      final categoryIds = filter.categoryIds.toList(growable: false);
+      if (categoryIds.length == 1) {
+        query = query.where('categoryId', isEqualTo: categoryIds.single);
+      } else {
+        query = query.where('categoryId', whereIn: categoryIds);
+      }
+    }
+
+    if (filter.startDate != null) {
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(
+          DateTime(
+            filter.startDate!.year,
+            filter.startDate!.month,
+            filter.startDate!.day,
+          ),
+        ),
+      );
+    }
+
+    if (filter.endDate != null) {
+      final exclusiveEnd = DateTime(
+        filter.endDate!.year,
+        filter.endDate!.month,
+        filter.endDate!.day + 1,
+      );
+      query = query.where('date', isLessThan: Timestamp.fromDate(exclusiveEnd));
+    }
+
+    if (filter.sort == TransactionHistorySort.latest ||
+        filter.sort == TransactionHistorySort.oldest) {
+      query = query.orderBy('date', descending: filter.sort.descending);
+    } else {
+      query = query
+          .orderBy('amount', descending: filter.sort.descending)
+          .orderBy('date', descending: true);
+    }
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final snapshot = await query.limit(limit).get();
+    final items = snapshot.docs.map(TransactionModel.fromDocument).toList();
+
+    return TransactionHistoryPage(
+      items: items,
+      lastDocument: snapshot.docs.isEmpty ? null : snapshot.docs.last,
+      hasMore: snapshot.docs.length == limit,
+    );
   }
 
   Future<void> addTransaction(String uid, TransactionModel transaction) async {

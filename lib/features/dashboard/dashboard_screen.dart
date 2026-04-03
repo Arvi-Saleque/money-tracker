@@ -33,7 +33,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       const _ShellTab(
         title: 'Transactions',
-        subtitle: 'Review recent income and expenses.',
+        subtitle: 'Search, filter, and sort your full history.',
         icon: Icons.receipt_long_outlined,
         selectedIcon: Icons.receipt_long_rounded,
         child: TransactionsTab(),
@@ -104,7 +104,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showTransactionEditorSheet(context),
+        onPressed: () => openTransactionEditorPage(context),
         icon: const Icon(Icons.add_rounded),
         label: const Text('Add'),
       ),

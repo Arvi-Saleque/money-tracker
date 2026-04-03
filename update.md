@@ -36,15 +36,30 @@
 ## Phase 3 - Transactions, Categories & Basic Dashboard
 
 - Added `CategoryModel`, `WalletModel`, and `TransactionModel` plus Firestore-backed services/providers for starter data, wallets, categories, dashboard summary, and transaction CRUD.
-- Seeded a default `Cash` wallet and bilingual default income/expense categories for every signed-in user through the app bootstrap flow.
-- Replaced the mock quick-add sheet with a real add/edit transaction bottom sheet that supports type selection, amount, wallet, category, date, note, and delete.
-- Added custom category creation from inside the transaction flow with English name, Bangla name, icon selection, color selection, and income/expense type.
+- Seeded starter `Cash`, `bKash`, and `Bank` wallets plus bilingual default income/expense categories for every signed-in user through the app bootstrap flow.
+- Replaced the mock quick-add flow with a real full-screen add/edit transaction page that supports type selection, amount, wallet, category, date, note, and delete.
+- Added custom category creation from inside the transaction flow with template/manual modes, icon selection, color selection, and automatic English/Bangla name pairing.
 - Replaced the mock Home tab with a live dashboard showing current wallet balances, total balance, today income/expense, recent transactions, and phase shortcuts.
 - Replaced the mock Transactions tab with a real Firestore-backed history list, search, filtering, transaction grouping by day, and tap-to-edit.
 - Updated the lightweight Calendar and Reports tabs to read live dashboard totals instead of fixed demo amounts.
 - Fixed currency and default Bangla catalog text to use the proper symbols/labels instead of mojibake placeholders.
+- Tightened the transaction/category UI with category deletion, clearer selection states, a proper app page layout, and mobile overflow fixes.
 
 ### Notes
 
 - Wallet balances now update automatically whenever transactions are added, edited, or deleted.
 - Web build verification required clearing stale generated plugin cache left over from the earlier Storage setup, but the current repo no longer depends on Firebase Storage.
+
+## Phase 4 - Transaction History, Search, Filter & Sort
+
+- Added a dedicated history filter model plus a paginated transaction query path so the Transactions tab no longer depends on a single flat recent-transactions stream.
+- Rebuilt the Transactions tab into a richer history screen with an expandable search field, type chips, category filter, wallet filter, date-range picker, sort selector, and clear-filters action.
+- Added paginated history browsing with automatic load-more behavior and grouped date sections for the currently loaded transaction set.
+- Added swipe-to-delete affordances with confirmation, while keeping tap-to-edit on each transaction row.
+- Upgraded transaction rows to show a clearer layout with wallet chip, time chip, note preview, and amount emphasis.
+- Added `firestore.indexes.json` and wired it into `firebase.json` to prepare the new sort/filter combinations for deployment.
+
+### Notes
+
+- Search is debounced in the UI and currently matches note text plus amount strings.
+- Some advanced Firestore filter/sort combinations may still prompt for index creation until the new index config is deployed to your Firebase project.

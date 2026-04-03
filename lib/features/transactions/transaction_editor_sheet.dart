@@ -9,30 +9,28 @@ import '../../shared/widgets/premium_card.dart';
 import 'finance_catalog.dart';
 import 'transaction_providers.dart';
 
-Future<void> showTransactionEditorSheet(
+Future<void> openTransactionEditorPage(
   BuildContext context, {
   TransactionModel? transaction,
 }) async {
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => TransactionEditorSheet(transaction: transaction),
+  await Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (context) => TransactionEditorPage(transaction: transaction),
+    ),
   );
 }
 
-class TransactionEditorSheet extends ConsumerStatefulWidget {
-  const TransactionEditorSheet({super.key, this.transaction});
+class TransactionEditorPage extends ConsumerStatefulWidget {
+  const TransactionEditorPage({super.key, this.transaction});
 
   final TransactionModel? transaction;
 
   @override
-  ConsumerState<TransactionEditorSheet> createState() =>
-      _TransactionEditorSheetState();
+  ConsumerState<TransactionEditorPage> createState() =>
+      _TransactionEditorPageState();
 }
 
-class _TransactionEditorSheetState
-    extends ConsumerState<TransactionEditorSheet> {
+class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
   late final TextEditingController _amountController;
   late final TextEditingController _noteController;
 
@@ -84,258 +82,100 @@ class _TransactionEditorSheetState
     final isLoadingCategories =
         allCategoriesAsync.isLoading && allCategories.isEmpty;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + viewInsets.bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: theme.dividerColor),
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 74,
+        leading: IconButton(
+          onPressed: isBusy ? null : () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded),
         ),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Center(
-                  child: Container(
-                    width: 56,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: theme.dividerColor,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
+        titleSpacing: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_isEditing ? 'Edit transaction' : 'Add transaction'),
+            const SizedBox(height: 2),
+            Text(
+              'Create or update a transaction',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.68,
                 ),
-                const SizedBox(height: 18),
-                Text(
-                  _isEditing ? 'Edit transaction' : 'Add transaction',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Track income and expenses with categories, wallets, and notes.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withValues(
-                      alpha: 0.72,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 22),
-                _TopSummaryCard(
-                  type: _selectedType,
-                  selectedDate: _selectedDate,
-                  walletName: wallets
-                      .cast<WalletModel?>()
-                      .firstWhere(
-                        (wallet) => wallet?.id == _selectedWalletId,
-                        orElse: () => null,
-                      )
-                      ?.name,
-                ),
-                const SizedBox(height: 18),
-                _SectionTitle('Type'),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: <Widget>[
-                    _TypeChip(
-                      label: 'Expense',
-                      selected: _selectedType == FinanceCatalog.expenseType,
-                      color: const Color(0xFFE85D5D),
-                      onTap: () {
-                        setState(() {
-                          _selectedType = FinanceCatalog.expenseType;
-                          _selectedCategoryId = null;
-                        });
-                      },
-                    ),
-                    _TypeChip(
-                      label: 'Income',
-                      selected: _selectedType == FinanceCatalog.incomeType,
-                      color: const Color(0xFF2ECC9A),
-                      onTap: () {
-                        setState(() {
-                          _selectedType = FinanceCatalog.incomeType;
-                          _selectedCategoryId = null;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                _SectionTitle('Amount'),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    hintText: '0.00',
-                    prefixText: '\u09F3 ',
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _SectionTitle('Wallet'),
-                const SizedBox(height: 10),
-                if (walletsAsync.isLoading && wallets.isEmpty)
-                  const Center(child: CircularProgressIndicator())
-                else if (wallets.isEmpty)
-                  _InlineInfoCard(
-                    title: 'No wallet yet',
-                    subtitle:
-                        'Starter data is still loading. Reopen this sheet in a moment.',
-                  )
-                else
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedWalletId,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.account_balance_wallet_outlined),
-                    ),
-                    items: wallets
-                        .map(
-                          (wallet) => DropdownMenuItem<String>(
-                            value: wallet.id,
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  FinanceCatalog.iconForKey(wallet.iconKey),
-                                  size: 18,
-                                  color: Color(wallet.colorValue),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(wallet.name),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: isBusy
-                        ? null
-                        : (value) {
-                            setState(() {
-                              _selectedWalletId = value;
-                            });
-                          },
-                  ),
-                const SizedBox(height: 18),
-                Row(
-                  children: <Widget>[
-                    const Expanded(child: _SectionTitle('Category')),
-                    FilledButton.tonalIcon(
-                      onPressed: isBusy
-                          ? null
-                          : () => _openCategoryDialog(allCategories),
-                      icon: const Icon(Icons.add_circle_outline_rounded),
-                      label: const Text('New category'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                if (isLoadingCategories)
-                  const Center(child: CircularProgressIndicator())
-                else if (categories.isEmpty)
-                  _InlineInfoCard(
-                    title: 'No category available',
-                    subtitle:
-                        'Starter categories are still syncing. You can also create one right now.',
-                  )
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 1.08,
-                        ),
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return _CategoryChoiceCard(
-                        category: category,
-                        selected: category.id == _selectedCategoryId,
-                        onTap: () {
-                          setState(() {
-                            _selectedCategoryId = category.id;
-                          });
-                        },
-                      );
-                    },
-                  ),
-                const SizedBox(height: 18),
-                Row(
-                  children: <Widget>[
-                    const Expanded(child: _SectionTitle('Date')),
-                    OutlinedButton.icon(
-                      onPressed: isBusy ? null : _pickDate,
-                      icon: const Icon(Icons.calendar_today_rounded),
-                      label: Text(
-                        DateFormat('dd MMM yyyy').format(_selectedDate),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                _SectionTitle('Note'),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _noteController,
-                  minLines: 2,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Optional note about this transaction',
-                  ),
-                ),
-                if (!hasData) ...<Widget>[
-                  const SizedBox(height: 16),
-                  Text(
-                    'You can still stay here while starter data finishes syncing.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.error,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                Row(
-                  children: <Widget>[
-                    if (_isEditing) ...<Widget>[
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: isBusy ? null : _deleteTransaction,
-                          icon: const Icon(Icons.delete_outline_rounded),
-                          label: const Text('Delete'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: isBusy
-                            ? null
-                            : () => Navigator.of(context).pop(),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: isBusy || !hasData ? null : _saveTransaction,
-                        child: Text(_isEditing ? 'Update' : 'Save'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
+          ],
+        ),
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: isBusy
+                    ? SizedBox(
+                        key: const ValueKey<String>('busy'),
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : Container(
+                        key: const ValueKey<String>('idle'),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Form',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 28 + viewInsets.bottom),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _TopSummaryCard(
+                type: _selectedType,
+                selectedDate: _selectedDate,
+                walletName: wallets
+                    .cast<WalletModel?>()
+                    .firstWhere(
+                      (wallet) => wallet?.id == _selectedWalletId,
+                      orElse: () => null,
+                    )
+                    ?.name,
+              ),
+              const SizedBox(height: 18),
+              _buildFormContent(
+                context,
+                wallets: wallets,
+                allCategories: allCategories,
+                categories: categories,
+                walletsAsync: walletsAsync,
+                isBusy: isBusy,
+                isLoadingCategories: isLoadingCategories,
+                hasData: hasData,
+              ),
+            ],
           ),
         ),
       ),
@@ -380,6 +220,225 @@ class _TransactionEditorSheetState
         _selectedCategoryId = nextCategoryId;
       });
     });
+  }
+
+  Widget _buildFormContent(
+    BuildContext context, {
+    required List<WalletModel> wallets,
+    required List<CategoryModel> allCategories,
+    required List<CategoryModel> categories,
+    required AsyncValue<List<WalletModel>> walletsAsync,
+    required bool isBusy,
+    required bool isLoadingCategories,
+    required bool hasData,
+  }) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _SectionTitle('Type'),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: <Widget>[
+            _TypeChip(
+              label: 'Expense',
+              selected: _selectedType == FinanceCatalog.expenseType,
+              color: const Color(0xFFE85D5D),
+              onTap: () {
+                setState(() {
+                  _selectedType = FinanceCatalog.expenseType;
+                  _selectedCategoryId = null;
+                });
+              },
+            ),
+            _TypeChip(
+              label: 'Income',
+              selected: _selectedType == FinanceCatalog.incomeType,
+              color: const Color(0xFF2ECC9A),
+              onTap: () {
+                setState(() {
+                  _selectedType = FinanceCatalog.incomeType;
+                  _selectedCategoryId = null;
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        _SectionTitle('Amount'),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _amountController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            hintText: '0.00',
+            prefixText: '\u09F3 ',
+          ),
+        ),
+        const SizedBox(height: 18),
+        _SectionTitle('Wallet'),
+        const SizedBox(height: 10),
+        if (walletsAsync.isLoading && wallets.isEmpty)
+          const Center(child: CircularProgressIndicator())
+        else if (wallets.isEmpty)
+          const _InlineInfoCard(
+            title: 'No wallet yet',
+            subtitle:
+                'Starter data is still loading. Reopen this sheet in a moment.',
+          )
+        else
+          DropdownButtonFormField<String>(
+            initialValue: _selectedWalletId,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+            ),
+            items: wallets
+                .map(
+                  (wallet) => DropdownMenuItem<String>(
+                    value: wallet.id,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          FinanceCatalog.iconForKey(wallet.iconKey),
+                          size: 18,
+                          color: Color(wallet.colorValue),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(wallet.name),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: isBusy
+                ? null
+                : (value) {
+                    setState(() {
+                      _selectedWalletId = value;
+                    });
+                  },
+          ),
+        const SizedBox(height: 18),
+        Row(
+          children: <Widget>[
+            const Expanded(child: _SectionTitle('Category')),
+            FilledButton.tonalIcon(
+              onPressed: isBusy
+                  ? null
+                  : () => _openCategoryDialog(allCategories),
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              label: const Text('New category'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (isLoadingCategories)
+          const Center(child: CircularProgressIndicator())
+        else if (categories.isEmpty)
+          const _InlineInfoCard(
+            title: 'No category available',
+            subtitle:
+                'Starter categories are still syncing. You can also create one right now.',
+          )
+        else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth < 340
+                  ? 3
+                  : constraints.maxWidth < 480
+                  ? 4
+                  : 5;
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: constraints.maxWidth < 360 ? 0.98 : 1.08,
+                ),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return _CategoryChoiceCard(
+                    category: category,
+                    selected: category.id == _selectedCategoryId,
+                    onTap: () {
+                      setState(() {
+                        _selectedCategoryId = category.id;
+                      });
+                    },
+                    onDelete: () => _deleteCategory(category),
+                  );
+                },
+              );
+            },
+          ),
+        const SizedBox(height: 18),
+        Row(
+          children: <Widget>[
+            const Expanded(child: _SectionTitle('Date')),
+            OutlinedButton.icon(
+              onPressed: isBusy ? null : _pickDate,
+              icon: const Icon(Icons.calendar_today_rounded),
+              label: Text(DateFormat('dd MMM yyyy').format(_selectedDate)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        _SectionTitle('Note'),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _noteController,
+          minLines: 2,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            hintText: 'Optional note about this transaction',
+          ),
+        ),
+        if (!hasData) ...<Widget>[
+          const SizedBox(height: 16),
+          Text(
+            'You can still stay here while starter data finishes syncing.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+          ),
+        ],
+        const SizedBox(height: 24),
+        Row(
+          children: <Widget>[
+            if (_isEditing) ...<Widget>[
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isBusy ? null : _deleteTransaction,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: const Text('Delete'),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: OutlinedButton(
+                onPressed: isBusy ? null : () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: isBusy || !hasData ? null : _saveTransaction,
+                child: Text(_isEditing ? 'Update' : 'Save'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Future<void> _pickDate() async {
@@ -483,6 +542,51 @@ class _TransactionEditorSheetState
       }
       Navigator.of(context).pop();
       _showGlobalMessage('Transaction deleted.');
+    } catch (error) {
+      _showMessage(error.toString());
+    }
+  }
+
+  Future<void> _deleteCategory(CategoryModel category) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete category'),
+          content: Text(
+            'Delete "${category.name}"? Existing transactions will still keep the old category id, so only remove categories you no longer need.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    try {
+      await ref
+          .read(categoryActionControllerProvider.notifier)
+          .deleteCategory(category);
+      if (!mounted) {
+        return;
+      }
+      if (_selectedCategoryId == category.id) {
+        setState(() {
+          _selectedCategoryId = null;
+        });
+      }
+      _showMessage('Category deleted.');
     } catch (error) {
       _showMessage(error.toString());
     }
@@ -1067,43 +1171,127 @@ class _CategoryChoiceCard extends StatelessWidget {
     required this.category,
     required this.selected,
     required this.onTap,
+    this.onDelete,
   });
 
   final CategoryModel category;
   final bool selected;
   final VoidCallback onTap;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = Color(category.colorValue);
+    final selectedBackground = accent.withValues(alpha: 0.14);
+    final selectedBorder = accent.withValues(alpha: 0.8);
+    final defaultBorder = theme.dividerColor.withValues(alpha: 0.55);
 
-    return buildPremiumInkCard(
-      context: context,
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: accent.withValues(alpha: 0.14),
-            foregroundColor: accent,
-            child: Icon(FinanceCatalog.iconForKey(category.iconKey), size: 18),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            category.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: selected ? theme.colorScheme.primary : null,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 84;
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: <Widget>[
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: onTap,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 170),
+                    curve: Curves.easeOut,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: compact ? 6 : 8,
+                      vertical: compact ? 8 : 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? selectedBackground
+                          : theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: selected ? selectedBorder : defaultBorder,
+                        width: selected ? 1.5 : 1,
+                      ),
+                      boxShadow: selected
+                          ? <BoxShadow>[
+                              BoxShadow(
+                                color: accent.withValues(alpha: 0.14),
+                                blurRadius: 16,
+                                offset: const Offset(0, 8),
+                              ),
+                            ]
+                          : const <BoxShadow>[],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        CircleAvatar(
+                          radius: compact ? 13 : 15,
+                          backgroundColor: accent.withValues(
+                            alpha: selected ? 0.22 : 0.14,
+                          ),
+                          foregroundColor: accent,
+                          child: Icon(
+                            FinanceCatalog.iconForKey(category.iconKey),
+                            size: compact ? 14 : 16,
+                          ),
+                        ),
+                        SizedBox(height: compact ? 4 : 6),
+                        Flexible(
+                          child: Text(
+                            category.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontSize: compact ? 10.5 : 11.5,
+                              height: 1.05,
+                              fontWeight: FontWeight.w700,
+                              color: selected
+                                  ? accent
+                                  : theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
-      ),
+            if (onDelete != null)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: onDelete,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.error,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.colorScheme.surface,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 14,
+                      color: theme.colorScheme.onError,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
