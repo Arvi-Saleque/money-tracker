@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../shared/providers/theme_provider.dart';
 import '../transactions/transaction_editor_sheet.dart';
+import 'dashboard_calendar_tab.dart';
 import 'dashboard_tabs.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -40,10 +41,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       const _ShellTab(
         title: 'Calendar',
-        subtitle: 'Track your month with a quick overview.',
+        subtitle: 'See daily income and expense activity on your calendar.',
         icon: Icons.calendar_month_outlined,
         selectedIcon: Icons.calendar_month_rounded,
-        child: CalendarTab(),
+        child: CalendarTabView(),
       ),
       const _ShellTab(
         title: 'Reports',

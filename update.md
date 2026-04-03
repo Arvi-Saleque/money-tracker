@@ -76,3 +76,17 @@
 
 - The current analytics windows are: this week, this month, and this year.
 - Weekly and monthly averages are shown as average daily expense, while yearly reports show average monthly expense.
+
+## Phase 6 - Calendar View With Day Details
+
+- Added `table_calendar` and replaced the placeholder calendar tab with a real month/week calendar experience.
+- Built a Firestore-backed month calendar provider that loads a single visible-month range query and derives per-day income/expense summaries locally.
+- Added green/red activity markers for days with income, expense, or both.
+- Added month navigation, month picking, and month/week switching from the calendar header.
+- Added a selected-day snapshot card plus a draggable day-detail bottom sheet showing total income, total expense, net, and that day's transaction list.
+- Wired calendar transaction rows into the existing edit transaction page so tapping a day entry opens the same edit flow.
+
+### Notes
+
+- Month data is cached naturally through the provider family key for each visible month during the app session.
+- The calendar currently uses month and week views with day details; a more advanced month picker and cross-month week caching can still be refined later if needed.
