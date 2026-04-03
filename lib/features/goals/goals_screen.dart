@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/goal_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
@@ -24,15 +25,18 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final goalsAsync = ref.watch(goalsProvider);
     final activeGoals = ref.watch(activeGoalsProvider);
     final completedGoals = ref.watch(completedGoalsProvider);
     final topGoal = ref.watch(topActiveGoalProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
+    final languageCode =
+        profile?.language ?? Localizations.localeOf(context).languageCode;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Goals')),
+      appBar: AppBar(title: Text(l10n.goalsTitleText)),
       body: SafeArea(
         child: goalsAsync.when(
           data: (_) => SingleChildScrollView(
@@ -43,20 +47,23 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    _GoalsHeroCard(topGoal: topGoal, currency: currency),
+                    _GoalsHeroCard(
+                      topGoal: topGoal,
+                      currency: currency,
+                      languageCode: languageCode,
+                    ),
                     const SizedBox(height: 20),
                     _SectionHeader(
-                      title: 'Active goals',
-                      actionLabel: 'Add goal',
+                      title: l10n.activeGoalsTitle,
+                      actionLabel: l10n.addGoalAction,
                       onAction: () => _openEditor(context),
                     ),
                     const SizedBox(height: 12),
                     if (activeGoals.isEmpty)
                       EmptyFinanceCard(
-                        title: 'No active goal yet',
-                        subtitle:
-                            'Create a goal for emergency savings, a trip, a new device, or anything you want to save for.',
-                        actionLabel: 'Add goal',
+                        title: l10n.noActiveGoalTitle,
+                        subtitle: l10n.noActiveGoalSubtitle,
+                        actionLabel: l10n.addGoalAction,
                         onAction: () => _openEditor(context),
                       )
                     else
@@ -66,6 +73,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                           child: _GoalTile(
                             goal: goal,
                             currency: currency,
+                            languageCode: languageCode,
                             onTap: () => _openEditor(context, goal: goal),
                             onContribute: () =>
                                 _openContributionPage(context, goal),
@@ -91,7 +99,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
-                                      'Completed goals (${completedGoals.length})',
+                                      l10n.completedGoalsTitle(
+                                        completedGoals.length,
+                                      ),
                                       style: Theme.of(context)
                                           .textTheme
                                           .titleLarge
@@ -116,6 +126,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                                   child: _GoalTile(
                                     goal: goal,
                                     currency: currency,
+                                    languageCode: languageCode,
                                     onTap: () =>
                                         _openEditor(context, goal: goal),
                                     onContribute: null,
@@ -141,7 +152,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(context),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Add goal'),
+        label: Text(l10n.addGoalAction),
       ),
     );
   }
@@ -167,16 +178,16 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete goal'),
-        content: const Text('Delete this savings goal?'),
+        title: Text(context.l10n.deleteGoalTitle),
+        content: Text(context.l10n.deleteSavingsGoalPrompt),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -193,7 +204,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Goal deleted.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.goalDeleted)));
     } catch (error) {
       if (!context.mounted) {
         return;
@@ -206,30 +217,33 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 }
 
 class _GoalsHeroCard extends StatelessWidget {
-  const _GoalsHeroCard({required this.topGoal, required this.currency});
+  const _GoalsHeroCard({
+    required this.topGoal,
+    required this.currency,
+    required this.languageCode,
+  });
 
   final GoalModel? topGoal;
   final String currency;
+  final String languageCode;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return buildPremiumCard(
       context: context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Savings goals',
+            l10n.savingsGoalsTitle,
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
-          Text(
-            topGoal == null
-                ? 'Create goals for the things you want to save toward and keep your progress visible.'
-                : 'Top active goal: ${topGoal!.name}',
-          ),
+          Text(l10n.savingsGoalsSubtitle(topGoal?.name)),
           if (topGoal != null) ...<Widget>[
             const SizedBox(height: 16),
             ClipRRect(
@@ -247,7 +261,18 @@ class _GoalsHeroCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '$currency${topGoal!.savedAmount.toStringAsFixed(0)} of $currency${topGoal!.targetAmount.toStringAsFixed(0)} saved',
+              l10n.goalSavedOf(
+                LocaleFormatters.formatCurrency(
+                  topGoal!.savedAmount,
+                  currency,
+                  languageCode,
+                ),
+                LocaleFormatters.formatCurrency(
+                  topGoal!.targetAmount,
+                  currency,
+                  languageCode,
+                ),
+              ),
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -308,6 +333,7 @@ class _GoalTile extends StatelessWidget {
   const _GoalTile({
     required this.goal,
     required this.currency,
+    required this.languageCode,
     required this.onTap,
     required this.onDelete,
     this.onContribute,
@@ -315,18 +341,18 @@ class _GoalTile extends StatelessWidget {
 
   final GoalModel goal;
   final String currency;
+  final String languageCode;
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final VoidCallback? onContribute;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final color = Color(goal.colorValue);
     final daysLabel = goal.isCompleted
-        ? 'Completed'
-        : goal.daysRemaining < 0
-        ? 'Past target by ${goal.daysRemaining.abs()}d'
-        : '${goal.daysRemaining} days left';
+        ? l10n.completedStatus
+        : l10n.daysLeftLabel(goal.daysRemaining);
 
     return buildPremiumInkCard(
       context: context,
@@ -376,13 +402,13 @@ class _GoalTile extends StatelessWidget {
                 },
                 itemBuilder: (context) => <PopupMenuEntry<String>>[
                   if (onContribute != null)
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'contribute',
-                      child: Text('Contribute'),
+                      child: Text(l10n.contributeAction),
                     ),
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'delete',
-                    child: Text('Delete'),
+                    child: Text(l10n.delete),
                   ),
                 ],
               ),
@@ -405,18 +431,45 @@ class _GoalTile extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  '$currency${goal.savedAmount.toStringAsFixed(0)} saved',
+                  l10n.goalSavedOf(
+                    LocaleFormatters.formatCurrency(
+                      goal.savedAmount,
+                      currency,
+                      languageCode,
+                    ),
+                    LocaleFormatters.formatCurrency(
+                      goal.targetAmount,
+                      currency,
+                      languageCode,
+                    ),
+                  ),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              Text('${(goal.progress * 100).round()}%'),
+              Text(
+                LocaleFormatters.localizeDigits(
+                  '${(goal.progress * 100).round()}%',
+                  languageCode,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Target $currency${goal.targetAmount.toStringAsFixed(0)} · ${DateFormat('d MMM yyyy').format(goal.targetDate)}',
+            l10n.goalTargetSummary(
+              LocaleFormatters.formatCurrency(
+                goal.targetAmount,
+                currency,
+                languageCode,
+              ),
+              LocaleFormatters.formatDate(
+                goal.targetDate,
+                'd MMM yyyy',
+                languageCode,
+              ),
+            ),
           ),
           if (goal.note.trim().isNotEmpty) ...<Widget>[
             const SizedBox(height: 10),
@@ -427,7 +480,7 @@ class _GoalTile extends StatelessWidget {
             FilledButton.icon(
               onPressed: onContribute,
               icon: const Icon(Icons.savings_rounded),
-              label: const Text('Contribute'),
+              label: Text(l10n.contributeAction),
             ),
           ],
         ],
@@ -480,17 +533,19 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final actionState = ref.watch(goalActionControllerProvider);
     final isBusy = actionState.isLoading;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit goal' : 'Add goal'),
+        title: Text(l10n.goalEditorTitle(_isEditing)),
         actions: <Widget>[
           if (_isEditing)
             TextButton(
               onPressed: isBusy ? null : _deleteGoal,
-              child: const Text('Delete'),
+              child: Text(l10n.delete),
             ),
           const SizedBox(width: 8),
         ],
@@ -526,9 +581,7 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            _isEditing
-                                ? 'Update your savings target'
-                                : 'Create a new savings target',
+                            l10n.goalHeaderSubtitle(_isEditing),
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
@@ -540,9 +593,9 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
                   TextField(
                     controller: _nameController,
                     enabled: !isBusy,
-                    decoration: const InputDecoration(
-                      labelText: 'Goal name',
-                      hintText: 'Emergency fund, Laptop, Trip, Bike',
+                    decoration: InputDecoration(
+                      labelText: l10n.goalNameLabel,
+                      hintText: l10n.goalNameHint,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -552,25 +605,29 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Target amount',
+                    decoration: InputDecoration(
+                      labelText: l10n.targetAmountLabel,
                     ),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Target date'),
+                    title: Text(l10n.targetDateLabel),
                     subtitle: Text(
-                      DateFormat('EEEE, d MMM yyyy').format(_targetDate),
+                      LocaleFormatters.formatDate(
+                        _targetDate,
+                        'EEEE, d MMM yyyy',
+                        languageCode,
+                      ),
                     ),
                     trailing: OutlinedButton(
                       onPressed: isBusy ? null : _pickTargetDate,
-                      child: const Text('Change'),
+                      child: Text(l10n.changeAction),
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Icon',
+                    l10n.iconLabel,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -625,7 +682,7 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Color',
+                    l10n.colorLabel,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -677,10 +734,11 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
                     enabled: !isBusy,
                     minLines: 3,
                     maxLines: 5,
-                    decoration: const InputDecoration(
-                      labelText: 'Note',
-                      hintText:
-                          'Optional reminder about why this goal matters.',
+                    decoration: InputDecoration(
+                      labelText: l10n.isBangla ? 'নোট' : 'Note',
+                      hintText: l10n.isBangla
+                          ? 'ঐচ্ছিক নোট লিখুন কেন এই লক্ষ্যটি গুরুত্বপূর্ণ।'
+                          : 'Optional reminder about why this goal matters.',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -695,7 +753,11 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.flag_rounded),
-                      label: Text(_isEditing ? 'Save goal' : 'Create goal'),
+                      label: Text(
+                        _isEditing
+                            ? l10n.saveGoalAction
+                            : l10n.createGoalAction,
+                      ),
                     ),
                   ),
                 ],
@@ -723,15 +785,16 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
   }
 
   Future<void> _saveGoal() async {
+    final l10n = context.l10n;
     final name = _nameController.text.trim();
     final targetAmount = double.tryParse(_targetAmountController.text.trim());
 
     if (name.isEmpty) {
-      _showMessage('Please enter a goal name.');
+      _showMessage(l10n.enterGoalNameError);
       return;
     }
     if (targetAmount == null || targetAmount <= 0) {
-      _showMessage('Please enter a valid target amount.');
+      _showMessage(l10n.enterTargetAmountError);
       return;
     }
 
@@ -766,13 +829,7 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
       }
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isEditing
-                ? 'Goal updated successfully.'
-                : 'Goal created successfully.',
-          ),
-        ),
+        SnackBar(content: Text(_isEditing ? l10n.goalUpdated : l10n.goalCreated)),
       );
     } catch (error) {
       _showMessage(error.toString());
@@ -788,16 +845,16 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete goal'),
-        content: Text('Delete "${goal.name}"?'),
+        title: Text(context.l10n.deleteGoalTitle),
+        content: Text(context.l10n.deleteNamedGoalPrompt(goal.name)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -815,7 +872,7 @@ class _GoalEditorPageState extends ConsumerState<GoalEditorPage> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Goal deleted.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.goalDeleted)));
     } catch (error) {
       _showMessage(error.toString());
     }
@@ -862,11 +919,14 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final wallets =
         ref.watch(walletsProvider).asData?.value ?? const <WalletModel>[];
     final actionState = ref.watch(goalActionControllerProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
+    final languageCode =
+        profile?.language ?? Localizations.localeOf(context).languageCode;
     final isBusy = actionState.isLoading;
 
     if (_selectedWalletId == null && wallets.isNotEmpty) {
@@ -885,7 +945,7 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Contribute to goal')),
+      appBar: AppBar(title: Text(l10n.contributeToGoalTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
@@ -907,7 +967,18 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '$currency${widget.goal.savedAmount.toStringAsFixed(0)} saved of $currency${widget.goal.targetAmount.toStringAsFixed(0)}',
+                          l10n.contributionSavedOf(
+                            LocaleFormatters.formatCurrency(
+                              widget.goal.savedAmount,
+                              currency,
+                              languageCode,
+                            ),
+                            LocaleFormatters.formatCurrency(
+                              widget.goal.targetAmount,
+                              currency,
+                              languageCode,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         ClipRRect(
@@ -934,22 +1005,23 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Contribution amount',
+                    decoration: InputDecoration(
+                      labelText: l10n.contributionAmountLabel,
                     ),
                   ),
                   const SizedBox(height: 16),
                   if (wallets.isEmpty)
-                    const EmptyFinanceCard(
-                      title: 'No wallet available',
-                      subtitle:
-                          'Create a wallet before contributing to a goal.',
+                    EmptyFinanceCard(
+                      title: l10n.isBangla
+                          ? 'কোনো ওয়ালেট নেই'
+                          : 'No wallet available',
+                      subtitle: l10n.noWalletForGoalSubtitle,
                     )
                   else
                     DropdownButtonFormField<String>(
                       initialValue: _selectedWalletId ?? wallets.first.id,
-                      decoration: const InputDecoration(
-                        labelText: 'Source wallet',
+                      decoration: InputDecoration(
+                        labelText: l10n.sourceWalletLabel,
                       ),
                       items: wallets
                           .map(
@@ -976,9 +1048,9 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
                     enabled: !isBusy,
                     minLines: 2,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Note',
-                      hintText: 'Optional note for this contribution.',
+                    decoration: InputDecoration(
+                      labelText: l10n.isBangla ? 'নোট' : 'Note',
+                      hintText: l10n.contributionNoteHint,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -993,7 +1065,7 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.savings_rounded),
-                      label: const Text('Add contribution'),
+                      label: Text(l10n.addContributionAction),
                     ),
                   ),
                 ],
@@ -1006,13 +1078,14 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
   }
 
   Future<void> _submitContribution() async {
+    final l10n = context.l10n;
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
-      _showMessage('Please enter a valid contribution amount.');
+      _showMessage(l10n.validContributionAmountError);
       return;
     }
     if (_selectedWalletId == null) {
-      _showMessage('Please choose a source wallet.');
+      _showMessage(l10n.chooseSourceWalletError);
       return;
     }
 
@@ -1034,8 +1107,8 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
         SnackBar(
           content: Text(
             result.justCompleted
-                ? 'Goal completed! ${widget.goal.name} is fully funded.'
-                : 'Contribution added successfully.',
+                ? l10n.goalCompletedMessage(widget.goal.name)
+                : l10n.contributionAdded,
           ),
         ),
       );
@@ -1043,14 +1116,12 @@ class _GoalContributionPageState extends ConsumerState<GoalContributionPage> {
         await showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Goal completed'),
-            content: Text(
-              'You reached your target for "${widget.goal.name}". Nice work.',
-            ),
+            title: Text(l10n.goalCompletedTitleText),
+            content: Text(l10n.goalCompletedDialog(widget.goal.name)),
             actions: <Widget>[
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Great'),
+                child: Text(l10n.greatAction),
               ),
             ],
           ),

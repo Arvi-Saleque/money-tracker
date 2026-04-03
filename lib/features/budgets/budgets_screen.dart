@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/budget_model.dart';
 import '../../shared/widgets/premium_card.dart';
 import '../profile/profile_providers.dart';
@@ -15,6 +16,7 @@ class BudgetsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final selectedMonth = ref.watch(budgetMonthProvider);
     final budgetsAsync = ref.watch(currentMonthBudgetsProvider);
     final overview = ref.watch(budgetOverviewProvider);
@@ -22,7 +24,7 @@ class BudgetsScreen extends ConsumerWidget {
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Budgets')),
+      appBar: AppBar(title: Text(l10n.budgetsTitleText)),
       body: SafeArea(
         child: budgetsAsync.when(
           data: (_) => SingleChildScrollView(
@@ -48,7 +50,7 @@ class BudgetsScreen extends ConsumerWidget {
                       children: <Widget>[
                         Expanded(
                           child: Text(
-                            'Category budgets',
+                            l10n.categoryBudgetsTitle,
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
@@ -56,7 +58,7 @@ class BudgetsScreen extends ConsumerWidget {
                         FilledButton.icon(
                           onPressed: () => _openBudgetEditor(context),
                           icon: const Icon(Icons.add_rounded),
-                          label: const Text('Add budget'),
+                          label: Text(l10n.addBudgetAction),
                         ),
                       ],
                     ),
@@ -70,6 +72,9 @@ class BudgetsScreen extends ConsumerWidget {
                           child: _BudgetTile(
                             item: item,
                             currency: currency,
+                            languageCode:
+                                profile?.language ??
+                                Localizations.localeOf(context).languageCode,
                             onTap: () =>
                                 _openBudgetEditor(context, budget: item.budget),
                             onDelete: () =>
@@ -89,7 +94,7 @@ class BudgetsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openBudgetEditor(context),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Add budget'),
+        label: Text(l10n.addBudgetAction),
       ),
     );
   }
@@ -113,16 +118,16 @@ class BudgetsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete budget'),
-        content: const Text('Delete this budget limit?'),
+        title: Text(context.l10n.deleteBudgetTitle),
+        content: Text(context.l10n.deleteBudgetPrompt),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -141,7 +146,7 @@ class BudgetsScreen extends ConsumerWidget {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Budget deleted.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.budgetDeleted)));
     } catch (error) {
       if (!context.mounted) {
         return;
@@ -190,26 +195,30 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final categories = ref.watch(
       categoriesByTypeProvider(FinanceCatalog.expenseType),
     );
+    final profile = ref.watch(currentUserProfileProvider).asData?.value;
+    final languageCode =
+        profile?.language ?? Localizations.localeOf(context).languageCode;
     final actionState = ref.watch(budgetActionControllerProvider);
     final isBusy = actionState.isLoading;
     final categoryItems = <DropdownMenuItem<String>>[
-      const DropdownMenuItem<String>(
+      DropdownMenuItem<String>(
         value: BudgetModel.overallCategoryId,
-        child: Text('Overall spending'),
+        child: Text(l10n.overallSpendingLabel),
       ),
       ...categories.map(
         (category) => DropdownMenuItem<String>(
           value: category.id,
-          child: Text(category.name),
+          child: Text(category.localizedName(languageCode)),
         ),
       ),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit budget' : 'Add budget')),
+      appBar: AppBar(title: Text(l10n.budgetEditorTitle(_isEditing))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
@@ -226,14 +235,14 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
                       children: <Widget>[
                         Text(
                           _selectedCategoryId == BudgetModel.overallCategoryId
-                              ? 'Overall spending budget'
-                              : 'Category budget',
+                              ? l10n.overallSpendingBudgetTitle
+                              : l10n.categoryBudgetTitle,
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Budgets update their spent amount automatically whenever related expenses change.',
+                          l10n.budgetsAutoUpdateSubtitle,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 color: Theme.of(context)
@@ -249,7 +258,7 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedCategoryId,
-                    decoration: const InputDecoration(labelText: 'Budget type'),
+                    decoration: InputDecoration(labelText: l10n.budgetTypeLabel),
                     items: categoryItems,
                     onChanged: isBusy
                         ? null
@@ -268,8 +277,8 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Budget limit',
+                    decoration: InputDecoration(
+                      labelText: l10n.budgetLimitLabel,
                       hintText: '0.00',
                       prefixText: '\u09F3 ',
                     ),
@@ -278,7 +287,13 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
                   OutlinedButton.icon(
                     onPressed: isBusy ? null : _pickMonth,
                     icon: const Icon(Icons.calendar_month_rounded),
-                    label: Text(DateFormat('MMMM yyyy').format(_selectedMonth)),
+                    label: Text(
+                      LocaleFormatters.formatDate(
+                        _selectedMonth,
+                        'MMMM yyyy',
+                        languageCode,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -288,7 +303,7 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
                           onPressed: isBusy
                               ? null
                               : () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
+                          child: Text(l10n.cancel),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -296,7 +311,9 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
                         child: ElevatedButton(
                           onPressed: isBusy ? null : _saveBudget,
                           child: Text(
-                            _isEditing ? 'Update budget' : 'Create budget',
+                            _isEditing
+                                ? l10n.updateBudgetAction
+                                : l10n.createBudgetAction,
                           ),
                         ),
                       ),
@@ -328,9 +345,10 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
   }
 
   Future<void> _saveBudget() async {
+    final l10n = context.l10n;
     final limit = double.tryParse(_limitController.text.replaceAll(',', ''));
     if (limit == null || limit <= 0) {
-      _showMessage('Enter a valid budget limit.');
+      _showMessage(l10n.validBudgetLimitError);
       return;
     }
 
@@ -355,9 +373,7 @@ class _BudgetEditorPageState extends ConsumerState<BudgetEditorPage> {
       ref.read(budgetMonthProvider.notifier).setMonth(_selectedMonth);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isEditing ? 'Budget updated.' : 'Budget created.'),
-        ),
+        SnackBar(content: Text(_isEditing ? l10n.budgetUpdated : l10n.budgetCreated)),
       );
     } catch (error) {
       _showMessage(error.toString());
@@ -389,11 +405,16 @@ class _MonthHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final languageCode = Localizations.localeOf(context).languageCode;
     return Row(
       children: <Widget>[
         Expanded(
           child: Text(
-            DateFormat('MMMM yyyy').format(selectedMonth),
+            LocaleFormatters.formatDate(
+              selectedMonth,
+              'MMMM yyyy',
+              languageCode,
+            ),
             style: Theme.of(
               context,
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
@@ -413,13 +434,18 @@ class _MonthHeader extends ConsumerWidget {
 }
 
 class _OverallBudgetCard extends StatelessWidget {
-  const _OverallBudgetCard({required this.overview, required this.currency});
+  const _OverallBudgetCard({
+    required this.overview,
+    required this.currency,
+  });
 
   final BudgetOverview overview;
   final String currency;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final overallBudget = overview.overallBudget;
     final limit = overallBudget?.limit ?? overview.totalCategoryLimit;
     final spent = overallBudget?.spent ?? overview.totalCategorySpent;
@@ -433,8 +459,8 @@ class _OverallBudgetCard extends StatelessWidget {
         children: <Widget>[
           Text(
             hasExplicitOverall
-                ? 'Overall monthly limit'
-                : 'Category budget total',
+                ? l10n.overallMonthlyLimitLabel
+                : l10n.categoryBudgetTotalLabel,
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -445,22 +471,23 @@ class _OverallBudgetCard extends StatelessWidget {
             runSpacing: 12,
             children: <Widget>[
               _BudgetMetric(
-                label: 'Spent',
-                value: _formatCurrency(spent, currency),
+                label: l10n.spentLabel,
+                value: _formatCurrency(spent, currency, languageCode),
               ),
               _BudgetMetric(
-                label: 'Limit',
+                label: l10n.limitLabel,
                 value: limit <= 0
-                    ? 'Not set'
-                    : _formatCurrency(limit, currency),
+                    ? l10n.notSetLabel
+                    : _formatCurrency(limit, currency, languageCode),
               ),
               _BudgetMetric(
-                label: 'Remaining',
+                label: l10n.isBangla ? 'বাকি' : 'Remaining',
                 value: limit <= 0
                     ? '--'
                     : _formatCurrency(
                         (limit - spent).clamp(0, double.infinity),
                         currency,
+                        languageCode,
                       ),
               ),
             ],
@@ -485,6 +512,8 @@ class _BudgetWarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final exceeded = overview.exceededBudgets.take(2).toList(growable: false);
     final near = overview.nearLimitBudgets.take(2).toList(growable: false);
 
@@ -494,9 +523,7 @@ class _BudgetWarningCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            overview.exceededBudgets.isNotEmpty
-                ? 'Budget alert'
-                : 'Budget warning',
+            l10n.budgetAlertsTitle(overview.exceededBudgets.isNotEmpty),
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -506,7 +533,15 @@ class _BudgetWarningCard extends StatelessWidget {
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '${item.category?.name ?? 'Category'} exceeded by ${_formatCurrency(item.budget.spent - item.budget.limit, currency)}.',
+                l10n.categoryExceededLabel(
+                  item.category?.localizedName(languageCode) ??
+                      (l10n.isBangla ? 'ক্যাটাগরি' : 'Category'),
+                  _formatCurrency(
+                    item.budget.spent - item.budget.limit,
+                    currency,
+                    languageCode,
+                  ),
+                ),
               ),
             ),
           ),
@@ -514,7 +549,11 @@ class _BudgetWarningCard extends StatelessWidget {
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '${item.category?.name ?? 'Category'} reached ${(item.budget.progress * 100).round()}% of its limit.',
+                l10n.categoryNearLimitLabel(
+                  item.category?.localizedName(languageCode) ??
+                      (l10n.isBangla ? 'ক্যাটাগরি' : 'Category'),
+                  (item.budget.progress * 100).round(),
+                ),
               ),
             ),
           ),
@@ -528,17 +567,20 @@ class _BudgetTile extends StatelessWidget {
   const _BudgetTile({
     required this.item,
     required this.currency,
+    required this.languageCode,
     required this.onTap,
     required this.onDelete,
   });
 
   final BudgetViewItem item;
   final String currency;
+  final String languageCode;
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final budget = item.budget;
     final category = item.category;
     final ratio = budget.progress;
@@ -575,15 +617,16 @@ class _BudgetTile extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       budget.isOverall
-                          ? 'Overall spending'
-                          : category?.name ?? 'Category',
+                          ? l10n.overallSpendingLabel
+                          : category?.localizedName(languageCode) ??
+                                (l10n.isBangla ? 'ক্যাটাগরি' : 'Category'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_formatCurrency(budget.spent, currency)} of ${_formatCurrency(budget.limit, currency)}',
+                      '${_formatCurrency(budget.spent, currency, languageCode)} / ${_formatCurrency(budget.limit, currency, languageCode)}',
                     ),
                   ],
                 ),
@@ -594,8 +637,11 @@ class _BudgetTile extends StatelessWidget {
                     onDelete();
                   }
                 },
-                itemBuilder: (context) => const <PopupMenuEntry<String>>[
-                  PopupMenuItem<String>(value: 'delete', child: Text('Delete')),
+                itemBuilder: (context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text(l10n.delete),
+                  ),
                 ],
               ),
             ],
@@ -610,14 +656,14 @@ class _BudgetTile extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: <Widget>[
-              Text('${(ratio * 100).round()}% used'),
+              Text(l10n.percentUsedLabel((ratio * 100).round())),
               const Spacer(),
               Text(
                 ratio >= 1
-                    ? 'Exceeded'
+                    ? l10n.exceededLabel
                     : ratio >= 0.8
-                    ? 'Warning'
-                    : 'On track',
+                    ? l10n.warningLabel
+                    : l10n.onTrackLabel,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: tone,
                   fontWeight: FontWeight.w700,
@@ -638,23 +684,24 @@ class _EmptyBudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return buildPremiumCard(
       context: context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'No budgets yet',
+            l10n.noBudgetsYetTitle,
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Set an overall or category budget for this month to start tracking spending progress.',
+          Text(
+            l10n.noBudgetsYetSubtitle,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: onAdd, child: const Text('Add budget')),
+          ElevatedButton(onPressed: onAdd, child: Text(l10n.addBudgetAction)),
         ],
       ),
     );
@@ -693,10 +740,6 @@ class _BudgetMetric extends StatelessWidget {
   }
 }
 
-String _formatCurrency(double amount, String currency) {
-  return NumberFormat.currency(
-    locale: 'en_US',
-    symbol: currency,
-    decimalDigits: 0,
-  ).format(amount);
+String _formatCurrency(double amount, String currency, String languageCode) {
+  return LocaleFormatters.formatCurrency(amount, currency, languageCode);
 }

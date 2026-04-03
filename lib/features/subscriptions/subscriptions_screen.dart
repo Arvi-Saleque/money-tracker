@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/category_model.dart';
 import '../../shared/models/subscription_model.dart';
 import '../../shared/models/wallet_model.dart';
@@ -18,23 +19,26 @@ class SubscriptionsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final subscriptionsAsync = ref.watch(subscriptionsProvider);
     final upcoming = ref.watch(upcomingSubscriptionsProvider);
     final paidThisMonth = ref.watch(paidThisMonthSubscriptionsProvider);
     final overview = ref.watch(subscriptionsOverviewProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
+    final languageCode =
+        profile?.language ?? Localizations.localeOf(context).languageCode;
 
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Bills'),
-          bottom: const TabBar(
+          title: Text(l10n.billsTitleText),
+          bottom: TabBar(
             tabs: <Tab>[
-              Tab(text: 'Upcoming'),
-              Tab(text: 'All'),
-              Tab(text: 'Paid this month'),
+              Tab(text: l10n.upcomingTabLabel),
+              Tab(text: l10n.allLabel),
+              Tab(text: l10n.paidThisMonthTabLabel),
             ],
           ),
         ),
@@ -50,6 +54,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       child: _OverviewCard(
                         overview: overview,
                         currency: currency,
+                        languageCode: languageCode,
                       ),
                     ),
                   ),
@@ -60,23 +65,20 @@ class SubscriptionsScreen extends ConsumerWidget {
                       _SubscriptionListView(
                         subscriptions: upcoming,
                         currency: currency,
-                        emptyTitle: 'No bill due soon',
-                        emptySubtitle:
-                            'Add recurring rent, internet, utilities, or any subscription you want to track.',
+                        emptyTitle: l10n.noBillDueSoonTitle,
+                        emptySubtitle: l10n.noBillDueSoonSubtitle,
                       ),
                       _SubscriptionListView(
                         subscriptions: subscriptions,
                         currency: currency,
-                        emptyTitle: 'No bill created yet',
-                        emptySubtitle:
-                            'Create your first recurring bill and the app will keep it organized here.',
+                        emptyTitle: l10n.noBillCreatedYetTitle,
+                        emptySubtitle: l10n.noBillCreatedYetSubtitle,
                       ),
                       _SubscriptionListView(
                         subscriptions: paidThisMonth,
                         currency: currency,
-                        emptyTitle: 'Nothing paid this month',
-                        emptySubtitle:
-                            'Bills you mark as paid will show up here during the current month.',
+                        emptyTitle: l10n.nothingPaidThisMonthTitle,
+                        emptySubtitle: l10n.nothingPaidThisMonthSubtitle,
                         allowMarkAsPaid: false,
                       ),
                     ],
@@ -91,7 +93,7 @@ class SubscriptionsScreen extends ConsumerWidget {
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _openEditor(context),
           icon: const Icon(Icons.add_rounded),
-          label: const Text('Add bill'),
+          label: Text(l10n.addBillAction),
         ),
       ),
     );
@@ -111,27 +113,33 @@ class SubscriptionsScreen extends ConsumerWidget {
 }
 
 class _OverviewCard extends StatelessWidget {
-  const _OverviewCard({required this.overview, required this.currency});
+  const _OverviewCard({
+    required this.overview,
+    required this.currency,
+    required this.languageCode,
+  });
 
   final SubscriptionsOverview overview;
   final String currency;
+  final String languageCode;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return buildPremiumCard(
       context: context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Recurring bills snapshot',
+            l10n.recurringBillsSnapshotTitle,
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'Track upcoming due dates, keep recurring expenses organized, and mark bills as paid in one move.',
+            l10n.recurringBillsSnapshotSubtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(
                 context,
@@ -144,17 +152,33 @@ class _OverviewCard extends StatelessWidget {
             runSpacing: 12,
             children: <Widget>[
               _MetricTile(
-                label: 'Due soon',
-                value: '${overview.dueSoonCount}',
-                subtitle:
-                    '$currency${overview.dueSoonTotal.toStringAsFixed(0)} scheduled',
+                label: l10n.dueSoonLabel,
+                value: LocaleFormatters.formatNumber(
+                  overview.dueSoonCount,
+                  languageCode,
+                ),
+                subtitle: l10n.scheduledAmount(
+                  LocaleFormatters.formatCurrency(
+                    overview.dueSoonTotal,
+                    currency,
+                    languageCode,
+                  ),
+                ),
                 color: const Color(0xFFE85D5D),
               ),
               _MetricTile(
-                label: 'Paid this month',
-                value: '${overview.paidThisMonthCount}',
-                subtitle:
-                    '$currency${overview.paidThisMonthTotal.toStringAsFixed(0)} cleared',
+                label: l10n.paidThisMonthTabLabel,
+                value: LocaleFormatters.formatNumber(
+                  overview.paidThisMonthCount,
+                  languageCode,
+                ),
+                subtitle: l10n.clearedAmount(
+                  LocaleFormatters.formatCurrency(
+                    overview.paidThisMonthTotal,
+                    currency,
+                    languageCode,
+                  ),
+                ),
                 color: const Color(0xFF2ECC9A),
               ),
             ],
@@ -307,7 +331,7 @@ class _SubscriptionListView extends ConsumerWidget {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${subscription.name} marked as paid.')),
+        SnackBar(content: Text(context.l10n.billMarkedPaid(subscription.name))),
       );
     } catch (error) {
       if (!context.mounted) {
@@ -339,7 +363,8 @@ class _SubscriptionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dueBadge = _dueBadge(subscription);
+    final l10n = context.l10n;
+    final dueBadge = _dueBadge(context, subscription);
 
     return buildPremiumInkCard(
       context: context,
@@ -385,7 +410,8 @@ class _SubscriptionCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      category?.localizedName(languageCode) ?? 'Category',
+                      category?.localizedName(languageCode) ??
+                          (l10n.isBangla ? 'ক্যাটাগরি' : 'Category'),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(
                           context,
@@ -410,20 +436,20 @@ class _SubscriptionCard extends ConsumerWidget {
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${subscription.name} marked as paid.'),
+                        content: Text(l10n.billMarkedPaid(subscription.name)),
                       ),
                     );
                   }
                 },
                 itemBuilder: (context) => <PopupMenuEntry<String>>[
                   if (allowMarkAsPaid)
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'paid',
-                      child: Text('Mark as paid'),
+                      child: Text(l10n.markAsPaidAction),
                     ),
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'delete',
-                    child: Text('Delete'),
+                    child: Text(l10n.delete),
                   ),
                 ],
               ),
@@ -437,11 +463,11 @@ class _SubscriptionCard extends ConsumerWidget {
               _InfoChip(icon: Icons.event_rounded, label: dueBadge.$1),
               _InfoChip(
                 icon: Icons.account_balance_wallet_rounded,
-                label: wallet?.name ?? 'Wallet',
+                label: wallet?.name ?? (l10n.isBangla ? 'ওয়ালেট' : 'Wallet'),
               ),
               _InfoChip(
                 icon: Icons.repeat_rounded,
-                label: SubscriptionFrequency.label(subscription.frequency),
+                label: _frequencyLabel(context, subscription.frequency),
               ),
             ],
           ),
@@ -457,12 +483,16 @@ class _SubscriptionCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Next due',
+                      l10n.nextDueLabel,
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('d MMM yyyy').format(subscription.nextDueDate),
+                      LocaleFormatters.formatDate(
+                        subscription.nextDueDate,
+                        'd MMM yyyy',
+                        languageCode,
+                      ),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -492,7 +522,11 @@ class _SubscriptionCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '$currency${subscription.amount.toStringAsFixed(0)}',
+                    LocaleFormatters.formatCurrency(
+                      subscription.amount,
+                      currency,
+                      languageCode,
+                    ),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -506,17 +540,17 @@ class _SubscriptionCard extends ConsumerWidget {
     );
   }
 
-  (String, Color) _dueBadge(SubscriptionModel item) {
+  (String, Color) _dueBadge(BuildContext context, SubscriptionModel item) {
     if (item.daysUntilDue < 0) {
-      return ('Overdue ${item.daysUntilDue.abs()}d', const Color(0xFFE85D5D));
+      return (context.l10n.dueLabel(item.daysUntilDue), const Color(0xFFE85D5D));
     }
     if (item.daysUntilDue == 0) {
-      return ('Due today', const Color(0xFFF59E0B));
+      return (context.l10n.dueLabel(item.daysUntilDue), const Color(0xFFF59E0B));
     }
     if (item.daysUntilDue == 1) {
-      return ('Due tomorrow', const Color(0xFF3D6BE4));
+      return (context.l10n.dueLabel(item.daysUntilDue), const Color(0xFF3D6BE4));
     }
-    return ('In ${item.daysUntilDue} days', const Color(0xFF2ECC9A));
+    return (context.l10n.dueLabel(item.daysUntilDue), const Color(0xFF2ECC9A));
   }
 
   Future<void> _deleteSubscription(
@@ -527,16 +561,16 @@ class _SubscriptionCard extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete bill'),
-        content: Text('Delete "${subscription.name}"?'),
+        title: Text(context.l10n.deleteBillTitle),
+        content: Text(context.l10n.deleteNamedBillPrompt(subscription.name)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -555,7 +589,7 @@ class _SubscriptionCard extends ConsumerWidget {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Bill deleted.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.billDeleted)));
     } catch (error) {
       if (!context.mounted) {
         return;
@@ -610,10 +644,10 @@ class _PaidSwipeBackground extends StatelessWidget {
       alignment: Alignment.centerRight,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: const <Widget>[
-          Icon(Icons.check_circle_outline_rounded, color: Color(0xFF2ECC9A)),
-          SizedBox(width: 8),
-          Text('Mark as paid'),
+        children: <Widget>[
+          const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF2ECC9A)),
+          const SizedBox(width: 8),
+          Text(context.l10n.markAsPaidAction),
         ],
       ),
     );
@@ -669,6 +703,8 @@ class _SubscriptionEditorPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final categories = ref.watch(
       categoriesByTypeProvider(FinanceCatalog.expenseType),
     );
@@ -698,12 +734,12 @@ class _SubscriptionEditorPageState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit bill' : 'Add bill'),
+        title: Text(l10n.billEditorTitle(_isEditing)),
         actions: <Widget>[
           if (_isEditing)
             TextButton(
               onPressed: isBusy ? null : _deleteSubscription,
-              child: const Text('Delete'),
+              child: Text(l10n.delete),
             ),
           const SizedBox(width: 8),
         ],
@@ -715,10 +751,9 @@ class _SubscriptionEditorPageState
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
               child: categories.isEmpty || wallets.isEmpty
-                  ? const EmptyFinanceCard(
-                      title: 'Bills need categories and wallets',
-                      subtitle:
-                          'Make sure the starter finance data has loaded, then open this page again.',
+                  ? EmptyFinanceCard(
+                      title: l10n.billEditorNeedsDataTitle,
+                      subtitle: l10n.billEditorNeedsDataSubtitle,
                     )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,15 +764,13 @@ class _SubscriptionEditorPageState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                _isEditing
-                                    ? 'Update recurring bill'
-                                    : 'Create recurring bill',
+                                l10n.billHeaderSubtitle(_isEditing),
                                 style: Theme.of(context).textTheme.titleLarge
                                     ?.copyWith(fontWeight: FontWeight.w700),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'When you mark this bill as paid, the app creates a real expense transaction and moves the next due date forward automatically.',
+                                l10n.billAutoCreateHint,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       color: Theme.of(context)
@@ -755,9 +788,9 @@ class _SubscriptionEditorPageState
                           controller: _nameController,
                           enabled: !isBusy,
                           textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            labelText: 'Bill name',
-                            hintText: 'Internet, Rent, Netflix, Electricity',
+                          decoration: InputDecoration(
+                            labelText: l10n.billNameLabel,
+                            hintText: l10n.billNameHint,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -767,8 +800,8 @@ class _SubscriptionEditorPageState
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: const InputDecoration(
-                            labelText: 'Amount',
+                          decoration: InputDecoration(
+                            labelText: l10n.isBangla ? 'পরিমাণ' : 'Amount',
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -776,14 +809,16 @@ class _SubscriptionEditorPageState
                           initialValue: _selectedCategoryId.isEmpty
                               ? categories.first.id
                               : _selectedCategoryId,
-                          decoration: const InputDecoration(
-                            labelText: 'Expense category',
+                          decoration: InputDecoration(
+                            labelText: l10n.expenseCategoryLabel,
                           ),
                           items: categories
                               .map(
                                 (category) => DropdownMenuItem<String>(
                                   value: category.id,
-                                  child: Text(category.name),
+                                  child: Text(
+                                    category.localizedName(languageCode),
+                                  ),
                                 ),
                               )
                               .toList(growable: false),
@@ -803,8 +838,8 @@ class _SubscriptionEditorPageState
                           initialValue: _selectedWalletId.isEmpty
                               ? wallets.first.id
                               : _selectedWalletId,
-                          decoration: const InputDecoration(
-                            labelText: 'Wallet',
+                          decoration: InputDecoration(
+                            labelText: l10n.isBangla ? 'ওয়ালেট' : 'Wallet',
                           ),
                           items: wallets
                               .map(
@@ -827,7 +862,7 @@ class _SubscriptionEditorPageState
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Frequency',
+                          l10n.isBangla ? 'ফ্রিকোয়েন্সি' : 'Frequency',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
@@ -838,9 +873,7 @@ class _SubscriptionEditorPageState
                           children: SubscriptionFrequency.values
                               .map(
                                 (frequency) => ChoiceChip(
-                                  label: Text(
-                                    SubscriptionFrequency.label(frequency),
-                                  ),
+                                  label: Text(_frequencyLabel(context, frequency)),
                                   selected: _frequency == frequency,
                                   onSelected: isBusy
                                       ? null
@@ -856,41 +889,45 @@ class _SubscriptionEditorPageState
                         const SizedBox(height: 20),
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Next due date'),
+                          title: Text(l10n.nextDueDateLabel),
                           subtitle: Text(
-                            DateFormat('EEEE, d MMM yyyy').format(_nextDueDate),
+                            LocaleFormatters.formatDate(
+                              _nextDueDate,
+                              'EEEE, d MMM yyyy',
+                              languageCode,
+                            ),
                           ),
                           trailing: OutlinedButton(
                             onPressed: isBusy ? null : _pickNextDueDate,
-                            child: const Text('Change'),
+                            child: Text(l10n.changeAction),
                           ),
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<int>(
                           initialValue: _reminderDaysBefore,
-                          decoration: const InputDecoration(
-                            labelText: 'Reminder',
+                          decoration: InputDecoration(
+                            labelText: l10n.reminderLabel,
                           ),
-                          items: const <DropdownMenuItem<int>>[
+                          items: <DropdownMenuItem<int>>[
                             DropdownMenuItem<int>(
                               value: 0,
-                              child: Text('Same day'),
+                              child: Text(l10n.sameDayLabel),
                             ),
                             DropdownMenuItem<int>(
                               value: 1,
-                              child: Text('1 day before'),
+                              child: Text(l10n.oneDayBeforeLabel),
                             ),
                             DropdownMenuItem<int>(
                               value: 2,
-                              child: Text('2 days before'),
+                              child: Text(l10n.twoDaysBeforeLabel),
                             ),
                             DropdownMenuItem<int>(
                               value: 3,
-                              child: Text('3 days before'),
+                              child: Text(l10n.threeDaysBeforeLabel),
                             ),
                             DropdownMenuItem<int>(
                               value: 7,
-                              child: Text('7 days before'),
+                              child: Text(l10n.sevenDaysBeforeLabel),
                             ),
                           ],
                           onChanged: isBusy
@@ -910,10 +947,12 @@ class _SubscriptionEditorPageState
                           enabled: !isBusy,
                           minLines: 3,
                           maxLines: 5,
-                          decoration: const InputDecoration(
-                            labelText: 'Note',
+                          decoration: InputDecoration(
+                            labelText: l10n.isBangla ? 'নোট' : 'Note',
                             hintText:
-                                'Optional details like provider, package, or account information.',
+                                l10n.isBangla
+                                    ? 'প্রোভাইডার, প্যাকেজ বা অ্যাকাউন্ট সংক্রান্ত ঐচ্ছিক তথ্য।'
+                                    : 'Optional details like provider, package, or account information.',
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -931,7 +970,13 @@ class _SubscriptionEditorPageState
                                   )
                                 : const Icon(Icons.check_rounded),
                             label: Text(
-                              _isEditing ? 'Save bill' : 'Create bill',
+                              _isEditing
+                                  ? (l10n.isBangla
+                                        ? 'বিল সংরক্ষণ করুন'
+                                        : 'Save bill')
+                                  : (l10n.isBangla
+                                        ? 'বিল তৈরি করুন'
+                                        : 'Create bill'),
                             ),
                           ),
                         ),
@@ -960,19 +1005,20 @@ class _SubscriptionEditorPageState
   }
 
   Future<void> _saveSubscription() async {
+    final l10n = context.l10n;
     final name = _nameController.text.trim();
     final amount = double.tryParse(_amountController.text.trim());
 
     if (name.isEmpty) {
-      _showMessage('Please enter a bill name.');
+      _showMessage(l10n.enterBillNameError);
       return;
     }
     if (amount == null || amount <= 0) {
-      _showMessage('Please enter a valid amount.');
+      _showMessage(l10n.validBillAmountError);
       return;
     }
     if (_selectedCategoryId.isEmpty || _selectedWalletId.isEmpty) {
-      _showMessage('Please choose a category and wallet.');
+      _showMessage(l10n.chooseCategoryWalletError);
       return;
     }
 
@@ -1007,13 +1053,7 @@ class _SubscriptionEditorPageState
       }
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isEditing
-                ? 'Bill updated successfully.'
-                : 'Bill created successfully.',
-          ),
-        ),
+        SnackBar(content: Text(_isEditing ? l10n.billUpdated : l10n.billCreated)),
       );
     } catch (error) {
       _showMessage(error.toString());
@@ -1029,16 +1069,16 @@ class _SubscriptionEditorPageState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete bill'),
-        content: Text('Delete "${subscription.name}"?'),
+        title: Text(context.l10n.deleteBillTitle),
+        content: Text(context.l10n.deleteNamedBillPrompt(subscription.name)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -1058,7 +1098,7 @@ class _SubscriptionEditorPageState
       Navigator.of(context).pop();
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Bill deleted.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.billDeleted)));
     } catch (error) {
       _showMessage(error.toString());
     }
@@ -1077,4 +1117,19 @@ class _SubscriptionEditorPageState
 String _trimZeroes(double value) {
   final whole = value.toInt();
   return value == whole ? '$whole' : value.toString();
+}
+
+String _frequencyLabel(BuildContext context, String value) {
+  final isBangla = context.l10n.isBangla;
+  switch (value) {
+    case SubscriptionFrequency.daily:
+      return isBangla ? 'দৈনিক' : 'Daily';
+    case SubscriptionFrequency.weekly:
+      return isBangla ? 'সাপ্তাহিক' : 'Weekly';
+    case SubscriptionFrequency.yearly:
+      return isBangla ? 'বার্ষিক' : 'Yearly';
+    case SubscriptionFrequency.monthly:
+    default:
+      return isBangla ? 'মাসিক' : 'Monthly';
+  }
 }
