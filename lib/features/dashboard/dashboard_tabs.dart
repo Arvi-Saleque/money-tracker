@@ -15,6 +15,7 @@ import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
 import '../budgets/budget_providers.dart';
+import '../debts/debt_providers.dart';
 import '../goals/goal_providers.dart';
 import 'dashboard_analytics.dart';
 import 'dashboard_chart_widgets.dart';
@@ -63,6 +64,7 @@ class HomeTab extends ConsumerWidget {
         topCategory?.localizedName(languageCode) ?? l10n.noTopCategoryYet;
     final upcomingBills = ref.watch(dashboardUpcomingBillsProvider);
     final topGoal = ref.watch(topActiveGoalProvider);
+    final debtOverview = ref.watch(debtOverviewProvider);
     final monthLabel = LocaleFormatters.formatDate(
       DateTime.now(),
       'MMMM yyyy',
@@ -303,8 +305,7 @@ class HomeTab extends ConsumerWidget {
                                       children: <Widget>[
                                         Expanded(
                                           child: AnalyticsMetricCard(
-                                            label: analytics
-                                                .period
+                                            label: analytics.period
                                                 .averageExpenseLabelFor(
                                                   languageCode,
                                                 ),
@@ -320,8 +321,7 @@ class HomeTab extends ConsumerWidget {
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: AnalyticsMetricCard(
-                                            label: analytics
-                                                .period
+                                            label: analytics.period
                                                 .peakExpenseLabelFor(
                                                   languageCode,
                                                 ),
@@ -456,6 +456,11 @@ class HomeTab extends ConsumerWidget {
                           const SizedBox(height: 16),
                           _TopGoalCard(goal: topGoal, currency: currency),
                           const SizedBox(height: 16),
+                          _DebtSnapshotCard(
+                            overview: debtOverview,
+                            currency: currency,
+                          ),
+                          const SizedBox(height: 16),
                           const QuickActionsCard(actions: actionShortcuts),
                         ],
                       ),
@@ -486,6 +491,11 @@ class HomeTab extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     _TopGoalCard(goal: topGoal, currency: currency),
+                    const SizedBox(height: 16),
+                    _DebtSnapshotCard(
+                      overview: debtOverview,
+                      currency: currency,
+                    ),
                     const SizedBox(height: 16),
                     const QuickActionsCard(actions: actionShortcuts),
                   ],
@@ -720,6 +730,202 @@ class _TopGoalCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(l10n.daysLeftLabel(goalData.daysRemaining)),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DebtSnapshotCard extends StatelessWidget {
+  const _DebtSnapshotCard({required this.overview, required this.currency});
+
+  final DebtOverview overview;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final hasData =
+        overview.borrowedOutstanding > 0 ||
+        overview.lentOutstanding > 0 ||
+        overview.borrowedActive > 0 ||
+        overview.lentActive > 0 ||
+        overview.overdueCount > 0 ||
+        overview.dueSoonCount > 0;
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final title = Text(
+                l10n.debtsTitleText,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              );
+              final button = TextButton(
+                onPressed: () => context.push(AppConstants.debtsRoute),
+                child: Text(l10n.openAction),
+              );
+
+              if (constraints.maxWidth < 320) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[title, const SizedBox(height: 8), button],
+                );
+              }
+
+              return Row(
+                children: <Widget>[
+                  Expanded(child: title),
+                  button,
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          if (!hasData)
+            Text(l10n.noDebtRecordsYet)
+          else ...<Widget>[
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: <Widget>[
+                _DashboardMetricPill(
+                  label: l10n.totalOwedLabel,
+                  value: _formatCurrency(
+                    overview.borrowedOutstanding,
+                    currency,
+                    languageCode,
+                  ),
+                ),
+                _DashboardMetricPill(
+                  label: l10n.totalReceivableLabel,
+                  value: _formatCurrency(
+                    overview.lentOutstanding,
+                    currency,
+                    languageCode,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: <Widget>[
+                _DashboardTagChip(
+                  icon: Icons.call_received_rounded,
+                  label: l10n.activeBorrowedCountLabel(overview.borrowedActive),
+                ),
+                _DashboardTagChip(
+                  icon: Icons.call_made_rounded,
+                  label: l10n.activeLentCountLabel(overview.lentActive),
+                ),
+                _DashboardTagChip(
+                  icon: Icons.warning_amber_rounded,
+                  label: l10n.overdueDebtCountLabel(overview.overdueCount),
+                  tone: _DashboardTagTone.danger,
+                ),
+                _DashboardTagChip(
+                  icon: Icons.schedule_rounded,
+                  label: l10n.dueSoonDebtCountLabel(overview.dueSoonCount),
+                  tone: _DashboardTagTone.warning,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardMetricPill extends StatelessWidget {
+  const _DashboardMetricPill({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.38),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(label),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _DashboardTagTone { neutral, warning, danger }
+
+class _DashboardTagChip extends StatelessWidget {
+  const _DashboardTagChip({
+    required this.icon,
+    required this.label,
+    this.tone = _DashboardTagTone.neutral,
+  });
+
+  final IconData icon;
+  final String label;
+  final _DashboardTagTone tone;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final (background, foreground) = switch (tone) {
+      _DashboardTagTone.danger => (
+        scheme.errorContainer.withValues(alpha: 0.5),
+        scheme.error,
+      ),
+      _DashboardTagTone.warning => (
+        scheme.tertiaryContainer.withValues(alpha: 0.6),
+        scheme.tertiary,
+      ),
+      _DashboardTagTone.neutral => (
+        scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        scheme.primary,
+      ),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 16, color: foreground),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -990,9 +1196,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(
-        SnackBar(content: Text(context.l10n.transactionDeleted)),
-      );
+      ).showSnackBar(SnackBar(content: Text(context.l10n.transactionDeleted)));
     } catch (error) {
       if (!mounted) {
         return;
@@ -1143,7 +1347,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                     Row(
                       children: <Widget>[
                         Expanded(
-                            child: OutlinedButton(
+                          child: OutlinedButton(
                             onPressed: () {
                               nextSelection.clear();
                               Navigator.of(context).pop(true);
@@ -1239,7 +1443,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                     Row(
                       children: <Widget>[
                         Expanded(
-                            child: OutlinedButton(
+                          child: OutlinedButton(
                             onPressed: () {
                               nextSelection.clear();
                               Navigator.of(context).pop(true);
@@ -1410,7 +1614,11 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
                     label: context.l10n.netBalanceLabel,
-                    value: _formatCurrency(analytics.net, currency, languageCode),
+                    value: _formatCurrency(
+                      analytics.net,
+                      currency,
+                      languageCode,
+                    ),
                     toneColor: Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -1655,7 +1863,9 @@ class _TransactionHistoryHeader extends StatelessWidget {
                 onTap: onOpenWalletFilter,
               ),
               _HistoryFilterPill(
-                label: hasDateRange ? l10n.dateRangeSetLabel : l10n.dateRangeLabel,
+                label: hasDateRange
+                    ? l10n.dateRangeSetLabel
+                    : l10n.dateRangeLabel,
                 icon: Icons.date_range_rounded,
                 active: hasDateRange,
                 onTap: onPickDateRange,
@@ -1663,7 +1873,9 @@ class _TransactionHistoryHeader extends StatelessWidget {
               _HistoryFilterPill(
                 label: sortLabel,
                 icon: Icons.swap_vert_rounded,
-                active: sortLabel != _sortLabel(context, TransactionHistorySort.latest),
+                active:
+                    sortLabel !=
+                    _sortLabel(context, TransactionHistorySort.latest),
                 onTap: onPickSort,
               ),
               if (hasAnyFilter)
@@ -1820,7 +2032,8 @@ List<CategoryBreakdownViewData> _buildBreakdownItems({
     final category = categoryMap[slice.categoryId];
     items.add(
       CategoryBreakdownViewData(
-        label: category?.localizedName(languageCode) ??
+        label:
+            category?.localizedName(languageCode) ??
             (languageCode == 'bn' ? 'ক্যাটাগরি' : 'Category'),
         amount: slice.amount,
         color: category == null

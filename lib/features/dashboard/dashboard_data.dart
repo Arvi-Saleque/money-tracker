@@ -23,6 +23,8 @@ class ActionShortcut {
         return l10n.goalsTitleText;
       case AppConstants.subscriptionsRoute:
         return l10n.billsTitleText;
+      case AppConstants.debtsRoute:
+        return l10n.debtsTitleText;
       default:
         return _label;
     }
@@ -51,4 +53,5 @@ const List<ActionShortcut> actionShortcuts = <ActionShortcut>[
     Icons.notifications_active_rounded,
     AppConstants.subscriptionsRoute,
   ),
+  ActionShortcut('Debts', Icons.handshake_outlined, AppConstants.debtsRoute),
 ];

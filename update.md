@@ -181,3 +181,16 @@
 
 - CSV exports include the filtered transaction rows with localized category names and localized column headers.
 - PDF exports currently require at least one transaction in the selected range and surface a friendly message when no data exists to export.
+
+## Phase 13A - Debt & Loan Tracker
+
+- Added `DebtRecordModel` and `DebtPaymentModel` plus a Firestore-backed debt service and Riverpod providers for live debt lists, borrowed/lent tabs, payment recording, and dashboard overview totals.
+- Replaced the placeholder debt shortcut with a real `DebtsScreen` that includes separate `Borrowed` and `Lent` tabs, a summary hero card, overdue state, installment hints, payment history, and full add/edit/delete flows.
+- Added a dedicated debt editor page with person name, borrowed-vs-lent mode, amount, start date, due date, installments, and optional notes so debt records can be maintained cleanly.
+- Added a payment-recording page that appends payment history, updates remaining balances atomically in Firestore, and automatically marks debts as settled when the remaining amount reaches zero.
+- Added a live debt snapshot card to the Home tab so outstanding borrowed/receivable totals, overdue items, and due-soon follow-ups are visible alongside budgets, bills, and goals.
+
+### Notes
+
+- Debt records are currently informational and do not change wallet balances automatically when they are created or paid; they track obligations and repayments separately from the wallet transaction ledger.
+- Payments are stored inside each debt document so the full repayment history remains visible without a second collection.

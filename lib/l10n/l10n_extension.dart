@@ -640,6 +640,117 @@ extension AppL10nX on AppLocalizations {
   String get noTransactionsOnDaySubtitle => isBangla
       ? 'অন্য একটি তারিখ বেছে নিন বা নতুন এন্ট্রি যোগ করুন।'
       : 'Pick another date or add a new entry to start building your calendar.';
+  String get debtsTitleText => isBangla ? 'ধার ও ঋণ' : 'Debts & loans';
+  String get borrowedTabLabel => isBangla ? 'ধার করা' : 'Borrowed';
+  String get lentTabLabel => isBangla ? 'ধার দেওয়া' : 'Lent';
+  String get debtBorrowedTypeLabel =>
+      isBangla ? 'আমি এখনো পরিশোধ করিনি' : 'You still owe this amount';
+  String get debtLentTypeLabel =>
+      isBangla ? 'অন্যজন এখনো ফেরত দেয়নি' : 'They still owe you this amount';
+  String get addDebtAction => isBangla ? 'ধার/ঋণ যোগ করুন' : 'Add debt';
+  String get debtTrackerHeroTitle =>
+      isBangla ? 'ধার ও ঋণের সারাংশ' : 'Debt and loan snapshot';
+  String get debtTrackerHeroSubtitle => isBangla
+      ? 'কে কত পাবে, কাকে কত দিতে হবে, আর কোনগুলো দ্রুত ফলো-আপ দরকার তা এক জায়গায় দেখুন।'
+      : 'Track what you owe, what others owe you, and which items need follow-up soon.';
+  String get totalOwedLabel => isBangla ? 'মোট দিতে হবে' : 'Total owed';
+  String get totalReceivableLabel =>
+      isBangla ? 'মোট পাবেন' : 'Total receivable';
+  String get noDebtRecordsYet => isBangla
+      ? 'এখনও কোনো ধার বা ঋণের রেকর্ড নেই।'
+      : 'No debt or loan records yet.';
+  String overdueDebtCountLabel(int count) =>
+      isBangla ? '$count টি ওভারডিউ' : '$count overdue';
+  String dueSoonDebtCountLabel(int count) =>
+      isBangla ? '$count টি দ্রুত ফলো-আপ' : '$count due soon';
+  String activeBorrowedCountLabel(int count) =>
+      isBangla ? '$count টি ধার করা' : '$count borrowed';
+  String activeLentCountLabel(int count) =>
+      isBangla ? '$count টি ধার দেওয়া' : '$count lent';
+  String get noBorrowedDebtTitle =>
+      isBangla ? 'কোনো ধার করা টাকা নেই' : 'No borrowed money yet';
+  String get noBorrowedDebtSubtitle => isBangla
+      ? 'আপনি কারও কাছ থেকে টাকা নিয়ে থাকলে এখানে যোগ করুন, যাতে কত বাকি আছে তা দেখা যায়।'
+      : 'Add money you borrowed from someone so the remaining balance stays visible.';
+  String get noLentDebtTitle =>
+      isBangla ? 'কোনো ধার দেওয়া টাকা নেই' : 'No lent money yet';
+  String get noLentDebtSubtitle => isBangla
+      ? 'আপনি কাউকে টাকা ধার দিলে এখানে রাখুন, যাতে ফেরত পাওয়ার অগ্রগতি দেখা যায়।'
+      : 'Track money you lent to someone so repayments stay organized.';
+  String settledDebtsTitle(int count) =>
+      isBangla ? 'সেটেলড রেকর্ড ($count)' : 'Settled records ($count)';
+  String get settledLabel => isBangla ? 'সেটেলড' : 'Settled';
+  String get overdueLabel => isBangla ? 'ওভারডিউ' : 'Overdue';
+  String get remainingLabel => isBangla ? 'বাকি' : 'Remaining';
+  String get paidLabel => isBangla ? 'পরিশোধিত' : 'Paid';
+  String get installmentsLabel => isBangla ? 'কিস্তি' : 'Installments';
+  String installmentPlanLabel(String amount, String count) => isBangla
+      ? '$count কিস্তিতে প্রতি কিস্তি $amount'
+      : '$amount per installment across $count installments';
+  String get recordPaymentAction =>
+      isBangla ? 'পেমেন্ট যোগ করুন' : 'Record payment';
+  String get paymentHistoryTitle =>
+      isBangla ? 'পেমেন্ট হিস্ট্রি' : 'Payment history';
+  String debtEditorTitle(bool isEditing) => isEditing
+      ? (isBangla ? 'ধার/ঋণ সম্পাদনা' : 'Edit debt')
+      : (isBangla ? 'ধার/ঋণ যোগ করুন' : 'Add debt');
+  String get debtBorrowedHeroTitle =>
+      isBangla ? 'ধার করা টাকার রেকর্ড' : 'Track borrowed money';
+  String get debtBorrowedHeroSubtitle => isBangla
+      ? 'আপনি কার কাছ থেকে নিয়েছেন, কত নিয়েছেন, আর কবে ফেরত দেবেন তা সংরক্ষণ করুন।'
+      : 'Save who you borrowed from, how much it was, and when you expect to repay it.';
+  String get debtLentHeroTitle =>
+      isBangla ? 'ধার দেওয়া টাকার রেকর্ড' : 'Track lent money';
+  String get debtLentHeroSubtitle => isBangla
+      ? 'আপনি কাকে দিয়েছেন, কত দিয়েছেন, আর কবে ফেরত পাওয়ার কথা তা লিখে রাখুন।'
+      : 'Track who received your money, how much they owe, and when it should return.';
+  String get debtPersonNameLabel => isBangla ? 'ব্যক্তির নাম' : 'Person name';
+  String get debtAmountLabel => isBangla ? 'মোট পরিমাণ' : 'Total amount';
+  String get debtStartDateLabel => isBangla ? 'শুরুর তারিখ' : 'Start date';
+  String get debtDueDateLabel => isBangla ? 'পরিশোধ/ফেরতের তারিখ' : 'Due date';
+  String debtDueDateLabelWithValue(String date) =>
+      isBangla ? 'ডিউ তারিখ: $date' : 'Due date: $date';
+  String get debtNoteHint => isBangla
+      ? 'ঐচ্ছিক নোট, যেমন কেন টাকা নেওয়া/দেওয়া হয়েছিল।'
+      : 'Optional note, such as why this money was borrowed or lent.';
+  String get debtNameRequiredError =>
+      isBangla ? 'একটি নাম লিখুন।' : 'Please enter a person name.';
+  String get validDebtAmountError =>
+      isBangla ? 'সঠিক পরিমাণ লিখুন।' : 'Please enter a valid amount.';
+  String get validInstallmentsError => isBangla
+      ? 'কিস্তির সংখ্যা ১ বা তার বেশি হতে হবে।'
+      : 'Installments must be at least 1.';
+  String get debtDueDateAfterStartError => isBangla
+      ? 'ডিউ তারিখ শুরুর তারিখের আগে হতে পারবে না।'
+      : 'Due date cannot be earlier than the start date.';
+  String debtAmountLowerThanPaidError(String paidAmount) => isBangla
+      ? 'মোট পরিমাণ ইতিমধ্যে পরিশোধিত $paidAmount এর কম হতে পারবে না।'
+      : 'Total amount cannot be less than the already paid $paidAmount.';
+  String get debtCreated =>
+      isBangla ? 'ধার/ঋণের রেকর্ড তৈরি হয়েছে।' : 'Debt record created.';
+  String get debtUpdated =>
+      isBangla ? 'ধার/ঋণের রেকর্ড আপডেট হয়েছে।' : 'Debt record updated.';
+  String get deleteDebtTitle => isBangla ? 'ধার/ঋণ মুছুন' : 'Delete debt';
+  String deleteNamedDebtPrompt(String name) =>
+      isBangla ? '"$name" রেকর্ডটি মুছবেন?' : 'Delete "$name"?';
+  String get debtDeleted =>
+      isBangla ? 'ধার/ঋণের রেকর্ড মুছে ফেলা হয়েছে।' : 'Debt record deleted.';
+  String get paymentEditorTitle =>
+      isBangla ? 'পেমেন্ট যোগ করুন' : 'Record payment';
+  String get paymentAmountLabel =>
+      isBangla ? 'পেমেন্টের পরিমাণ' : 'Payment amount';
+  String get paymentDateLabel => isBangla ? 'পেমেন্টের তারিখ' : 'Payment date';
+  String get paymentNoteHint => isBangla
+      ? 'ঐচ্ছিক নোট, যেমন কিস্তি, ব্যাংক ট্রান্সফার, নগদ ইত্যাদি।'
+      : 'Optional note such as installment, bank transfer, or cash.';
+  String get validPaymentAmountError => isBangla
+      ? 'সঠিক পেমেন্টের পরিমাণ লিখুন।'
+      : 'Please enter a valid payment amount.';
+  String get paymentExceedsRemainingError => isBangla
+      ? 'এই পেমেন্ট বাকি পরিমাণের চেয়ে বেশি।'
+      : 'This payment is higher than the remaining amount.';
+  String get paymentAdded =>
+      isBangla ? 'পেমেন্ট যোগ করা হয়েছে।' : 'Payment recorded.';
   String get exportDataTitle => isBangla ? 'ডাটা এক্সপোর্ট' : 'Export data';
   String get exportDataSubtitle => isBangla
       ? 'CSV বা PDF আকারে আপনার আর্থিক ডাটা সংরক্ষণ বা শেয়ার করুন।'

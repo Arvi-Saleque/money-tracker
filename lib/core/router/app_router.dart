@@ -9,6 +9,7 @@ import '../../features/auth/sign_up_screen.dart';
 import '../../features/budgets/budgets_screen.dart';
 import '../../features/calendar/calendar_placeholder_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/debts/debts_screen.dart';
 import '../../features/exports/export_screen.dart';
 import '../../features/goals/goals_screen.dart';
 import '../../features/profile/profile_screen.dart';
@@ -93,6 +94,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppConstants.subscriptionsRoute,
         builder: (context, state) => const SubscriptionsScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.debtsRoute,
+        builder: (context, state) => const DebtsScreen(),
       ),
       GoRoute(
         path: AppConstants.exportRoute,
