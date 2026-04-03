@@ -22,7 +22,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String? _selectedCurrency;
   String? _selectedLanguage;
   String? _selectedTheme;
-  bool _initialized = false;
+  String? _initializedProfileUid;
 
   @override
   void dispose() {
@@ -61,12 +61,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             );
           }
 
-          if (!_initialized) {
-            _initialized = true;
+          final safeCurrency = AppConstants.normalizeCurrency(profile.currency);
+          final safeLanguage =
+              AppConstants.supportedLanguageCodes.contains(profile.language)
+              ? profile.language
+              : AppConstants.supportedLanguageCodes.contains(
+                  currentLocale.languageCode,
+                )
+              ? currentLocale.languageCode
+              : AppConstants.defaultLanguageCode;
+          final safeTheme = AppConstants.availableThemes.contains(profile.theme)
+              ? profile.theme
+              : AppConstants.availableThemes.contains(currentTheme)
+              ? currentTheme
+              : AppConstants.sapphireDarkTheme;
+
+          if (_initializedProfileUid != profile.uid) {
+            _initializedProfileUid = profile.uid;
             _nameController.text = profile.name;
-            _selectedCurrency = profile.currency;
-            _selectedLanguage = profile.language;
-            _selectedTheme = profile.theme;
+            _selectedCurrency = safeCurrency;
+            _selectedLanguage = safeLanguage;
+            _selectedTheme = safeTheme;
           }
 
           final initials = _buildInitials(profile.name, profile.email);
@@ -143,7 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedCurrency ?? profile.currency,
+                        initialValue: _selectedCurrency ?? safeCurrency,
                         decoration: const InputDecoration(
                           labelText: 'Currency',
                         ),
@@ -165,8 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        initialValue:
-                            _selectedLanguage ?? currentLocale.languageCode,
+                        initialValue: _selectedLanguage ?? safeLanguage,
                         decoration: const InputDecoration(
                           labelText: 'Language',
                         ),
@@ -184,7 +198,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedTheme ?? currentTheme,
+                        initialValue: _selectedTheme ?? safeTheme,
                         decoration: const InputDecoration(labelText: 'Theme'),
                         items: AppConstants.availableThemes
                             .map(
@@ -244,9 +258,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           .saveProfile(
             currentProfile: profile,
             name: _nameController.text,
-            currency: _selectedCurrency ?? profile.currency,
-            language: _selectedLanguage ?? profile.language,
-            themeName: _selectedTheme ?? profile.theme,
+            currency:
+                _selectedCurrency ??
+                AppConstants.normalizeCurrency(profile.currency),
+            language:
+                _selectedLanguage ??
+                AppConstants.normalizeLanguageCode(profile.language),
+            themeName:
+                _selectedTheme ??
+                AppConstants.normalizeThemeName(profile.theme),
           );
       if (!mounted) {
         return;

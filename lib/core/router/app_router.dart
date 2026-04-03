@@ -13,7 +13,7 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/reports/reports_placeholder_screen.dart';
 import '../../features/subscriptions/subscriptions_placeholder_screen.dart';
 import '../../features/transactions/transactions_placeholder_screen.dart';
-import '../../features/wallets/wallets_placeholder_screen.dart';
+import '../../features/wallets/wallets_screen.dart';
 import '../constants/app_constants.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -75,7 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppConstants.walletsRoute,
-        builder: (context, state) => const WalletsPlaceholderScreen(),
+        builder: (context, state) => const WalletsScreen(),
       ),
       GoRoute(
         path: AppConstants.budgetsRoute,

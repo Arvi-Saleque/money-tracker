@@ -37,6 +37,18 @@ final walletsProvider = StreamProvider<List<WalletModel>>((ref) {
   return ref.watch(walletServiceProvider).watchWallets(uid);
 });
 
+final walletTransactionsProvider =
+    StreamProvider.family<List<TransactionModel>, String>((ref, walletId) {
+      final uid = ref.watch(currentUserIdProvider);
+      if (uid == null) {
+        return Stream<List<TransactionModel>>.value(const <TransactionModel>[]);
+      }
+
+      return ref
+          .watch(transactionServiceProvider)
+          .watchWalletTransactions(uid, walletId);
+    });
+
 final allCategoriesProvider = StreamProvider<List<CategoryModel>>((ref) {
   final uid = ref.watch(currentUserIdProvider);
   if (uid == null) {
@@ -109,6 +121,9 @@ final dashboardSummaryProvider = Provider<DashboardSummary>((ref) {
   double todayIncome = 0;
   double todayExpense = 0;
   for (final transaction in today) {
+    if (transaction.isTransfer) {
+      continue;
+    }
     if (transaction.type == FinanceCatalog.incomeType) {
       todayIncome += transaction.amount;
     } else {
@@ -136,6 +151,16 @@ final transactionActionControllerProvider =
 final categoryActionControllerProvider =
     AsyncNotifierProvider<CategoryActionController, void>(
       CategoryActionController.new,
+    );
+
+final walletActionControllerProvider =
+    AsyncNotifierProvider<WalletActionController, void>(
+      WalletActionController.new,
+    );
+
+final transferActionControllerProvider =
+    AsyncNotifierProvider<TransferActionController, void>(
+      TransferActionController.new,
     );
 
 class DashboardSummary {
@@ -295,7 +320,11 @@ class TransactionHistoryController extends Notifier<TransactionHistoryState> {
     try {
       await _service.deleteTransaction(uid, transaction);
       _fetchedItems = _fetchedItems
-          .where((item) => item.id != transaction.id)
+          .where(
+            (item) =>
+                item.id != transaction.id &&
+                item.id != transaction.linkedTransactionId,
+          )
           .toList(growable: false);
       _publishLoadedItems(
         hasMore: state.hasMore,
@@ -616,6 +645,156 @@ class CategoryActionController extends AsyncNotifier<void> {
       return (trimmed, translatedText.isEmpty ? trimmed : translatedText);
     } catch (_) {
       return (trimmed, trimmed);
+    }
+  }
+
+  String _requireUserId() {
+    final uid = ref.read(currentUserIdProvider);
+    if (uid == null) {
+      throw StateError('User is not signed in.');
+    }
+    return uid;
+  }
+}
+
+class WalletActionController extends AsyncNotifier<void> {
+  WalletService get _service => ref.read(walletServiceProvider);
+
+  @override
+  Future<void> build() async {}
+
+  Future<WalletModel> addWallet(WalletModel wallet) async {
+    final uid = _requireUserId();
+    state = const AsyncLoading<void>();
+    WalletModel? createdWallet;
+    state = await AsyncValue.guard(() async {
+      createdWallet = await _service.addWallet(uid, wallet);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+    return createdWallet!;
+  }
+
+  Future<void> updateWallet(WalletModel wallet) async {
+    final uid = _requireUserId();
+    state = const AsyncLoading<void>();
+    state = await AsyncValue.guard(() => _service.updateWallet(uid, wallet));
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> deleteWallet(WalletModel wallet) async {
+    final uid = _requireUserId();
+    state = const AsyncLoading<void>();
+    state = await AsyncValue.guard(() => _service.deleteWallet(uid, wallet));
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  String _requireUserId() {
+    final uid = ref.read(currentUserIdProvider);
+    if (uid == null) {
+      throw StateError('User is not signed in.');
+    }
+    return uid;
+  }
+}
+
+class TransferActionController extends AsyncNotifier<void> {
+  WalletService get _walletService => ref.read(walletServiceProvider);
+  TransactionService get _transactionService =>
+      ref.read(transactionServiceProvider);
+
+  @override
+  Future<void> build() async {}
+
+  Future<void> createTransfer({
+    required String fromWalletId,
+    required String toWalletId,
+    required double amount,
+    required String note,
+    required DateTime date,
+  }) async {
+    final uid = _requireUserId();
+    state = const AsyncLoading<void>();
+    state = await AsyncValue.guard(
+      () => _walletService.transferBetweenWallets(
+        uid,
+        fromWalletId: fromWalletId,
+        toWalletId: toWalletId,
+        amount: amount,
+        note: note,
+        date: date,
+      ),
+    );
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<(TransactionModel, TransactionModel)> loadTransferPair(
+    TransactionModel transaction,
+  ) async {
+    final uid = _requireUserId();
+    if (!transaction.isTransfer || transaction.linkedTransactionId == null) {
+      throw StateError('This is not a linked transfer entry.');
+    }
+    final linked = await _transactionService.getTransaction(
+      uid,
+      transaction.linkedTransactionId!,
+    );
+    if (linked == null) {
+      throw StateError('The linked transfer entry could not be found.');
+    }
+    return (transaction, linked);
+  }
+
+  Future<void> updateTransfer({
+    required TransactionModel baseTransaction,
+    required TransactionModel linkedTransaction,
+    required String fromWalletId,
+    required String toWalletId,
+    required double amount,
+    required String note,
+    required DateTime date,
+  }) async {
+    final uid = _requireUserId();
+    state = const AsyncLoading<void>();
+    state = await AsyncValue.guard(
+      () => _walletService.updateTransferPair(
+        uid,
+        baseTransaction: baseTransaction,
+        linkedTransaction: linkedTransaction,
+        fromWalletId: fromWalletId,
+        toWalletId: toWalletId,
+        amount: amount,
+        note: note,
+        date: date,
+      ),
+    );
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> deleteTransfer({
+    required TransactionModel baseTransaction,
+    TransactionModel? linkedTransaction,
+  }) async {
+    final uid = _requireUserId();
+    state = const AsyncLoading<void>();
+    state = await AsyncValue.guard(
+      () => _walletService.deleteTransferPair(
+        uid,
+        baseTransaction: baseTransaction,
+        linkedTransaction: linkedTransaction,
+      ),
+    );
+    if (state.hasError) {
+      throw state.error!;
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../shared/models/category_model.dart';
+import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 
 class FinanceIconOption {
@@ -78,9 +79,29 @@ class FinanceWalletTemplate {
   }
 }
 
+class FinanceWalletTypeOption {
+  const FinanceWalletTypeOption({
+    required this.type,
+    required this.label,
+    required this.iconKey,
+    required this.colorValue,
+  });
+
+  final String type;
+  final String label;
+  final String iconKey;
+  final int colorValue;
+}
+
 abstract final class FinanceCatalog {
   static const String incomeType = 'income';
   static const String expenseType = 'expense';
+  static const String transferType = 'transfer';
+  static const String walletTypeCash = 'cash';
+  static const String walletTypeBank = 'bank';
+  static const String walletTypeBkash = 'bkash';
+  static const String walletTypeNagad = 'nagad';
+  static const String walletTypeSavings = 'savings';
 
   static const List<FinanceIconOption> categoryIcons = <FinanceIconOption>[
     FinanceIconOption(key: 'shopping_basket', icon: Icons.shopping_basket),
@@ -114,6 +135,7 @@ abstract final class FinanceCatalog {
     FinanceIconOption(key: 'subscriptions', icon: Icons.subscriptions),
     FinanceIconOption(key: 'sports_esports', icon: Icons.sports_esports),
     FinanceIconOption(key: 'devices', icon: Icons.devices),
+    FinanceIconOption(key: 'swap_horiz', icon: Icons.swap_horiz_rounded),
   ];
 
   static const List<int> colorChoices = <int>[
@@ -133,7 +155,7 @@ abstract final class FinanceCatalog {
         FinanceWalletTemplate(
           id: 'wallet_cash',
           name: 'Cash',
-          type: 'cash',
+          type: walletTypeCash,
           iconKey: 'account_balance_wallet',
           colorValue: 0xFF3D6BE4,
           isDefault: true,
@@ -141,16 +163,64 @@ abstract final class FinanceCatalog {
         FinanceWalletTemplate(
           id: 'wallet_bkash',
           name: 'bKash',
-          type: 'mobile_money',
+          type: walletTypeBkash,
           iconKey: 'phone_android',
           colorValue: 0xFFE2136E,
         ),
         FinanceWalletTemplate(
+          id: 'wallet_nagad',
+          name: 'Nagad',
+          type: walletTypeNagad,
+          iconKey: 'phone_android',
+          colorValue: 0xFFF97316,
+        ),
+        FinanceWalletTemplate(
           id: 'wallet_bank',
           name: 'Bank',
-          type: 'bank',
+          type: walletTypeBank,
           iconKey: 'account_balance',
           colorValue: 0xFF16A34A,
+        ),
+        FinanceWalletTemplate(
+          id: 'wallet_savings',
+          name: 'Savings',
+          type: walletTypeSavings,
+          iconKey: 'savings',
+          colorValue: 0xFF8B5CF6,
+        ),
+      ];
+
+  static const List<FinanceWalletTypeOption> walletTypes =
+      <FinanceWalletTypeOption>[
+        FinanceWalletTypeOption(
+          type: walletTypeCash,
+          label: 'Cash',
+          iconKey: 'account_balance_wallet',
+          colorValue: 0xFF3D6BE4,
+        ),
+        FinanceWalletTypeOption(
+          type: walletTypeBank,
+          label: 'Bank',
+          iconKey: 'account_balance',
+          colorValue: 0xFF16A34A,
+        ),
+        FinanceWalletTypeOption(
+          type: walletTypeBkash,
+          label: 'bKash',
+          iconKey: 'phone_android',
+          colorValue: 0xFFE2136E,
+        ),
+        FinanceWalletTypeOption(
+          type: walletTypeNagad,
+          label: 'Nagad',
+          iconKey: 'phone_android',
+          colorValue: 0xFFF97316,
+        ),
+        FinanceWalletTypeOption(
+          type: walletTypeSavings,
+          label: 'Savings',
+          iconKey: 'savings',
+          colorValue: 0xFF8B5CF6,
         ),
       ];
 
@@ -429,5 +499,55 @@ abstract final class FinanceCatalog {
       }
     }
     return Icons.category;
+  }
+
+  static FinanceWalletTypeOption walletTypeFor(String type) {
+    for (final option in walletTypes) {
+      if (option.type == type) {
+        return option;
+      }
+    }
+    return walletTypes.first;
+  }
+
+  static bool isTransferTransaction(TransactionModel transaction) {
+    return transaction.isTransfer;
+  }
+
+  static String transactionTitle(
+    TransactionModel transaction, {
+    CategoryModel? category,
+    WalletModel? otherWallet,
+    required String languageCode,
+  }) {
+    if (transaction.isTransfer) {
+      final walletName = otherWallet?.name ?? 'wallet';
+      return transaction.type == incomeType
+          ? 'Transfer from $walletName'
+          : 'Transfer to $walletName';
+    }
+
+    return category?.localizedName(languageCode) ?? 'Category';
+  }
+
+  static Color transactionColor(TransactionModel transaction) {
+    if (transaction.isTransfer) {
+      return const Color(0xFF3D6BE4);
+    }
+
+    return transaction.type == incomeType
+        ? const Color(0xFF2ECC9A)
+        : const Color(0xFFE85D5D);
+  }
+
+  static IconData transactionIcon(
+    TransactionModel transaction, {
+    CategoryModel? category,
+  }) {
+    if (transaction.isTransfer) {
+      return Icons.swap_horiz_rounded;
+    }
+
+    return iconForKey(category?.iconKey ?? 'category');
   }
 }

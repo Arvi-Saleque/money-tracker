@@ -31,9 +31,9 @@ class UserModel {
       name: map['name'] as String? ?? '',
       email: map['email'] as String? ?? '',
       avatarUrl: map['avatarUrl'] as String? ?? '',
-      currency: map['currency'] as String? ?? AppConstants.defaultCurrency,
-      language: map['language'] as String? ?? AppConstants.defaultLanguageCode,
-      theme: map['theme'] as String? ?? AppConstants.sapphireDarkTheme,
+      currency: AppConstants.normalizeCurrency(map['currency'] as String?),
+      language: AppConstants.normalizeLanguageCode(map['language'] as String?),
+      theme: AppConstants.normalizeThemeName(map['theme'] as String?),
       createdAt: createdAtValue is Timestamp
           ? createdAtValue.toDate()
           : DateTime.tryParse(createdAtValue?.toString() ?? '') ??

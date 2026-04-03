@@ -7,9 +7,12 @@ class TransactionModel {
     required this.type,
     required this.categoryId,
     required this.walletId,
+    required this.isTransfer,
     required this.note,
     required this.date,
     required this.createdAt,
+    this.transferWalletId,
+    this.linkedTransactionId,
   });
 
   final String id;
@@ -17,9 +20,12 @@ class TransactionModel {
   final String type;
   final String categoryId;
   final String walletId;
+  final bool isTransfer;
   final String note;
   final DateTime date;
   final DateTime createdAt;
+  final String? transferWalletId;
+  final String? linkedTransactionId;
 
   factory TransactionModel.fromDocument(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -34,11 +40,14 @@ class TransactionModel {
       type: data['type'] as String? ?? 'expense',
       categoryId: data['categoryId'] as String? ?? '',
       walletId: data['walletId'] as String? ?? '',
+      isTransfer: data['isTransfer'] as bool? ?? false,
       note: data['note'] as String? ?? '',
       date: dateValue is Timestamp ? dateValue.toDate() : DateTime.now(),
       createdAt: createdAtValue is Timestamp
           ? createdAtValue.toDate()
           : DateTime.now(),
+      transferWalletId: data['transferWalletId'] as String?,
+      linkedTransactionId: data['linkedTransactionId'] as String?,
     );
   }
 
@@ -48,9 +57,12 @@ class TransactionModel {
       'type': type,
       'categoryId': categoryId,
       'walletId': walletId,
+      'isTransfer': isTransfer,
       'note': note,
       'date': Timestamp.fromDate(date),
       'createdAt': Timestamp.fromDate(createdAt),
+      'transferWalletId': transferWalletId,
+      'linkedTransactionId': linkedTransactionId,
     };
   }
 
@@ -60,9 +72,14 @@ class TransactionModel {
     String? type,
     String? categoryId,
     String? walletId,
+    bool? isTransfer,
     String? note,
     DateTime? date,
     DateTime? createdAt,
+    String? transferWalletId,
+    bool clearTransferWalletId = false,
+    String? linkedTransactionId,
+    bool clearLinkedTransactionId = false,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -70,9 +87,16 @@ class TransactionModel {
       type: type ?? this.type,
       categoryId: categoryId ?? this.categoryId,
       walletId: walletId ?? this.walletId,
+      isTransfer: isTransfer ?? this.isTransfer,
       note: note ?? this.note,
       date: date ?? this.date,
       createdAt: createdAt ?? this.createdAt,
+      transferWalletId: clearTransferWalletId
+          ? null
+          : transferWalletId ?? this.transferWalletId,
+      linkedTransactionId: clearLinkedTransactionId
+          ? null
+          : linkedTransactionId ?? this.linkedTransactionId,
     );
   }
 }

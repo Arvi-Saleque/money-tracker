@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/providers/firebase_providers.dart';
 import '../../shared/providers/locale_provider.dart';
@@ -38,14 +39,16 @@ final profilePreferencesSyncProvider = FutureProvider<void>((ref) async {
     return;
   }
 
+  final safeTheme = AppConstants.normalizeThemeName(profile.theme);
+  final safeLanguage = AppConstants.normalizeLanguageCode(profile.language);
   final currentTheme = ref.read(themeProvider);
-  if (profile.theme != currentTheme) {
-    await ref.read(themeProvider.notifier).setTheme(profile.theme);
+  if (safeTheme != currentTheme) {
+    await ref.read(themeProvider.notifier).setTheme(safeTheme);
   }
 
   final currentLocale = ref.read(localeProvider);
-  if (profile.language != currentLocale.languageCode) {
-    await ref.read(localeProvider.notifier).setLocaleCode(profile.language);
+  if (safeLanguage != currentLocale.languageCode) {
+    await ref.read(localeProvider.notifier).setLocaleCode(safeLanguage);
   }
 });
 

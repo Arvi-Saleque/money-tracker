@@ -25,6 +25,19 @@ String authErrorMessage(Object error) {
     }
   }
 
+  if (error is FirebaseException) {
+    switch (error.code) {
+      case 'unavailable':
+        return 'Network connection is unavailable right now. Please check your internet and try again.';
+      case 'permission-denied':
+        return 'You do not have permission for this action.';
+      case 'failed-precondition':
+        return 'This action needs extra Firebase setup, such as a Firestore index.';
+      default:
+        return error.message ?? 'Something went wrong. Please try again.';
+    }
+  }
+
   return error.toString();
 }
 

@@ -67,41 +67,67 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(18),
-                          onTap: _pickMonth,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Text(
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final monthSelector = InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: _pickMonth,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Flexible(
+                                child: Text(
                                   DateFormat(
                                     'MMMM yyyy',
                                     localeCode,
                                   ).format(_focusedDay),
+                                  overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.titleLarge
                                       ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.keyboard_arrow_down_rounded),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.keyboard_arrow_down_rounded),
+                            ],
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => _moveFocusedMonth(-1),
-                        icon: const Icon(Icons.chevron_left_rounded),
-                      ),
-                      IconButton(
-                        onPressed: () => _moveFocusedMonth(1),
-                        icon: const Icon(Icons.chevron_right_rounded),
-                      ),
-                    ],
+                      );
+
+                      final actions = Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          IconButton(
+                            onPressed: () => _moveFocusedMonth(-1),
+                            icon: const Icon(Icons.chevron_left_rounded),
+                          ),
+                          IconButton(
+                            onPressed: () => _moveFocusedMonth(1),
+                            icon: const Icon(Icons.chevron_right_rounded),
+                          ),
+                        ],
+                      );
+
+                      if (constraints.maxWidth < 360) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            monthSelector,
+                            const SizedBox(height: 8),
+                            actions,
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        children: <Widget>[
+                          Expanded(child: monthSelector),
+                          const SizedBox(width: 8),
+                          actions,
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   Wrap(
@@ -136,7 +162,10 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                     focusedDay: _focusedDay,
                     calendarFormat: _calendarFormat,
                     headerVisible: false,
-                    availableCalendarFormats: const <CalendarFormat, String>{},
+                    availableCalendarFormats: const <CalendarFormat, String>{
+                      CalendarFormat.month: 'Month',
+                      CalendarFormat.week: 'Week',
+                    },
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
                     onDaySelected: (selectedDay, focusedDay) {
@@ -167,9 +196,11 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                     calendarStyle: CalendarStyle(
                       outsideDaysVisible: true,
                       defaultDecoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       selectedDecoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
                         color: Theme.of(
                           context,
                         ).colorScheme.primary.withValues(alpha: 0.16),
@@ -179,6 +210,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                         ),
                       ),
                       todayDecoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
                         color: Theme.of(
                           context,
                         ).colorScheme.primary.withValues(alpha: 0.1),
@@ -339,9 +371,12 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    Row(
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
                       children: <Widget>[
-                        Expanded(
+                        SizedBox(
+                          width: 110,
                           child: _DayMetricCard(
                             label: 'Income',
                             value: _formatCurrency(
@@ -351,8 +386,8 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                             color: const Color(0xFF2ECC9A),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+                        SizedBox(
+                          width: 110,
                           child: _DayMetricCard(
                             label: 'Expense',
                             value: _formatCurrency(
@@ -362,8 +397,8 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                             color: const Color(0xFFE85D5D),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+                        SizedBox(
+                          width: 110,
                           child: _DayMetricCard(
                             label: 'Net',
                             value: _formatCurrency(
@@ -393,24 +428,30 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                                 final category =
                                     categoryMap[transaction.categoryId];
                                 final wallet = walletMap[transaction.walletId];
-                                final color =
-                                    transaction.type ==
-                                        FinanceCatalog.incomeType
-                                    ? const Color(0xFF2ECC9A)
-                                    : const Color(0xFFE85D5D);
+                                final otherWallet =
+                                    transaction.transferWalletId == null
+                                    ? null
+                                    : walletMap[transaction.transferWalletId!];
+                                final color = FinanceCatalog.transactionColor(
+                                  transaction,
+                                );
 
                                 return FinanceTransactionTile(
-                                  title:
-                                      category?.localizedName(languageCode) ??
-                                      'Category',
+                                  title: FinanceCatalog.transactionTitle(
+                                    transaction,
+                                    category: category,
+                                    otherWallet: otherWallet,
+                                    languageCode: languageCode,
+                                  ),
                                   subtitle: _buildCalendarSubtitle(
                                     transaction: transaction,
                                     wallet: wallet,
                                   ),
                                   amount:
                                       '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency)}',
-                                  icon: FinanceCatalog.iconForKey(
-                                    category?.iconKey ?? 'category',
+                                  icon: FinanceCatalog.transactionIcon(
+                                    transaction,
+                                    category: category,
                                   ),
                                   color: color,
                                   onTap: () async {
@@ -506,6 +547,9 @@ final monthCalendarProvider =
                 ..sort((a, b) => b.date.compareTo(a.date));
 
               for (final transaction in sortedTransactions) {
+                if (transaction.isTransfer) {
+                  continue;
+                }
                 if (transaction.type == FinanceCatalog.incomeType) {
                   income += transaction.amount;
                 } else {
@@ -750,6 +794,9 @@ String _buildCalendarSubtitle({
   final pieces = <String>[];
   if (wallet != null) {
     pieces.add(wallet.name);
+  }
+  if (transaction.isTransfer) {
+    pieces.add('Transfer');
   }
   if (transaction.note.trim().isNotEmpty) {
     pieces.add(transaction.note.trim());

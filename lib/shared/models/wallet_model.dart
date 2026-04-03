@@ -50,4 +50,26 @@ class WalletModel {
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
+
+  WalletModel copyWith({
+    String? id,
+    String? name,
+    String? type,
+    double? balance,
+    String? iconKey,
+    int? colorValue,
+    bool? isDefault,
+    DateTime? createdAt,
+  }) {
+    return WalletModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      balance: balance ?? this.balance,
+      iconKey: iconKey ?? this.iconKey,
+      colorValue: colorValue ?? this.colorValue,
+      isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

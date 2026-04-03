@@ -68,6 +68,33 @@ class TransactionService {
         );
   }
 
+  Stream<List<TransactionModel>> watchWalletTransactions(
+    String uid,
+    String walletId, {
+    int limit = 100,
+  }) {
+    return _userRef(uid)
+        .where('walletId', isEqualTo: walletId)
+        .orderBy('date', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map(TransactionModel.fromDocument).toList(),
+        );
+  }
+
+  Future<TransactionModel?> getTransaction(
+    String uid,
+    String transactionId,
+  ) async {
+    final snapshot = await _userRef(uid).doc(transactionId).get();
+    if (!snapshot.exists) {
+      return null;
+    }
+    return TransactionModel.fromDocument(snapshot);
+  }
+
   Future<TransactionHistoryPage> fetchTransactionPage(
     String uid, {
     required TransactionHistoryFilter filter,
@@ -160,6 +187,12 @@ class TransactionService {
     required TransactionModel previous,
     required TransactionModel next,
   }) async {
+    if (previous.isTransfer || next.isTransfer) {
+      throw StateError(
+        'Transfer entries should be updated from the transfer flow.',
+      );
+    }
+
     final batch = _firestore.batch();
     final docRef = _userRef(uid).doc(previous.id);
 
@@ -185,6 +218,32 @@ class TransactionService {
     String uid,
     TransactionModel transaction,
   ) async {
+    if (transaction.isTransfer && transaction.linkedTransactionId != null) {
+      final linked = await getTransaction(
+        uid,
+        transaction.linkedTransactionId!,
+      );
+      if (linked != null) {
+        final outgoing = transaction.type == FinanceCatalog.expenseType
+            ? transaction
+            : linked;
+        final incoming = transaction.type == FinanceCatalog.incomeType
+            ? transaction
+            : linked;
+        final batch = _firestore.batch();
+        batch.delete(_userRef(uid).doc(outgoing.id));
+        batch.delete(_userRef(uid).doc(incoming.id));
+        batch.update(_walletsRef(uid).doc(outgoing.walletId), <String, dynamic>{
+          'balance': FieldValue.increment(outgoing.amount),
+        });
+        batch.update(_walletsRef(uid).doc(incoming.walletId), <String, dynamic>{
+          'balance': FieldValue.increment(-incoming.amount),
+        });
+        await batch.commit();
+        return;
+      }
+    }
+
     final batch = _firestore.batch();
     batch.delete(_userRef(uid).doc(transaction.id));
     batch.update(_walletsRef(uid).doc(transaction.walletId), <String, dynamic>{

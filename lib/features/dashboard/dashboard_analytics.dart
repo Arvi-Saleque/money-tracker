@@ -186,6 +186,10 @@ PeriodAnalytics buildPeriodAnalytics({
   double totalExpense = 0;
 
   for (final transaction in transactions) {
+    if (transaction.isTransfer) {
+      continue;
+    }
+
     final bucketIndex = _resolveBucketIndex(
       period: period,
       rangeStart: range.start,

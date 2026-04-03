@@ -6,6 +6,7 @@ import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
+import '../wallets/transfer_editor_page.dart';
 import 'finance_catalog.dart';
 import 'transaction_providers.dart';
 
@@ -13,6 +14,11 @@ Future<void> openTransactionEditorPage(
   BuildContext context, {
   TransactionModel? transaction,
 }) async {
+  if (transaction?.isTransfer == true) {
+    await openTransferEditorPage(context, transaction: transaction);
+    return;
+  }
+
   await Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
       builder: (context) => TransactionEditorPage(transaction: transaction),
@@ -499,6 +505,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       type: _selectedType,
       categoryId: _selectedCategoryId!,
       walletId: _selectedWalletId!,
+      isTransfer: false,
       note: _noteController.text.trim(),
       date: _selectedDate,
       createdAt: widget.transaction?.createdAt ?? DateTime.now(),

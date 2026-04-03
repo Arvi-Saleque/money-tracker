@@ -1,0 +1,823 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/constants/app_constants.dart';
+import '../../shared/models/category_model.dart';
+import '../../shared/models/transaction_model.dart';
+import '../../shared/models/wallet_model.dart';
+import '../../shared/widgets/premium_card.dart';
+import '../dashboard/dashboard_ui_parts.dart';
+import '../profile/profile_providers.dart';
+import '../transactions/finance_catalog.dart';
+import '../transactions/transaction_editor_sheet.dart';
+import '../transactions/transaction_providers.dart';
+import 'transfer_editor_page.dart';
+
+class WalletsScreen extends ConsumerWidget {
+  const WalletsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletsAsync = ref.watch(walletsProvider);
+    final profile = ref.watch(currentUserProfileProvider).asData?.value;
+    final currency = profile?.currency ?? AppConstants.defaultCurrency;
+    final wallets = walletsAsync.asData?.value ?? const <WalletModel>[];
+    final total = wallets.fold<double>(
+      0,
+      (sum, wallet) => sum + wallet.balance,
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Wallets'),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () => openTransferEditorPage(context),
+            icon: const Icon(Icons.swap_horiz_rounded),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SafeArea(
+        child: walletsAsync.when(
+          data: (_) => SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    buildPremiumCard(
+                      context: context,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Text('Total across wallets'),
+                          const SizedBox(height: 8),
+                          Text(
+                            formatWalletCurrency(total, currency),
+                            style: Theme.of(context).textTheme.displaySmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Your wallets',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        FilledButton.icon(
+                          onPressed: () => _openWalletEditor(context),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Add wallet'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (wallets.isEmpty)
+                      EmptyFinanceCard(
+                        title: 'No wallet available',
+                        subtitle:
+                            'Create a wallet for cash, bank, bKash, Nagad, or savings.',
+                        actionLabel: 'Add wallet',
+                        onAction: () => _openWalletEditor(context),
+                      )
+                    else
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final crossAxisCount = constraints.maxWidth > 880
+                              ? 3
+                              : constraints.maxWidth > 580
+                              ? 2
+                              : 1;
+
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  mainAxisSpacing: 14,
+                                  crossAxisSpacing: 14,
+                                  childAspectRatio: crossAxisCount == 1
+                                      ? 1.9
+                                      : 1.45,
+                                ),
+                            itemCount: wallets.length,
+                            itemBuilder: (context, index) {
+                              final wallet = wallets[index];
+                              return _WalletCard(
+                                wallet: wallet,
+                                currency: currency,
+                                onTap: () => _openWalletDetail(context, wallet),
+                                onEdit: () =>
+                                    _openWalletEditor(context, wallet: wallet),
+                                onTransfer: () => openTransferEditorPage(
+                                  context,
+                                  initialFromWalletId: wallet.id,
+                                ),
+                                onDelete: () =>
+                                    _deleteWallet(context, ref, wallet),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(child: Text(error.toString())),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => openTransferEditorPage(context),
+        icon: const Icon(Icons.swap_horiz_rounded),
+        label: const Text('Transfer'),
+      ),
+    );
+  }
+
+  Future<void> _openWalletEditor(
+    BuildContext context, {
+    WalletModel? wallet,
+  }) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (context) => WalletEditorPage(wallet: wallet),
+      ),
+    );
+  }
+
+  Future<void> _openWalletDetail(
+    BuildContext context,
+    WalletModel wallet,
+  ) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (context) => WalletDetailScreen(walletId: wallet.id),
+      ),
+    );
+  }
+
+  Future<void> _deleteWallet(
+    BuildContext context,
+    WidgetRef ref,
+    WalletModel wallet,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete wallet'),
+        content: Text(
+          'Delete "${wallet.name}"? It must have zero balance and no linked transactions.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    try {
+      await ref
+          .read(walletActionControllerProvider.notifier)
+          .deleteWallet(wallet);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Wallet deleted.')));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+}
+
+class WalletDetailScreen extends ConsumerWidget {
+  const WalletDetailScreen({super.key, required this.walletId});
+
+  final String walletId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallets =
+        ref.watch(walletsProvider).asData?.value ?? const <WalletModel>[];
+    final wallet = wallets.cast<WalletModel?>().firstWhere(
+      (item) => item?.id == walletId,
+      orElse: () => null,
+    );
+    final transactions =
+        ref.watch(walletTransactionsProvider(walletId)).asData?.value ??
+        const <TransactionModel>[];
+    final categories =
+        ref.watch(allCategoriesProvider).asData?.value ??
+        const <CategoryModel>[];
+    final categoryMap = {
+      for (final category in categories) category.id: category,
+    };
+    final walletMap = {for (final item in wallets) item.id: item};
+    final profile = ref.watch(currentUserProfileProvider).asData?.value;
+    final currency = profile?.currency ?? AppConstants.defaultCurrency;
+    final languageCode =
+        profile?.language ?? Localizations.localeOf(context).languageCode;
+
+    if (wallet == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Wallet detail')),
+        body: const Center(child: Text('Wallet not found.')),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(wallet.name),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () =>
+                openTransferEditorPage(context, initialFromWalletId: wallet.id),
+            icon: const Icon(Icons.swap_horiz_rounded),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 860),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  buildPremiumCard(
+                    context: context,
+                    child: Row(
+                      children: <Widget>[
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Color(
+                            wallet.colorValue,
+                          ).withValues(alpha: 0.14),
+                          foregroundColor: Color(wallet.colorValue),
+                          child: Icon(
+                            FinanceCatalog.iconForKey(wallet.iconKey),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                wallet.name,
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 6),
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: <Widget>[
+                                  MiniPill(
+                                    label: FinanceCatalog.walletTypeFor(
+                                      wallet.type,
+                                    ).label,
+                                  ),
+                                  if (wallet.isDefault)
+                                    const MiniPill(label: 'Default'),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          formatWalletCurrency(wallet.balance, currency),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Wallet activity',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (transactions.isEmpty)
+                    const EmptyFinanceCard(
+                      title: 'No transactions here yet',
+                      subtitle:
+                          'This wallet will show transactions and transfers here.',
+                    )
+                  else
+                    ...transactions.take(50).map((transaction) {
+                      final category = categoryMap[transaction.categoryId];
+                      final otherWallet = transaction.transferWalletId == null
+                          ? null
+                          : walletMap[transaction.transferWalletId!];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: FinanceTransactionTile(
+                          title: FinanceCatalog.transactionTitle(
+                            transaction,
+                            category: category,
+                            otherWallet: otherWallet,
+                            languageCode: languageCode,
+                          ),
+                          subtitle: [
+                            if (transaction.note.trim().isNotEmpty)
+                              transaction.note.trim(),
+                            DateFormat(
+                              'dd MMM yyyy  •  hh:mm a',
+                            ).format(transaction.date),
+                          ].join('  '),
+                          amount:
+                              '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${formatWalletCurrency(transaction.amount, currency)}',
+                          icon: FinanceCatalog.transactionIcon(
+                            transaction,
+                            category: category,
+                          ),
+                          color: FinanceCatalog.transactionColor(transaction),
+                          onTap: () {
+                            if (transaction.isTransfer) {
+                              openTransferEditorPage(
+                                context,
+                                transaction: transaction,
+                              );
+                            } else {
+                              openTransactionEditorPage(
+                                context,
+                                transaction: transaction,
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class WalletEditorPage extends ConsumerStatefulWidget {
+  const WalletEditorPage({super.key, this.wallet});
+
+  final WalletModel? wallet;
+
+  @override
+  ConsumerState<WalletEditorPage> createState() => _WalletEditorPageState();
+}
+
+String formatWalletCurrency(double amount, String currency) {
+  return NumberFormat.currency(
+    locale: 'en_US',
+    symbol: currency,
+    decimalDigits: 0,
+  ).format(amount);
+}
+
+class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _balanceController;
+  late String _selectedType;
+  late String _selectedIconKey;
+  late int _selectedColorValue;
+  late bool _isDefault;
+
+  bool get _isEditing => widget.wallet != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final wallet = widget.wallet;
+    final typeMeta = wallet == null
+        ? FinanceCatalog.walletTypes.first
+        : FinanceCatalog.walletTypeFor(wallet.type);
+    _nameController = TextEditingController(text: wallet?.name ?? '');
+    _balanceController = TextEditingController(
+      text: wallet == null ? '' : _trimZeroes(wallet.balance),
+    );
+    _selectedType = wallet?.type ?? typeMeta.type;
+    _selectedIconKey = wallet?.iconKey ?? typeMeta.iconKey;
+    _selectedColorValue = wallet?.colorValue ?? typeMeta.colorValue;
+    _isDefault = wallet?.isDefault ?? false;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _balanceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(walletActionControllerProvider);
+    final isBusy = state.isLoading;
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(_isEditing ? 'Edit wallet' : 'Add wallet')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  buildPremiumCard(
+                    context: context,
+                    child: Row(
+                      children: <Widget>[
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Color(
+                            _selectedColorValue,
+                          ).withValues(alpha: 0.14),
+                          foregroundColor: Color(_selectedColorValue),
+                          child: Icon(
+                            FinanceCatalog.iconForKey(_selectedIconKey),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                _nameController.text.trim().isEmpty
+                                    ? 'Wallet preview'
+                                    : _nameController.text.trim(),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                FinanceCatalog.walletTypeFor(
+                                  _selectedType,
+                                ).label,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _nameController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: const InputDecoration(labelText: 'Wallet name'),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedType,
+                    decoration: const InputDecoration(labelText: 'Wallet type'),
+                    items: FinanceCatalog.walletTypes
+                        .map(
+                          (type) => DropdownMenuItem<String>(
+                            value: type.type,
+                            child: Text(type.label),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: isBusy
+                        ? null
+                        : (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            final selected = FinanceCatalog.walletTypeFor(
+                              value,
+                            );
+                            setState(() {
+                              _selectedType = value;
+                              _selectedIconKey = selected.iconKey;
+                              _selectedColorValue = selected.colorValue;
+                            });
+                          },
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isEditing)
+                    TextFormField(
+                      initialValue: _trimZeroes(widget.wallet!.balance),
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Current balance',
+                        helperText:
+                            'Balance follows transactions and transfers automatically.',
+                      ),
+                    )
+                  else
+                    TextField(
+                      controller: _balanceController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Initial balance',
+                        hintText: '0.00',
+                        prefixText: '\u09F3 ',
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    value: _isDefault,
+                    title: const Text('Set as default wallet'),
+                    onChanged: isBusy
+                        ? null
+                        : (value) => setState(() => _isDefault = value),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Choose icon',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 5,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                        ),
+                    itemCount: FinanceCatalog.categoryIcons.length,
+                    itemBuilder: (context, index) {
+                      final option = FinanceCatalog.categoryIcons[index];
+                      final selected = option.key == _selectedIconKey;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: isBusy
+                            ? null
+                            : () =>
+                                  setState(() => _selectedIconKey = option.key),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? theme.colorScheme.primary.withValues(
+                                    alpha: 0.14,
+                                  )
+                                : theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: selected
+                                  ? theme.colorScheme.primary
+                                  : theme.dividerColor,
+                            ),
+                          ),
+                          child: Icon(option.icon),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: FinanceCatalog.colorChoices.map((colorValue) {
+                      final selected = colorValue == _selectedColorValue;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(999),
+                        onTap: isBusy
+                            ? null
+                            : () => setState(
+                                () => _selectedColorValue = colorValue,
+                              ),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: Color(colorValue),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: selected
+                                  ? theme.colorScheme.onSurface
+                                  : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: isBusy
+                              ? null
+                              : () => Navigator.of(context).pop(),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: isBusy ? null : _saveWallet,
+                          child: Text(
+                            _isEditing ? 'Update wallet' : 'Create wallet',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveWallet() async {
+    if (_nameController.text.trim().isEmpty) {
+      _showMessage('Please enter a wallet name.');
+      return;
+    }
+
+    final initialBalance = _isEditing
+        ? widget.wallet!.balance
+        : double.tryParse(_balanceController.text.replaceAll(',', '')) ?? 0;
+
+    final wallet = WalletModel(
+      id: widget.wallet?.id ?? '',
+      name: _nameController.text.trim(),
+      type: _selectedType,
+      balance: initialBalance,
+      iconKey: _selectedIconKey,
+      colorValue: _selectedColorValue,
+      isDefault: _isDefault,
+      createdAt: widget.wallet?.createdAt ?? DateTime.now(),
+    );
+
+    try {
+      final controller = ref.read(walletActionControllerProvider.notifier);
+      if (_isEditing) {
+        await controller.updateWallet(wallet);
+      } else {
+        await controller.addWallet(wallet);
+      }
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isEditing ? 'Wallet updated.' : 'Wallet created.'),
+        ),
+      );
+    } catch (error) {
+      _showMessage(error.toString());
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static String _trimZeroes(double value) {
+    final text = value.toStringAsFixed(2);
+    if (text.endsWith('.00')) {
+      return text.substring(0, text.length - 3);
+    }
+    if (text.endsWith('0')) {
+      return text.substring(0, text.length - 1);
+    }
+    return text;
+  }
+}
+
+class _WalletCard extends StatelessWidget {
+  const _WalletCard({
+    required this.wallet,
+    required this.currency,
+    required this.onTap,
+    required this.onEdit,
+    required this.onTransfer,
+    required this.onDelete,
+  });
+
+  final WalletModel wallet;
+  final String currency;
+  final VoidCallback onTap;
+  final VoidCallback onEdit;
+  final VoidCallback onTransfer;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return buildPremiumInkCard(
+      context: context,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: Color(
+                  wallet.colorValue,
+                ).withValues(alpha: 0.14),
+                foregroundColor: Color(wallet.colorValue),
+                child: Icon(FinanceCatalog.iconForKey(wallet.iconKey)),
+              ),
+              const Spacer(),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    onEdit();
+                  } else if (value == 'transfer') {
+                    onTransfer();
+                  } else if (value == 'delete') {
+                    onDelete();
+                  }
+                },
+                itemBuilder: (context) => const <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem<String>(
+                    value: 'transfer',
+                    child: Text('Transfer'),
+                  ),
+                  PopupMenuItem<String>(value: 'delete', child: Text('Delete')),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            wallet.name,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: <Widget>[
+              MiniPill(label: FinanceCatalog.walletTypeFor(wallet.type).label),
+              if (wallet.isDefault) const MiniPill(label: 'Default'),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            formatWalletCurrency(wallet.balance, currency),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}

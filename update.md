@@ -90,3 +90,18 @@
 
 - Month data is cached naturally through the provider family key for each visible month during the app session.
 - The calendar currently uses month and week views with day details; a more advanced month picker and cross-month week caching can still be refined later if needed.
+
+## Phase 7 - Multi-Wallet System
+
+- Expanded starter wallet bootstrapping so users now get Cash, Bank, bKash, Nagad, and Savings wallets automatically.
+- Added richer wallet and transaction metadata to support linked transfer entries, safer profile value normalization, and transfer-aware UI rendering.
+- Built a real Wallets screen with total balance overview, responsive wallet cards, add/edit wallet flow, wallet detail pages, and guarded delete behavior.
+- Added a dedicated transfer page for moving money between wallets, including linked transfer creation, editing, and deletion with paired balance updates.
+- Upgraded wallet services and controllers to support wallet CRUD, default-wallet switching, transfer pair management, and wallet-specific transaction streams.
+- Wired transfers into the existing app flow so tapping a transfer opens the transfer editor instead of the regular transaction editor.
+- Updated dashboard, calendar, and history surfaces so transfer entries render with clear labels/icons while analytics and income-expense summaries ignore transfer-only movements.
+
+### Notes
+
+- Wallet balances continue to stay transaction-driven: normal transactions and transfers both update wallet balances in Firestore through batch writes.
+- Transfer history is stored as two linked entries so both source and destination wallets retain a visible audit trail.

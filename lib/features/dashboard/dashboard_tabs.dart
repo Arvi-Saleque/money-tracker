@@ -1804,9 +1804,10 @@ List<Widget> _buildTransactionSections(
             ...entry.value.map((transaction) {
               final category = categoryMap[transaction.categoryId];
               final wallet = walletMap[transaction.walletId];
-              final color = transaction.type == FinanceCatalog.incomeType
-                  ? const Color(0xFF2ECC9A)
-                  : const Color(0xFFE85D5D);
+              final otherWallet = transaction.transferWalletId == null
+                  ? null
+                  : walletMap[transaction.transferWalletId!];
+              final color = FinanceCatalog.transactionColor(transaction);
 
               return Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -1820,7 +1821,12 @@ List<Widget> _buildTransactionSections(
                   background: const SizedBox.shrink(),
                   secondaryBackground: _DeleteBackground(color: color),
                   child: _HistoryTransactionTile(
-                    title: category?.localizedName(languageCode) ?? 'Category',
+                    title: FinanceCatalog.transactionTitle(
+                      transaction,
+                      category: category,
+                      otherWallet: otherWallet,
+                      languageCode: languageCode,
+                    ),
                     note: transaction.note.trim(),
                     walletName: wallet?.name,
                     timeLabel: DateFormat('hh:mm a').format(transaction.date),
@@ -1849,6 +1855,9 @@ String _buildSubtitle({
   final pieces = <String>[];
   if (wallet != null) {
     pieces.add(wallet.name);
+  }
+  if (transaction.isTransfer) {
+    pieces.add('Transfer');
   }
   if (transaction.note.trim().isNotEmpty) {
     pieces.add(transaction.note.trim());
@@ -1949,22 +1958,29 @@ class _RecentTransactionsCard extends StatelessWidget {
             ...transactions.take(5).map((transaction) {
               final category = categoryMap[transaction.categoryId];
               final wallet = walletMap[transaction.walletId];
-              final color = transaction.type == FinanceCatalog.incomeType
-                  ? const Color(0xFF2ECC9A)
-                  : const Color(0xFFE85D5D);
+              final otherWallet = transaction.transferWalletId == null
+                  ? null
+                  : walletMap[transaction.transferWalletId!];
+              final color = FinanceCatalog.transactionColor(transaction);
 
               return Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: FinanceTransactionTile(
-                  title: category?.localizedName(languageCode) ?? 'Category',
+                  title: FinanceCatalog.transactionTitle(
+                    transaction,
+                    category: category,
+                    otherWallet: otherWallet,
+                    languageCode: languageCode,
+                  ),
                   subtitle: _buildSubtitle(
                     transaction: transaction,
                     wallet: wallet,
                   ),
                   amount:
                       '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency)}',
-                  icon: FinanceCatalog.iconForKey(
-                    category?.iconKey ?? 'category',
+                  icon: FinanceCatalog.transactionIcon(
+                    transaction,
+                    category: category,
                   ),
                   color: color,
                   onTap: () => openTransactionEditorPage(

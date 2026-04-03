@@ -36,6 +36,27 @@ abstract final class AppConstants {
     '\u20AC',
   ];
 
+  static String normalizeCurrency(String? value) {
+    if (value != null && supportedCurrencies.contains(value)) {
+      return value;
+    }
+    return defaultCurrency;
+  }
+
+  static String normalizeLanguageCode(String? value) {
+    if (value != null && supportedLanguageCodes.contains(value)) {
+      return value;
+    }
+    return defaultLanguageCode;
+  }
+
+  static String normalizeThemeName(String? value) {
+    if (value != null && availableThemes.contains(value)) {
+      return value;
+    }
+    return sapphireDarkTheme;
+  }
+
   static String themeLabel(String themeName) {
     switch (themeName) {
       case sapphireLightTheme:
