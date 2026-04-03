@@ -208,10 +208,10 @@ class ExportService {
 
     doc.addPage(
       pw.MultiPage(
-        theme: pw.ThemeData.withFont(base: font, bold: boldFont),
-        pageTheme: const pw.PageTheme(
+        pageTheme: pw.PageTheme(
           pageFormat: PdfPageFormat.a4,
-          margin: pw.EdgeInsets.all(28),
+          margin: const pw.EdgeInsets.all(28),
+          theme: pw.ThemeData.withFont(base: font, bold: boldFont),
         ),
         build: (context) => <pw.Widget>[
           pw.Text(

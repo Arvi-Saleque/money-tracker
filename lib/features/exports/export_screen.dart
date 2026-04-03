@@ -511,6 +511,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     if (message.contains('No transactions available for export')) {
       return context.l10n.noTransactionsToExport;
     }
+    if (message.contains("Don't set both pageTheme")) {
+      return context.l10n.exportFailedMessage(context.l10n.genericError);
+    }
     return context.l10n.exportFailedMessage(message);
   }
 
