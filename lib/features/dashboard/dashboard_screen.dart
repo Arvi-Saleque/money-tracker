@@ -47,7 +47,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       const _ShellTab(
         title: 'Reports',
-        subtitle: 'See spending patterns and summary insights.',
+        subtitle: 'See trends, category share, and deeper analytics.',
         icon: Icons.bar_chart_outlined,
         selectedIcon: Icons.bar_chart_rounded,
         child: ReportsTab(),

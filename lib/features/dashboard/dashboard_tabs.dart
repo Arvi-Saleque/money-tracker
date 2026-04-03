@@ -10,6 +10,8 @@ import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
+import 'dashboard_analytics.dart';
+import 'dashboard_chart_widgets.dart';
 import '../profile/profile_providers.dart';
 import '../transactions/finance_catalog.dart';
 import '../transactions/transaction_editor_sheet.dart';
@@ -30,6 +32,7 @@ class HomeTab extends ConsumerWidget {
     final walletsAsync = ref.watch(walletsProvider);
     final recentTransactionsAsync = ref.watch(recentTransactionsProvider);
     final summary = ref.watch(dashboardSummaryProvider);
+    final monthlyAnalyticsAsync = ref.watch(monthlyAnalyticsProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
     final languageCode =
@@ -44,6 +47,12 @@ class HomeTab extends ConsumerWidget {
       for (final category in categories) category.id: category,
     };
     final walletMap = {for (final wallet in wallets) wallet.id: wallet};
+    final monthAnalytics = monthlyAnalyticsAsync.asData?.value;
+    final topCategory = monthAnalytics?.topCategoryId == null
+        ? null
+        : categoryMap[monthAnalytics!.topCategoryId!];
+    final topCategoryLabel =
+        topCategory?.localizedName(languageCode) ?? 'No top category yet';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
@@ -104,6 +113,14 @@ class HomeTab extends ConsumerWidget {
                           icon: Icons.arrow_upward_rounded,
                         ),
                         HeroMetric(
+                          label: 'Month expense',
+                          value: _formatCurrency(
+                            monthAnalytics?.totalExpense ?? 0,
+                            currency,
+                          ),
+                          icon: Icons.show_chart_rounded,
+                        ),
+                        HeroMetric(
                           label: 'Net today',
                           value: _formatCurrency(
                             summary.todayIncome - summary.todayExpense,
@@ -128,24 +145,237 @@ class HomeTab extends ConsumerWidget {
                   onAction: () => openTransactionEditorPage(context),
                 )
               else
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: wallets
-                      .map(
-                        (wallet) => SizedBox(
-                          width: isWide ? 342 : double.infinity,
-                          child: WalletOverviewCard(
-                            name: wallet.name,
-                            balance: _formatCurrency(wallet.balance, currency),
-                            icon: FinanceCatalog.iconForKey(wallet.iconKey),
-                            color: Color(wallet.colorValue),
-                          ),
-                        ),
-                      )
-                      .toList(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Wallet balances',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 116,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: wallets.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          final wallet = wallets[index];
+                          return SizedBox(
+                            width: 228,
+                            child: WalletOverviewCard(
+                              name: wallet.name,
+                              balance: _formatCurrency(
+                                wallet.balance,
+                                currency,
+                              ),
+                              icon: FinanceCatalog.iconForKey(wallet.iconKey),
+                              color: Color(wallet.colorValue),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               const SizedBox(height: 20),
+              monthlyAnalyticsAsync.when(
+                data: (analytics) {
+                  return Column(
+                    children: <Widget>[
+                      if (isWide)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Expanded(
+                              flex: 3,
+                              child: ExpenseTrendChartCard(
+                                analytics: analytics,
+                                title: 'Expense trend',
+                                subtitle:
+                                    'Daily expense movement for the current month.',
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 2,
+                              child: buildPremiumCard(
+                                context: context,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'This month pulse',
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Your dashboard now blends live balances with category trends.',
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: theme
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.color
+                                                ?.withValues(alpha: 0.74),
+                                          ),
+                                    ),
+                                    const SizedBox(height: 18),
+                                    Wrap(
+                                      spacing: 10,
+                                      runSpacing: 10,
+                                      children: <Widget>[
+                                        _SummaryPill(
+                                          label: 'Month income',
+                                          value: _formatCurrency(
+                                            analytics.totalIncome,
+                                            currency,
+                                          ),
+                                          color: const Color(0xFF2ECC9A),
+                                        ),
+                                        _SummaryPill(
+                                          label: 'Month expense',
+                                          value: _formatCurrency(
+                                            analytics.totalExpense,
+                                            currency,
+                                          ),
+                                          color: const Color(0xFFE85D5D),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _TopCategoryChip(
+                                      label: topCategoryLabel,
+                                      amount: _formatCurrency(
+                                        analytics.topCategoryAmount,
+                                        currency,
+                                      ),
+                                      color: topCategory == null
+                                          ? theme.colorScheme.primary
+                                          : Color(topCategory.colorValue),
+                                    ),
+                                    const SizedBox(height: 18),
+                                    Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: AnalyticsMetricCard(
+                                            label: analytics
+                                                .period
+                                                .averageExpenseLabel,
+                                            value: _formatCurrency(
+                                              analytics.averageExpense,
+                                              currency,
+                                            ),
+                                            toneColor:
+                                                theme.colorScheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: AnalyticsMetricCard(
+                                            label: analytics
+                                                .period
+                                                .peakExpenseLabel,
+                                            value: _formatCurrency(
+                                              analytics.peakExpenseAmount,
+                                              currency,
+                                            ),
+                                            highlight:
+                                                analytics
+                                                    .peakExpenseBucketLabel ??
+                                                'Waiting for spending',
+                                            toneColor: const Color(0xFFE85D5D),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Column(
+                          children: <Widget>[
+                            ExpenseTrendChartCard(
+                              analytics: analytics,
+                              title: 'Expense trend',
+                              subtitle:
+                                  'Daily expense movement for the current month.',
+                            ),
+                            const SizedBox(height: 16),
+                            buildPremiumCard(
+                              context: context,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'This month pulse',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 10,
+                                    runSpacing: 10,
+                                    children: <Widget>[
+                                      _SummaryPill(
+                                        label: 'Month income',
+                                        value: _formatCurrency(
+                                          analytics.totalIncome,
+                                          currency,
+                                        ),
+                                        color: const Color(0xFF2ECC9A),
+                                      ),
+                                      _SummaryPill(
+                                        label: 'Month expense',
+                                        value: _formatCurrency(
+                                          analytics.totalExpense,
+                                          currency,
+                                        ),
+                                        color: const Color(0xFFE85D5D),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _TopCategoryChip(
+                                    label: topCategoryLabel,
+                                    amount: _formatCurrency(
+                                      analytics.topCategoryAmount,
+                                      currency,
+                                    ),
+                                    color: topCategory == null
+                                        ? theme.colorScheme.primary
+                                        : Color(topCategory.colorValue),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, _) => Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: EmptyFinanceCard(
+                    title: 'Analytics are catching up',
+                    subtitle: error.toString(),
+                  ),
+                ),
+              ),
               if (isWide)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,6 +399,7 @@ class HomeTab extends ConsumerWidget {
                             summary: summary,
                             transactionCount: recentTransactions.length,
                             currency: currency,
+                            monthNet: monthAnalytics?.net ?? 0,
                           ),
                           const SizedBox(height: 16),
                           const QuickActionsCard(actions: actionShortcuts),
@@ -184,6 +415,7 @@ class HomeTab extends ConsumerWidget {
                       summary: summary,
                       transactionCount: recentTransactions.length,
                       currency: currency,
+                      monthNet: monthAnalytics?.net ?? 0,
                     ),
                     const SizedBox(height: 16),
                     _RecentTransactionsCard(
@@ -849,99 +1081,192 @@ class CalendarTab extends ConsumerWidget {
   }
 }
 
-class ReportsTab extends ConsumerWidget {
+class ReportsTab extends ConsumerStatefulWidget {
   const ReportsTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final summary = ref.watch(dashboardSummaryProvider);
+  ConsumerState<ReportsTab> createState() => _ReportsTabState();
+}
+
+class _ReportsTabState extends ConsumerState<ReportsTab> {
+  AnalyticsPeriod _period = AnalyticsPeriod.monthly;
+
+  @override
+  Widget build(BuildContext context) {
     final currency =
         ref.watch(currentUserProfileProvider).asData?.value?.currency ??
         AppConstants.defaultCurrency;
+    final categories =
+        ref.watch(allCategoriesProvider).asData?.value ??
+        const <CategoryModel>[];
+    final languageCode =
+        ref.watch(currentUserProfileProvider).asData?.value?.language ??
+        Localizations.localeOf(context).languageCode;
+    final analyticsAsync = ref.watch(periodAnalyticsProvider(_period));
+    final isWide = MediaQuery.sizeOf(context).width >= 960;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
-      children: <Widget>[
-        Wrap(
-          spacing: 14,
-          runSpacing: 14,
+    return analyticsAsync.when(
+      data: (analytics) {
+        final categoryMap = {
+          for (final category in categories) category.id: category,
+        };
+        final breakdown = _buildBreakdownItems(
+          analytics: analytics,
+          categoryMap: categoryMap,
+          languageCode: languageCode,
+        );
+        final topCategory = analytics.topCategoryId == null
+            ? null
+            : categoryMap[analytics.topCategoryId!];
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
           children: <Widget>[
-            SizedBox(
-              width: 260,
-              child: ReportMetricCard(
-                'Balance',
-                _formatCurrency(summary.totalBalance, currency),
+            buildPremiumCard(
+              context: context,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Financial report',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: AnalyticsPeriod.values.map((period) {
+                      return _FilterChip(
+                        label: period.label,
+                        selected: _period == period,
+                        onTap: () {
+                          setState(() {
+                            _period = period;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              width: 260,
-              child: ReportMetricCard(
-                'Today income',
-                _formatCurrency(summary.todayIncome, currency),
+            const SizedBox(height: 18),
+            if (isWide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(
+                    flex: 3,
+                    child: IncomeExpenseBarChartCard(
+                      analytics: analytics,
+                      title: 'Income vs expense',
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: CategoryBreakdownChartCard(
+                      items: breakdown,
+                      title: 'Category breakdown',
+                    ),
+                  ),
+                ],
+              )
+            else ...<Widget>[
+              IncomeExpenseBarChartCard(
+                analytics: analytics,
+                title: 'Income vs expense',
               ),
-            ),
-            SizedBox(
-              width: 260,
-              child: ReportMetricCard(
-                'Today expense',
-                _formatCurrency(summary.todayExpense, currency),
+              const SizedBox(height: 16),
+              CategoryBreakdownChartCard(
+                items: breakdown,
+                title: 'Category breakdown',
               ),
+            ],
+            const SizedBox(height: 18),
+            Wrap(
+              spacing: 14,
+              runSpacing: 14,
+              children: <Widget>[
+                SizedBox(
+                  width: isWide ? 250 : double.infinity,
+                  child: AnalyticsMetricCard(
+                    label: 'Total income',
+                    value: _formatCurrency(analytics.totalIncome, currency),
+                    toneColor: const Color(0xFF2ECC9A),
+                  ),
+                ),
+                SizedBox(
+                  width: isWide ? 250 : double.infinity,
+                  child: AnalyticsMetricCard(
+                    label: 'Total expense',
+                    value: _formatCurrency(analytics.totalExpense, currency),
+                    toneColor: const Color(0xFFE85D5D),
+                  ),
+                ),
+                SizedBox(
+                  width: isWide ? 250 : double.infinity,
+                  child: AnalyticsMetricCard(
+                    label: 'Net balance',
+                    value: _formatCurrency(analytics.net, currency),
+                    toneColor: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                SizedBox(
+                  width: isWide ? 250 : double.infinity,
+                  child: AnalyticsMetricCard(
+                    label: analytics.period.averageExpenseLabel,
+                    value: _formatCurrency(analytics.averageExpense, currency),
+                    toneColor: const Color(0xFFED8F41),
+                  ),
+                ),
+                SizedBox(
+                  width: isWide ? 250 : double.infinity,
+                  child: AnalyticsMetricCard(
+                    label: analytics.period.peakExpenseLabel,
+                    value: _formatCurrency(
+                      analytics.peakExpenseAmount,
+                      currency,
+                    ),
+                    highlight:
+                        analytics.peakExpenseBucketLabel ??
+                        'Waiting for spending',
+                    toneColor: const Color(0xFFE85D5D),
+                  ),
+                ),
+                SizedBox(
+                  width: isWide ? 250 : double.infinity,
+                  child: AnalyticsMetricCard(
+                    label: 'Top category',
+                    value: _formatCurrency(
+                      analytics.topCategoryAmount,
+                      currency,
+                    ),
+                    highlight:
+                        topCategory?.localizedName(languageCode) ??
+                        'No category yet',
+                    toneColor: topCategory == null
+                        ? Theme.of(context).colorScheme.primary
+                        : Color(topCategory.colorValue),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        const SizedBox(height: 18),
-        buildPremiumCard(
-          context: context,
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Phase 3 progress',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              SizedBox(height: 18),
-              ProgressBarRow(label: 'Transactions', value: 0.92),
-              SizedBox(height: 14),
-              ProgressBarRow(label: 'Categories', value: 0.88),
-              SizedBox(height: 14),
-              ProgressBarRow(label: 'Dashboard', value: 0.81),
-              SizedBox(height: 14),
-              ProgressBarRow(label: 'Reports', value: 0.35),
-            ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
+        children: <Widget>[
+          EmptyFinanceCard(
+            title: 'Reports are loading',
+            subtitle: error.toString(),
           ),
-        ),
-        const SizedBox(height: 18),
-        buildPremiumCard(
-          context: context,
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Insights',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              SizedBox(height: 14),
-              InsightTile(
-                title: 'Transactions are now live',
-                subtitle:
-                    'You can add, edit, delete, and categorize real entries from the app shell.',
-              ),
-              SizedBox(height: 12),
-              InsightTile(
-                title: 'Wallet balance updates automatically',
-                subtitle:
-                    'Every transaction now changes the selected wallet balance in Firestore.',
-              ),
-              SizedBox(height: 12),
-              InsightTile(
-                title: 'Reports deepen in later phases',
-                subtitle:
-                    'This tab is still a light preview until charts and analytics arrive in Phase 5.',
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1149,6 +1474,172 @@ class _TransactionHistoryHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SummaryPill extends StatelessWidget {
+  const _SummaryPill({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopCategoryChip extends StatelessWidget {
+  const _TopCategoryChip({
+    required this.label,
+    required this.amount,
+    required this.color,
+  });
+
+  final String label;
+  final String amount;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        children: <Widget>[
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: color.withValues(alpha: 0.18),
+            foregroundColor: color,
+            child: const Icon(Icons.workspace_premium_rounded, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Top spending category',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodySmall?.color?.withValues(
+                      alpha: 0.72,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+List<CategoryBreakdownViewData> _buildBreakdownItems({
+  required PeriodAnalytics analytics,
+  required Map<String, CategoryModel> categoryMap,
+  required String languageCode,
+}) {
+  const palette = <Color>[
+    Color(0xFF3D6BE4),
+    Color(0xFFE85D5D),
+    Color(0xFF2ECC9A),
+    Color(0xFFF5A623),
+    Color(0xFF845EF7),
+    Color(0xFF4DABF7),
+  ];
+
+  if (analytics.expenseByCategory.isEmpty) {
+    return const <CategoryBreakdownViewData>[];
+  }
+
+  final topFive = analytics.expenseByCategory.take(5).toList(growable: false);
+  final remainingAmount = analytics.expenseByCategory
+      .skip(5)
+      .fold<double>(0, (sum, item) => sum + item.amount);
+  final items = <CategoryBreakdownViewData>[];
+
+  for (var index = 0; index < topFive.length; index++) {
+    final slice = topFive[index];
+    final category = categoryMap[slice.categoryId];
+    items.add(
+      CategoryBreakdownViewData(
+        label: category?.localizedName(languageCode) ?? 'Category',
+        amount: slice.amount,
+        color: category == null
+            ? palette[index % palette.length]
+            : Color(category.colorValue),
+      ),
+    );
+  }
+
+  if (remainingAmount > 0) {
+    items.add(
+      const CategoryBreakdownViewData(
+        label: 'Other',
+        amount: 0,
+        color: Color(0xFF8B93A6),
+      ),
+    );
+    items[items.length - 1] = CategoryBreakdownViewData(
+      label: 'Other',
+      amount: remainingAmount,
+      color: const Color(0xFF8B93A6),
+    );
+  }
+
+  return items;
 }
 
 class _HistoryFilterPill extends StatelessWidget {
@@ -1588,11 +2079,13 @@ class _TodayPulseCard extends StatelessWidget {
     required this.summary,
     required this.transactionCount,
     required this.currency,
+    required this.monthNet,
   });
 
   final DashboardSummary summary;
   final int transactionCount;
   final String currency;
+  final double monthNet;
 
   @override
   Widget build(BuildContext context) {
@@ -1632,8 +2125,15 @@ class _TodayPulseCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Net',
+                  label: 'Today net',
                   value: _formatCurrency(net, currency),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _MiniStatTile(
+                  label: 'Month net',
+                  value: _formatCurrency(monthNet, currency),
                 ),
               ),
               const SizedBox(width: 12),

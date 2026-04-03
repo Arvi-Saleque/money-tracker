@@ -52,6 +52,22 @@ class TransactionService {
         );
   }
 
+  Stream<List<TransactionModel>> watchTransactionsInRange(
+    String uid, {
+    required DateTime start,
+    required DateTime end,
+  }) {
+    return _userRef(uid)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThan: Timestamp.fromDate(end))
+        .orderBy('date', descending: false)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map(TransactionModel.fromDocument).toList(),
+        );
+  }
+
   Future<TransactionHistoryPage> fetchTransactionPage(
     String uid, {
     required TransactionHistoryFilter filter,

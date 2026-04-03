@@ -63,3 +63,16 @@
 
 - Search is debounced in the UI and currently matches note text plus amount strings.
 - Some advanced Firestore filter/sort combinations may still prompt for index creation until the new index config is deployed to your Firebase project.
+
+## Phase 5 - Dashboard Analytics & Reports
+
+- Added `fl_chart` and built a dedicated analytics layer for weekly, monthly, and yearly reporting windows.
+- Added live period analytics providers that aggregate income, expense, net balance, averages, peak spending periods, category totals, and time-bucket breakdowns from Firestore transactions.
+- Upgraded the Home tab with wallet balance chips, month summary pills, a current-month expense trend chart, top category highlight, and richer live dashboard insight cards.
+- Rebuilt the Reports tab into a proper analytics screen with period switching, income-vs-expense bar charts, category breakdown donut charts, and summary cards for totals, averages, peak spending, and top category.
+- Added reusable chart widgets and metric cards so later phases can reuse the same visual analytics language.
+
+### Notes
+
+- The current analytics windows are: this week, this month, and this year.
+- Weekly and monthly averages are shown as average daily expense, while yearly reports show average monthly expense.
