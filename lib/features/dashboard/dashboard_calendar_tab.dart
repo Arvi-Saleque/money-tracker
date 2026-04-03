@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
@@ -79,10 +81,11 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                             children: <Widget>[
                               Flexible(
                                 child: Text(
-                                  DateFormat(
+                                  LocaleFormatters.formatDate(
+                                    _focusedDay,
                                     'MMMM yyyy',
                                     localeCode,
-                                  ).format(_focusedDay),
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.titleLarge
                                       ?.copyWith(fontWeight: FontWeight.w700),
@@ -135,7 +138,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                     runSpacing: 10,
                     children: <Widget>[
                       _CalendarModeChip(
-                        label: 'Month view',
+                        label: context.l10n.monthViewLabel,
                         selected: _calendarFormat == CalendarFormat.month,
                         onTap: () {
                           setState(() {
@@ -144,7 +147,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                         },
                       ),
                       _CalendarModeChip(
-                        label: 'Week view',
+                        label: context.l10n.weekViewLabel,
                         selected: _calendarFormat == CalendarFormat.week,
                         onTap: () {
                           setState(() {
@@ -382,6 +385,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                             value: _formatCurrency(
                               summary.totalIncome,
                               currency,
+                              languageCode: languageCode,
                             ),
                             color: const Color(0xFF2ECC9A),
                           ),
@@ -393,6 +397,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                             value: _formatCurrency(
                               summary.totalExpense,
                               currency,
+                              languageCode: languageCode,
                             ),
                             color: const Color(0xFFE85D5D),
                           ),
@@ -404,6 +409,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                             value: _formatCurrency(
                               summary.totalIncome - summary.totalExpense,
                               currency,
+                              languageCode: languageCode,
                             ),
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -448,7 +454,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                                     wallet: wallet,
                                   ),
                                   amount:
-                                      '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency)}',
+                                      '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency, languageCode: languageCode)}',
                                   icon: FinanceCatalog.transactionIcon(
                                     transaction,
                                     category: category,
@@ -661,14 +667,18 @@ class _SelectedDayPreviewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Selected day snapshot',
+                    context.l10n.selectedDaySnapshot,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('dd MMM yyyy', localeCode).format(summary.date),
+                    LocaleFormatters.formatDate(
+                      summary.date,
+                      'dd MMM yyyy',
+                      localeCode,
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(
                         context,
@@ -681,7 +691,7 @@ class _SelectedDayPreviewCard extends StatelessWidget {
               final button = OutlinedButton.icon(
                 onPressed: onOpenDetails,
                 icon: const Icon(Icons.open_in_new_rounded),
-                label: const Text('Open details'),
+                label: Text(context.l10n.openDetailsAction),
               );
 
               if (constraints.maxWidth < 360) {
@@ -710,18 +720,30 @@ class _SelectedDayPreviewCard extends StatelessWidget {
             runSpacing: 12,
             children: <Widget>[
               _DayMetricCard(
-                label: 'Income',
-                value: _formatCurrency(summary.totalIncome, currency),
+                label: context.l10n.incomeLabel,
+                value: _formatCurrency(
+                  summary.totalIncome,
+                  currency,
+                  languageCode: localeCode,
+                ),
                 color: const Color(0xFF2ECC9A),
               ),
               _DayMetricCard(
-                label: 'Expense',
-                value: _formatCurrency(summary.totalExpense, currency),
+                label: context.l10n.expenseLabel,
+                value: _formatCurrency(
+                  summary.totalExpense,
+                  currency,
+                  languageCode: localeCode,
+                ),
                 color: const Color(0xFFE85D5D),
               ),
               _DayMetricCard(
-                label: 'Net',
-                value: _formatCurrency(net, currency),
+                label: context.l10n.netLabel,
+                value: _formatCurrency(
+                  net,
+                  currency,
+                  languageCode: localeCode,
+                ),
                 color: Theme.of(context).colorScheme.primary,
               ),
             ],
@@ -779,12 +801,12 @@ DateTime _monthStart(DateTime date) => DateTime(date.year, date.month, 1);
 
 DateTime _dayKey(DateTime date) => DateTime(date.year, date.month, date.day);
 
-String _formatCurrency(double amount, String currency) {
-  return NumberFormat.currency(
-    locale: 'en_US',
-    symbol: currency,
-    decimalDigits: 0,
-  ).format(amount);
+String _formatCurrency(
+  double amount,
+  String currency, {
+  String languageCode = 'en',
+}) {
+  return LocaleFormatters.formatCurrency(amount, currency, languageCode);
 }
 
 String _buildCalendarSubtitle({

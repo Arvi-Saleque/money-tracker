@@ -147,3 +147,16 @@
 
 - Goal contributions currently use the reserved `Savings Goal` expense category under the hood and include the goal name in the transaction note.
 - Editing a goal recalculates completion state from the current saved amount and target amount so completed/archive state stays consistent after target changes.
+
+## Phase 11 - Localization Foundations and Core Bilingual UI
+
+- Expanded the ARB localization files well beyond the original app-name scaffold and added shared localization extensions for theme labels, language labels, and reusable app strings.
+- Updated the app bootstrap to use localized titles plus locale-aware theme typography, so English surfaces use Poppins while Bangla surfaces use Noto Sans Bengali.
+- Localized the primary auth flow, profile screen, dashboard shell labels, wallet screen actions, selected calendar labels, and bill reminder notification text.
+- Added reusable locale formatting helpers for currency, dates, and Bengali-digit conversion, then wired them into wallet and calendar surfaces.
+- Updated widget tests to run with localization delegates so test coverage reflects the real app setup.
+
+### Notes
+
+- The app now switches both text and typography when the saved profile language changes, and major shell/profile/auth/wallet/calendar strings respond immediately.
+- Several deeper dashboard, budget, goal, subscription, and transaction-detail labels still have room for a second localization sweep, but the localization architecture and the most user-visible flows are now in place and working.

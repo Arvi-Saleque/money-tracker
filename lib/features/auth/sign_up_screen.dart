@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../l10n/l10n_extension.dart';
 import 'auth_providers.dart';
 import 'auth_ui_helpers.dart';
 
@@ -32,10 +33,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authControllerProvider).isLoading;
+    final l10n = context.l10n;
 
     return AuthScaffold(
-      title: 'Create account',
-      subtitle: 'Set up your profile and start saving your financial history.',
+      title: l10n.createAccountTitle,
+      subtitle: l10n.createAccountSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -43,10 +45,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           children: <Widget>[
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Full name'),
+              decoration: InputDecoration(labelText: l10n.fullNameLabel),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Name is required.';
+                  return l10n.nameRequired;
                 }
                 return null;
               },
@@ -55,13 +57,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: l10n.emailLabel),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Email is required.';
+                  return l10n.emailRequired;
                 }
                 if (!value.contains('@')) {
-                  return 'Enter a valid email.';
+                  return l10n.emailInvalid;
                 }
                 return null;
               },
@@ -70,13 +72,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(labelText: l10n.passwordLabel),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Password is required.';
+                  return l10n.passwordRequired;
                 }
                 if (value.length < 6) {
-                  return 'Password must be at least 6 characters.';
+                  return l10n.passwordTooShort;
                 }
                 return null;
               },
@@ -85,10 +87,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             TextFormField(
               controller: _confirmPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Confirm password'),
+              decoration: InputDecoration(labelText: l10n.confirmPasswordLabel),
               validator: (value) {
                 if (value != _passwordController.text) {
-                  return 'Passwords do not match.';
+                  return l10n.passwordsDoNotMatch;
                 }
                 return null;
               },
@@ -96,18 +98,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             const SizedBox(height: 18),
             ElevatedButton(
               onPressed: isLoading ? null : _handleSignUp,
-              child: Text(isLoading ? 'Creating account...' : 'Sign up'),
+              child: Text(
+                isLoading ? l10n.creatingAccount : l10n.signUpAction,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                const Text('Already have an account?'),
+                Text(l10n.alreadyHaveAccount),
                 TextButton(
                   onPressed: isLoading
                       ? null
                       : () => context.go(AppConstants.authRoute),
-                  child: const Text('Login'),
+                  child: Text(l10n.loginAction),
                 ),
               ],
             ),
@@ -138,7 +142,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (!mounted) {
         return;
       }
-      showAppSnackBar(context, authErrorMessage(error));
+      showAppSnackBar(context, authErrorMessage(error, l10n: context.l10n));
     }
   }
 }

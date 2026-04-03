@@ -7,10 +7,11 @@ import 'gradient_colors.dart';
 import 'premium_card_style.dart';
 
 abstract final class AppTheme {
-  static ThemeData getTheme(String themeName) {
+  static ThemeData getTheme(String themeName, {String languageCode = 'en'}) {
     switch (themeName) {
       case AppConstants.sapphireLightTheme:
         return _buildTheme(
+          languageCode: languageCode,
           brightness: Brightness.light,
           background: AppColors.lightBackground,
           surface: AppColors.lightSurface,
@@ -25,6 +26,7 @@ abstract final class AppTheme {
       case AppConstants.sapphireDarkTheme:
       default:
         return _buildTheme(
+          languageCode: languageCode,
           brightness: Brightness.dark,
           background: AppColors.darkBackground,
           surface: AppColors.darkSurface,
@@ -40,6 +42,7 @@ abstract final class AppTheme {
   }
 
   static ThemeData _buildTheme({
+    required String languageCode,
     required Brightness brightness,
     required Color background,
     required Color surface,
@@ -66,9 +69,13 @@ abstract final class AppTheme {
           outline: border,
         );
 
-    final textTheme = GoogleFonts.poppinsTextTheme(
-      baseTheme.textTheme,
-    ).apply(bodyColor: textPrimary, displayColor: textPrimary);
+    final localizedTextTheme = languageCode == 'bn'
+        ? GoogleFonts.notoSansBengaliTextTheme(baseTheme.textTheme)
+        : GoogleFonts.poppinsTextTheme(baseTheme.textTheme);
+    final textTheme = localizedTextTheme.apply(
+      bodyColor: textPrimary,
+      displayColor: textPrimary,
+    );
 
     return baseTheme.copyWith(
       colorScheme: colorScheme,

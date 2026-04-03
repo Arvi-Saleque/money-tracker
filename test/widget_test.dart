@@ -22,7 +22,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
-        child: const MaterialApp(home: LoginScreen()),
+        child: MaterialApp(
+          theme: AppTheme.getTheme(AppConstants.sapphireDarkTheme),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const LoginScreen(),
+        ),
       ),
     );
 
@@ -41,7 +46,10 @@ void main() {
       ProviderScope(
         overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
         child: MaterialApp(
-          theme: AppTheme.getTheme(AppConstants.sapphireDarkTheme),
+          theme: AppTheme.getTheme(
+            AppConstants.sapphireDarkTheme,
+            languageCode: 'en',
+          ),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: const DashboardScreen(),

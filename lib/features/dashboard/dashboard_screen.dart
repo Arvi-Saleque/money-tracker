@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/providers/theme_provider.dart';
 import '../transactions/transaction_editor_sheet.dart';
 import 'dashboard_calendar_tab.dart';
@@ -27,31 +28,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final tabs = <_ShellTab>[
       _ShellTab(
         title: localizations.appTitle,
-        subtitle: 'Overview of balance, budgets, and recent activity.',
+        subtitle: localizations.homeTabSubtitle,
         icon: Icons.home_rounded,
         selectedIcon: Icons.home_filled,
         child: const HomeTab(),
       ),
-      const _ShellTab(
-        title: 'Transactions',
-        subtitle: 'Search, filter, and sort your full history.',
+      _ShellTab(
+        title: localizations.transactionsTabLabel,
+        subtitle: localizations.transactionsTabSubtitle,
         icon: Icons.receipt_long_outlined,
         selectedIcon: Icons.receipt_long_rounded,
-        child: TransactionsTab(),
+        child: const TransactionsTab(),
       ),
-      const _ShellTab(
-        title: 'Calendar',
-        subtitle: 'See daily income and expense activity on your calendar.',
+      _ShellTab(
+        title: localizations.calendarTabLabel,
+        subtitle: localizations.calendarTabSubtitle,
         icon: Icons.calendar_month_outlined,
         selectedIcon: Icons.calendar_month_rounded,
-        child: CalendarTabView(),
+        child: const CalendarTabView(),
       ),
-      const _ShellTab(
-        title: 'Reports',
-        subtitle: 'See trends, category share, and deeper analytics.',
+      _ShellTab(
+        title: localizations.reportsTabLabel,
+        subtitle: localizations.reportsTabSubtitle,
         icon: Icons.bar_chart_outlined,
         selectedIcon: Icons.bar_chart_rounded,
-        child: ReportsTab(),
+        child: const ReportsTab(),
       ),
     ];
     final activeTab = tabs[_currentIndex];
@@ -79,7 +80,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         actions: <Widget>[
           if (_currentIndex == 0)
             IconButton(
-              tooltip: 'Toggle theme',
+              tooltip: context.l10n.toggleThemeTooltip,
               onPressed: themeController.toggleTheme,
               icon: Icon(
                 currentTheme == AppConstants.sapphireDarkTheme
@@ -88,7 +89,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ),
           IconButton(
-            tooltip: 'Profile',
+            tooltip: context.l10n.profileTooltip,
             onPressed: () => context.push(AppConstants.profileRoute),
             icon: const Icon(Icons.person_outline_rounded),
           ),
@@ -107,7 +108,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openTransactionEditorPage(context),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Add'),
+        label: Text(context.l10n.addAction),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _AppBottomBar(
@@ -143,7 +144,7 @@ class _AppBottomBar extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: _BottomBarItem(
-              label: 'Home',
+              label: context.l10n.homeTabLabel,
               icon: currentIndex == 0 ? tabs[0].selectedIcon : tabs[0].icon,
               selected: currentIndex == 0,
               onTap: () => onSelected(0),
@@ -151,7 +152,7 @@ class _AppBottomBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomBarItem(
-              label: 'Transactions',
+              label: context.l10n.transactionsTabLabel,
               icon: currentIndex == 1 ? tabs[1].selectedIcon : tabs[1].icon,
               selected: currentIndex == 1,
               onTap: () => onSelected(1),
@@ -160,7 +161,7 @@ class _AppBottomBar extends StatelessWidget {
           const SizedBox(width: 72),
           Expanded(
             child: _BottomBarItem(
-              label: 'Calendar',
+              label: context.l10n.calendarTabLabel,
               icon: currentIndex == 2 ? tabs[2].selectedIcon : tabs[2].icon,
               selected: currentIndex == 2,
               onTap: () => onSelected(2),
@@ -168,7 +169,7 @@ class _AppBottomBar extends StatelessWidget {
           ),
           Expanded(
             child: _BottomBarItem(
-              label: 'Reports',
+              label: context.l10n.reportsTabLabel,
               icon: currentIndex == 3 ? tabs[3].selectedIcon : tabs[3].icon,
               selected: currentIndex == 3,
               onTap: () => onSelected(3),

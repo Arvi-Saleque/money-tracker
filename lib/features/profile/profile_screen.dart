@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/providers/locale_provider.dart';
 import '../../shared/providers/theme_provider.dart';
@@ -32,6 +33,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final profileAsync = ref.watch(currentUserProfileProvider);
     final bootstrapAsync = ref.watch(authProfileBootstrapProvider);
     final isSaving = ref.watch(profileControllerProvider).isLoading;
@@ -39,7 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: profileAsync.when(
         data: (profile) {
           if (profile == null) {
@@ -51,13 +53,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(authErrorMessage(bootstrapAsync.error!)),
+                  child: Text(
+                    authErrorMessage(bootstrapAsync.error!, l10n: l10n),
+                  ),
                 ),
               );
             }
 
-            return const Center(
-              child: Text('No profile found yet. Try reopening the screen.'),
+            return Center(
+              child: Text(l10n.profileMissing),
             );
           }
 
@@ -142,10 +146,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 24),
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Name'),
+                        decoration: InputDecoration(labelText: l10n.nameLabel),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Name is required.';
+                            return l10n.nameRequired;
                           }
                           return null;
                         },
@@ -154,13 +158,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       TextFormField(
                         initialValue: profile.email,
                         readOnly: true,
-                        decoration: const InputDecoration(labelText: 'Email'),
+                        decoration: InputDecoration(labelText: l10n.emailLabel),
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedCurrency ?? safeCurrency,
-                        decoration: const InputDecoration(
-                          labelText: 'Currency',
+                        decoration: InputDecoration(
+                          labelText: l10n.currencyLabel,
                         ),
                         items: AppConstants.supportedCurrencies
                             .map(
@@ -181,12 +185,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedLanguage ?? safeLanguage,
-                        decoration: const InputDecoration(
-                          labelText: 'Language',
+                        decoration: InputDecoration(
+                          labelText: l10n.languageLabel,
                         ),
-                        items: const <DropdownMenuItem<String>>[
-                          DropdownMenuItem(value: 'en', child: Text('English')),
-                          DropdownMenuItem(value: 'bn', child: Text('Bangla')),
+                        items: <DropdownMenuItem<String>>[
+                          DropdownMenuItem(
+                            value: 'en',
+                            child: Text(l10n.englishLabel),
+                          ),
+                          DropdownMenuItem(
+                            value: 'bn',
+                            child: Text(l10n.banglaLabel),
+                          ),
                         ],
                         onChanged: isSaving
                             ? null
@@ -199,12 +209,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedTheme ?? safeTheme,
-                        decoration: const InputDecoration(labelText: 'Theme'),
+                        decoration: InputDecoration(labelText: l10n.themeLabel),
                         items: AppConstants.availableThemes
                             .map(
                               (themeName) => DropdownMenuItem<String>(
                                 value: themeName,
-                                child: Text(AppConstants.themeLabel(themeName)),
+                                child: Text(l10n.themeName(themeName)),
                               ),
                             )
                             .toList(),
@@ -221,13 +231,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         onPressed: isSaving
                             ? null
                             : () => _saveProfile(profile),
-                        child: Text(isSaving ? 'Saving...' : 'Save changes'),
+                        child: Text(
+                          isSaving ? l10n.saving : l10n.saveChanges,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: isSaving ? null : _signOut,
                         icon: const Icon(Icons.logout_rounded),
-                        label: const Text('Sign out'),
+                        label: Text(l10n.signOut),
                       ),
                     ],
                   ),
@@ -240,7 +252,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(authErrorMessage(error)),
+            child: Text(authErrorMessage(error, l10n: l10n)),
           ),
         ),
       ),
@@ -271,12 +283,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (!mounted) {
         return;
       }
-      showAppSnackBar(context, 'Profile updated successfully.');
+      showAppSnackBar(context, context.l10n.profileUpdated);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      showAppSnackBar(context, authErrorMessage(error));
+      showAppSnackBar(context, authErrorMessage(error, l10n: context.l10n));
     }
   }
 
@@ -287,7 +299,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (!mounted) {
         return;
       }
-      showAppSnackBar(context, authErrorMessage(error));
+      showAppSnackBar(context, authErrorMessage(error, l10n: context.l10n));
     }
   }
 

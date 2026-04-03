@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -8,6 +10,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../shared/models/subscription_model.dart';
 import '../constants/app_constants.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../router/app_router.dart';
 
 class AppNotificationService {
@@ -126,7 +129,7 @@ class AppNotificationService {
 
     await _plugin.zonedSchedule(
       id: _notificationIdForSubscription(subscription.id),
-      title: 'Bill reminder',
+      title: _localizations.billReminderTitle,
       body: _buildReminderBody(subscription),
       scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
@@ -199,15 +202,27 @@ class AppNotificationService {
   String _buildReminderBody(SubscriptionModel subscription) {
     final days = subscription.reminderDaysBefore;
     if (days <= 0) {
-      return '${subscription.name} is due today.';
+      return _localizations.dueTodayBody(subscription.name);
     }
     if (days == 1) {
-      return '${subscription.name} is due tomorrow.';
+      return _localizations.dueTomorrowBody(subscription.name);
     }
-    return '${subscription.name} is due in $days days.';
+    return _localizations.dueInDaysBody(subscription.name, '$days');
   }
 
   int _notificationIdForSubscription(String subscriptionId) {
     return subscriptionId.hashCode & 0x7fffffff;
+  }
+
+  AppLocalizations get _localizations {
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      return AppLocalizations.of(context);
+    }
+
+    final languageCode = AppConstants.normalizeLanguageCode(
+      PlatformDispatcher.instance.locale.languageCode,
+    );
+    return lookupAppLocalizations(Locale(languageCode));
   }
 }

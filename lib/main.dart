@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/constants/app_constants.dart';
 import 'core/firebase/firebase_bootstrap.dart';
 import 'core/notifications/app_notification_service.dart';
 import 'core/router/app_router.dart';
@@ -49,8 +48,11 @@ class MoneyTrackerApp extends ConsumerWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: AppConstants.appName,
-      theme: AppTheme.getTheme(themeName),
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+      theme: AppTheme.getTheme(
+        themeName,
+        languageCode: locale.languageCode,
+      ),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

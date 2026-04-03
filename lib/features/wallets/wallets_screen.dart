@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
@@ -19,9 +21,12 @@ class WalletsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final walletsAsync = ref.watch(walletsProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
+    final languageCode =
+        profile?.language ?? Localizations.localeOf(context).languageCode;
     final wallets = walletsAsync.asData?.value ?? const <WalletModel>[];
     final total = wallets.fold<double>(
       0,
@@ -30,7 +35,7 @@ class WalletsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wallets'),
+        title: Text(l10n.walletsTitle),
         actions: <Widget>[
           IconButton(
             onPressed: () => openTransferEditorPage(context),
@@ -54,10 +59,14 @@ class WalletsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          const Text('Total across wallets'),
+                          Text(l10n.walletsTotal),
                           const SizedBox(height: 8),
                           Text(
-                            formatWalletCurrency(total, currency),
+                            formatWalletCurrency(
+                              total,
+                              currency,
+                              languageCode: languageCode,
+                            ),
                             style: Theme.of(context).textTheme.displaySmall
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
@@ -68,14 +77,14 @@ class WalletsScreen extends ConsumerWidget {
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final title = Text(
-                          'Your wallets',
+                          l10n.yourWalletsTitle,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.w700),
                         );
                         final button = FilledButton.icon(
                           onPressed: () => _openWalletEditor(context),
                           icon: const Icon(Icons.add_rounded),
-                          label: const Text('Add wallet'),
+                          label: Text(l10n.addWalletAction),
                         );
 
                         if (constraints.maxWidth < 420) {
@@ -101,10 +110,9 @@ class WalletsScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     if (wallets.isEmpty)
                       EmptyFinanceCard(
-                        title: 'No wallet available',
-                        subtitle:
-                            'Create a wallet for cash, bank, bKash, Nagad, or savings.',
-                        actionLabel: 'Add wallet',
+                        title: l10n.noWalletAvailableTitle,
+                        subtitle: l10n.noWalletAvailableSubtitle,
+                        actionLabel: l10n.addWalletAction,
                         onAction: () => _openWalletEditor(context),
                       )
                     else
@@ -160,7 +168,7 @@ class WalletsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openTransferEditorPage(context),
         icon: const Icon(Icons.swap_horiz_rounded),
-        label: const Text('Transfer'),
+        label: Text(l10n.transferAction),
       ),
     );
   }
@@ -195,18 +203,16 @@ class WalletsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete wallet'),
-        content: Text(
-          'Delete "${wallet.name}"? It must have zero balance and no linked transactions.',
-        ),
+        title: Text(context.l10n.deleteWalletTitle),
+        content: Text(context.l10n.deleteWalletPrompt(wallet.name)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -225,7 +231,7 @@ class WalletsScreen extends ConsumerWidget {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Wallet deleted.')));
+      ).showSnackBar(SnackBar(content: Text(context.l10n.walletDeleted)));
     } catch (error) {
       if (!context.mounted) {
         return;
@@ -267,8 +273,8 @@ class WalletDetailScreen extends ConsumerWidget {
 
     if (wallet == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Wallet detail')),
-        body: const Center(child: Text('Wallet not found.')),
+        appBar: AppBar(title: Text(context.l10n.walletDetailTitle)),
+        body: Center(child: Text(context.l10n.walletNotFound)),
       );
     }
 
@@ -328,14 +334,18 @@ class WalletDetailScreen extends ConsumerWidget {
                                     ).label,
                                   ),
                                   if (wallet.isDefault)
-                                    const MiniPill(label: 'Default'),
+                                    MiniPill(label: context.l10n.defaultLabel),
                                 ],
                               ),
                             ],
                           ),
                         ),
                         Text(
-                          formatWalletCurrency(wallet.balance, currency),
+                          formatWalletCurrency(
+                            wallet.balance,
+                            currency,
+                            languageCode: languageCode,
+                          ),
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
@@ -344,17 +354,16 @@ class WalletDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Wallet activity',
+                    context.l10n.walletActivityTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 12),
                   if (transactions.isEmpty)
-                    const EmptyFinanceCard(
-                      title: 'No transactions here yet',
-                      subtitle:
-                          'This wallet will show transactions and transfers here.',
+                    EmptyFinanceCard(
+                      title: context.l10n.noTransactionsHereYet,
+                      subtitle: context.l10n.walletTransactionsSubtitle,
                     )
                   else
                     ...transactions.take(50).map((transaction) {
@@ -421,12 +430,12 @@ class WalletEditorPage extends ConsumerStatefulWidget {
   ConsumerState<WalletEditorPage> createState() => _WalletEditorPageState();
 }
 
-String formatWalletCurrency(double amount, String currency) {
-  return NumberFormat.currency(
-    locale: 'en_US',
-    symbol: currency,
-    decimalDigits: 0,
-  ).format(amount);
+String formatWalletCurrency(
+  double amount,
+  String currency, {
+  String languageCode = 'en',
+}) {
+  return LocaleFormatters.formatCurrency(amount, currency, languageCode);
 }
 
 class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
@@ -803,13 +812,19 @@ class _WalletCard extends StatelessWidget {
                     onDelete();
                   }
                 },
-                itemBuilder: (context) => const <PopupMenuEntry<String>>[
-                  PopupMenuItem<String>(value: 'edit', child: Text('Edit')),
+                itemBuilder: (context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Text(context.l10n.editAction),
+                  ),
                   PopupMenuItem<String>(
                     value: 'transfer',
-                    child: Text('Transfer'),
+                    child: Text(context.l10n.transferAction),
                   ),
-                  PopupMenuItem<String>(value: 'delete', child: Text('Delete')),
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text(context.l10n.delete),
+                  ),
                 ],
               ),
             ],

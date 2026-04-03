@@ -1,40 +1,51 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_constants.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../l10n/l10n_extension.dart';
 
-String authErrorMessage(Object error) {
+String authErrorMessage(Object error, {AppLocalizations? l10n}) {
   if (error is FirebaseAuthException) {
     switch (error.code) {
       case 'invalid-email':
-        return 'Please enter a valid email address.';
+        return l10n?.authInvalidEmail ?? 'Please enter a valid email address.';
       case 'user-not-found':
       case 'wrong-password':
       case 'invalid-credential':
-        return 'Email or password is incorrect.';
+        return l10n?.authWrongCredentials ?? 'Email or password is incorrect.';
       case 'email-already-in-use':
-        return 'This email is already being used.';
+        return l10n?.authEmailAlreadyInUse ??
+            'This email is already being used.';
       case 'weak-password':
-        return 'Password should be at least 6 characters.';
+        return l10n?.authWeakPassword ??
+            'Password should be at least 6 characters.';
       case 'network-request-failed':
-        return 'Network error. Please try again.';
+        return l10n?.authNetwork ?? 'Network error. Please try again.';
       case 'too-many-requests':
-        return 'Too many attempts. Please wait and try again.';
+        return l10n?.authTooManyRequests ??
+            'Too many attempts. Please wait and try again.';
       default:
-        return error.message ?? 'Authentication failed. Please try again.';
+        return error.message ??
+            l10n?.authGeneric ??
+            'Authentication failed. Please try again.';
     }
   }
 
   if (error is FirebaseException) {
     switch (error.code) {
       case 'unavailable':
-        return 'Network connection is unavailable right now. Please check your internet and try again.';
+        return l10n?.firebaseUnavailable ??
+            'Network connection is unavailable right now. Please check your internet and try again.';
       case 'permission-denied':
-        return 'You do not have permission for this action.';
+        return l10n?.firebasePermissionDenied ??
+            'You do not have permission for this action.';
       case 'failed-precondition':
-        return 'This action needs extra Firebase setup, such as a Firestore index.';
+        return l10n?.firebaseNeedsIndex ??
+            'This action needs extra Firebase setup, such as a Firestore index.';
       default:
-        return error.message ?? 'Something went wrong. Please try again.';
+        return error.message ??
+            l10n?.genericError ??
+            'Something went wrong. Please try again.';
     }
   }
 
@@ -60,6 +71,7 @@ class AuthScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       body: SafeArea(
@@ -75,7 +87,7 @@ class AuthScaffold extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        AppConstants.appName,
+                        l10n.appTitle,
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w700,
