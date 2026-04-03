@@ -107,6 +107,7 @@ class TransactionService {
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
   }) async {
     Query<Map<String, dynamic>> query = _userRef(uid);
+    final effectiveLimit = filter.categoryIds.isNotEmpty ? limit * 3 : limit;
 
     if (filter.type != TransactionHistoryFilter.allTypes) {
       query = query.where('type', isEqualTo: filter.type);
@@ -118,15 +119,6 @@ class TransactionService {
         query = query.where('walletId', isEqualTo: walletIds.single);
       } else {
         query = query.where('walletId', whereIn: walletIds);
-      }
-    }
-
-    if (filter.usesServerCategoryFilter) {
-      final categoryIds = filter.categoryIds.toList(growable: false);
-      if (categoryIds.length == 1) {
-        query = query.where('categoryId', isEqualTo: categoryIds.single);
-      } else {
-        query = query.where('categoryId', whereIn: categoryIds);
       }
     }
 
@@ -165,13 +157,13 @@ class TransactionService {
       query = query.startAfterDocument(startAfter);
     }
 
-    final snapshot = await query.limit(limit).get();
+    final snapshot = await query.limit(effectiveLimit).get();
     final items = snapshot.docs.map(TransactionModel.fromDocument).toList();
 
     return TransactionHistoryPage(
       items: items,
       lastDocument: snapshot.docs.isEmpty ? null : snapshot.docs.last,
-      hasMore: snapshot.docs.length == limit,
+      hasMore: snapshot.docs.length == effectiveLimit,
     );
   }
 
@@ -366,27 +358,42 @@ class TransactionService {
       return;
     }
 
-    final targets = <String>[
-      _budgetDocumentId(
-        categoryId: transaction.categoryId,
-        year: transaction.date.year,
-        month: transaction.date.month,
-      ),
+    final splitItems = transaction.normalizedSplitItems;
+    final categoryTotals = <String, double>{};
+    for (final item in splitItems) {
+      categoryTotals.update(
+        item.categoryId,
+        (value) => value + item.amount,
+        ifAbsent: () => item.amount,
+      );
+    }
+
+    for (final entry in categoryTotals.entries) {
+      final budgetRef = _budgetsRef(uid).doc(
+        _budgetDocumentId(
+          categoryId: entry.key,
+          year: transaction.date.year,
+          month: transaction.date.month,
+        ),
+      );
+      final snapshot = await budgetRef.get();
+      if (snapshot.exists) {
+        batch.update(budgetRef, <String, dynamic>{
+          'spent': FieldValue.increment(entry.value * deltaSign),
+        });
+      }
+    }
+
+    final overallBudgetRef = _budgetsRef(uid).doc(
       _budgetDocumentId(
         categoryId: BudgetModel.overallCategoryId,
         year: transaction.date.year,
         month: transaction.date.month,
       ),
-    ];
-
-    for (final budgetId in targets) {
-      final budgetRef = _budgetsRef(uid).doc(budgetId);
-      final snapshot = await budgetRef.get();
-      if (!snapshot.exists) {
-        continue;
-      }
-
-      batch.update(budgetRef, <String, dynamic>{
+    );
+    final overallSnapshot = await overallBudgetRef.get();
+    if (overallSnapshot.exists) {
+      batch.update(overallBudgetRef, <String, dynamic>{
         'spent': FieldValue.increment(transaction.amount * deltaSign),
       });
     }

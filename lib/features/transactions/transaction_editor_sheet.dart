@@ -45,8 +45,14 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
   String? _selectedCategoryId;
   String? _selectedWalletId;
   late DateTime _selectedDate;
+  late bool _isSplitTransaction;
+  late List<_SplitLineDraft> _splitLines;
 
   bool get _isEditing => widget.transaction != null;
+  double get _splitTotal => _splitLines.fold<double>(
+    0,
+    (sum, line) => sum + _parseAmount(line.amountController.text),
+  );
 
   @override
   void initState() {
@@ -60,12 +66,17 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     _selectedCategoryId = transaction?.categoryId;
     _selectedWalletId = transaction?.walletId;
     _selectedDate = transaction?.date ?? DateTime.now();
+    _isSplitTransaction = transaction?.isSplit ?? false;
+    _splitLines = _buildInitialSplitLines(transaction);
   }
 
   @override
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
+    for (final line in _splitLines) {
+      line.dispose();
+    }
     super.dispose();
   }
 
@@ -215,7 +226,8 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     }
 
     if (nextWalletId == _selectedWalletId &&
-        nextCategoryId == _selectedCategoryId) {
+        nextCategoryId == _selectedCategoryId &&
+        !_needsSplitRepair(categories)) {
       return;
     }
 
@@ -226,6 +238,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       setState(() {
         _selectedWalletId = nextWalletId;
         _selectedCategoryId = nextCategoryId;
+        _repairSplitLines(categories);
       });
     });
   }
@@ -261,6 +274,9 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                 setState(() {
                   _selectedType = FinanceCatalog.expenseType;
                   _selectedCategoryId = null;
+                  for (final line in _splitLines) {
+                    line.categoryId = null;
+                  }
                 });
               },
             ),
@@ -272,11 +288,53 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                 setState(() {
                   _selectedType = FinanceCatalog.incomeType;
                   _selectedCategoryId = null;
+                  for (final line in _splitLines) {
+                    line.categoryId = null;
+                  }
                 });
               },
             ),
           ],
         ),
+        if (_selectedType != FinanceCatalog.transferType) ...<Widget>[
+          const SizedBox(height: 16),
+          buildPremiumCard(
+            context: context,
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        l10n.splitTransactionLabel,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.splitTransactionHint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.textTheme.bodySmall?.color?.withValues(
+                            alpha: 0.74,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: _isSplitTransaction,
+                  onChanged: isBusy
+                      ? null
+                      : (value) => _toggleSplitMode(value, categories),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 18),
         _SectionTitle(l10n.amountFieldLabel),
         const SizedBox(height: 10),
@@ -331,60 +389,76 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                   },
           ),
         const SizedBox(height: 18),
-        Row(
-          children: <Widget>[
-            Expanded(child: _SectionTitle(l10n.categoryFieldLabel)),
-            FilledButton.tonalIcon(
-              onPressed: isBusy
-                  ? null
-                  : () => _openCategoryDialog(allCategories),
-              icon: const Icon(Icons.add_circle_outline_rounded),
-              label: Text(l10n.newCategoryAction),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (isLoadingCategories)
-          const Center(child: CircularProgressIndicator())
-        else if (categories.isEmpty)
-          _InlineInfoCard(
-            title: l10n.noCategoryAvailableTitle,
-            subtitle: l10n.noCategoryAvailableSubtitle,
+        if (_isSplitTransaction)
+          _buildSplitSection(
+            context,
+            allCategories: allCategories,
+            categories: categories,
+            isBusy: isBusy,
+            isLoadingCategories: isLoadingCategories,
           )
         else
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth < 340
-                  ? 3
-                  : constraints.maxWidth < 480
-                  ? 4
-                  : 5;
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(child: _SectionTitle(l10n.categoryFieldLabel)),
+                  FilledButton.tonalIcon(
+                    onPressed: isBusy
+                        ? null
+                        : () => _openCategoryDialog(allCategories),
+                    icon: const Icon(Icons.add_circle_outline_rounded),
+                    label: Text(l10n.newCategoryAction),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (isLoadingCategories)
+                const Center(child: CircularProgressIndicator())
+              else if (categories.isEmpty)
+                _InlineInfoCard(
+                  title: l10n.noCategoryAvailableTitle,
+                  subtitle: l10n.noCategoryAvailableSubtitle,
+                )
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final crossAxisCount = constraints.maxWidth < 340
+                        ? 3
+                        : constraints.maxWidth < 480
+                        ? 4
+                        : 5;
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: constraints.maxWidth < 360 ? 0.98 : 1.08,
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: constraints.maxWidth < 360
+                            ? 0.98
+                            : 1.08,
+                      ),
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return _CategoryChoiceCard(
+                          category: category,
+                          selected: category.id == _selectedCategoryId,
+                          onTap: () {
+                            setState(() {
+                              _selectedCategoryId = category.id;
+                            });
+                          },
+                          onDelete: () => _deleteCategory(category),
+                        );
+                      },
+                    );
+                  },
                 ),
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return _CategoryChoiceCard(
-                    category: category,
-                    selected: category.id == _selectedCategoryId,
-                    onTap: () {
-                      setState(() {
-                        _selectedCategoryId = category.id;
-                      });
-                    },
-                    onDelete: () => _deleteCategory(category),
-                  );
-                },
-              );
-            },
+            ],
           ),
         const SizedBox(height: 18),
         Row(
@@ -459,6 +533,208 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     );
   }
 
+  Widget _buildSplitSection(
+    BuildContext context, {
+    required List<CategoryModel> allCategories,
+    required List<CategoryModel> categories,
+    required bool isBusy,
+    required bool isLoadingCategories,
+  }) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(child: _SectionTitle(l10n.splitLinesTitle)),
+            FilledButton.tonalIcon(
+              onPressed: isBusy || categories.isEmpty
+                  ? null
+                  : () {
+                      setState(() {
+                        _splitLines.add(_createSplitLine(categories));
+                      });
+                    },
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l10n.addSplitLineAction),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.tonalIcon(
+              onPressed: isBusy
+                  ? null
+                  : () => _openCategoryDialog(allCategories),
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              label: Text(l10n.newCategoryAction),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (isLoadingCategories)
+          const Center(child: CircularProgressIndicator())
+        else if (categories.isEmpty)
+          _InlineInfoCard(
+            title: l10n.noCategoryAvailableTitle,
+            subtitle: l10n.noCategoryAvailableSubtitle,
+          )
+        else
+          buildPremiumCard(
+            context: context,
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: <Widget>[
+                for (
+                  var index = 0;
+                  index < _splitLines.length;
+                  index++
+                ) ...<Widget>[
+                  _SplitLineCard(
+                    title: l10n.splitLineTitle(index),
+                    line: _splitLines[index],
+                    categories: categories,
+                    onCategoryChanged: (value) {
+                      setState(() {
+                        _splitLines[index].categoryId = value;
+                      });
+                    },
+                    onRemove: _splitLines.length <= 2
+                        ? null
+                        : () {
+                            setState(() {
+                              final line = _splitLines.removeAt(index);
+                              line.dispose();
+                            });
+                          },
+                  ),
+                  if (index != _splitLines.length - 1)
+                    const SizedBox(height: 12),
+                ],
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.34,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          l10n.splitTotalLabel,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\u09F3 ${_trimZeroes(_splitTotal)}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  List<_SplitLineDraft> _buildInitialSplitLines(TransactionModel? transaction) {
+    final sourceItems = transaction?.normalizedSplitItems ?? const [];
+    if (sourceItems.isEmpty) {
+      return <_SplitLineDraft>[_SplitLineDraft(), _SplitLineDraft()];
+    }
+
+    final seeded = sourceItems
+        .map(
+          (item) => _SplitLineDraft(
+            categoryId: item.categoryId,
+            amountText: _trimZeroes(item.amount),
+          ),
+        )
+        .toList(growable: true);
+    if (seeded.length == 1) {
+      seeded.add(_SplitLineDraft());
+    }
+    return seeded;
+  }
+
+  void _toggleSplitMode(bool value, List<CategoryModel> categories) {
+    if (_isSplitTransaction == value) {
+      return;
+    }
+
+    setState(() {
+      _isSplitTransaction = value;
+      if (value) {
+        for (final line in _splitLines) {
+          line.dispose();
+        }
+        final baseCategoryId = _selectedCategoryId;
+        final baseAmount = _amountController.text.trim();
+        _splitLines = <_SplitLineDraft>[
+          _SplitLineDraft(categoryId: baseCategoryId, amountText: baseAmount),
+          _createSplitLine(categories),
+        ];
+        _repairSplitLines(categories);
+      } else {
+        if (_splitLines.isNotEmpty) {
+          _selectedCategoryId =
+              _splitLines.first.categoryId ?? _selectedCategoryId;
+        }
+      }
+    });
+  }
+
+  _SplitLineDraft _createSplitLine(List<CategoryModel> categories) {
+    final selectedIds = _splitLines
+        .map((line) => line.categoryId)
+        .whereType<String>()
+        .toSet();
+    final nextCategory = categories.cast<CategoryModel?>().firstWhere(
+      (category) => category != null && !selectedIds.contains(category.id),
+      orElse: () => categories.isEmpty ? null : categories.first,
+    );
+    return _SplitLineDraft(categoryId: nextCategory?.id);
+  }
+
+  bool _needsSplitRepair(List<CategoryModel> categories) {
+    if (!_isSplitTransaction || categories.isEmpty) {
+      return false;
+    }
+    return _splitLines.any(
+      (line) =>
+          line.categoryId == null ||
+          categories.every((category) => category.id != line.categoryId),
+    );
+  }
+
+  void _repairSplitLines(List<CategoryModel> categories) {
+    if (!_isSplitTransaction || categories.isEmpty) {
+      return;
+    }
+    for (final line in _splitLines) {
+      if (line.categoryId == null ||
+          categories.every((category) => category.id != line.categoryId)) {
+        line.categoryId = categories.first.id;
+      }
+    }
+  }
+
+  double _parseAmount(String raw) {
+    return double.tryParse(raw.replaceAll(',', '').trim()) ?? 0;
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -492,7 +768,15 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
 
     setState(() {
       _selectedType = category.type;
-      _selectedCategoryId = category.id;
+      if (_isSplitTransaction) {
+        final targetLine = _splitLines.cast<_SplitLineDraft?>().firstWhere(
+          (line) => line?.categoryId == null,
+          orElse: () => _splitLines.isEmpty ? null : _splitLines.last,
+        );
+        targetLine?.categoryId = category.id;
+      } else {
+        _selectedCategoryId = category.id;
+      }
     });
   }
 
@@ -506,21 +790,65 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       _showMessage(context.l10n.chooseWalletError);
       return;
     }
-    if (_selectedCategoryId == null) {
-      _showMessage(context.l10n.chooseCategoryError);
-      return;
+
+    var nextCategoryId = _selectedCategoryId;
+    var splitItems = const <TransactionSplitItem>[];
+
+    if (_isSplitTransaction) {
+      if (_splitLines.length < 2) {
+        _showMessage(context.l10n.splitNeedsTwoLinesError);
+        return;
+      }
+
+      final items = <TransactionSplitItem>[];
+      for (final line in _splitLines) {
+        if (line.categoryId == null || line.categoryId!.trim().isEmpty) {
+          _showMessage(context.l10n.splitLineCategoryError);
+          return;
+        }
+        final lineAmount = _parseAmount(line.amountController.text);
+        if (lineAmount <= 0) {
+          _showMessage(context.l10n.splitLineAmountError);
+          return;
+        }
+        items.add(
+          TransactionSplitItem(
+            categoryId: line.categoryId!,
+            amount: lineAmount,
+          ),
+        );
+      }
+
+      final splitTotal = items.fold<double>(
+        0,
+        (sum, item) => sum + item.amount,
+      );
+      if ((splitTotal - amount).abs() > 0.009) {
+        _showMessage(context.l10n.splitTotalMismatchError);
+        return;
+      }
+
+      splitItems = items;
+      nextCategoryId = items.first.categoryId;
+    } else {
+      if (_selectedCategoryId == null) {
+        _showMessage(context.l10n.chooseCategoryError);
+        return;
+      }
+      nextCategoryId = _selectedCategoryId;
     }
 
     final nextTransaction = TransactionModel(
       id: widget.transaction?.id ?? '',
       amount: amount,
       type: _selectedType,
-      categoryId: _selectedCategoryId!,
+      categoryId: nextCategoryId!,
       walletId: _selectedWalletId!,
       isTransfer: false,
       note: _noteController.text.trim(),
       date: _selectedDate,
       createdAt: widget.transaction?.createdAt ?? DateTime.now(),
+      splitItems: splitItems,
     );
 
     try {
@@ -539,7 +867,9 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       }
       Navigator.of(context).pop();
       _showGlobalMessage(
-        _isEditing ? context.l10n.transactionUpdated : context.l10n.transactionSaved,
+        _isEditing
+            ? context.l10n.transactionUpdated
+            : context.l10n.transactionSaved,
       );
     } catch (error) {
       _showMessage(error.toString());
@@ -603,6 +933,13 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
           _selectedCategoryId = null;
         });
       }
+      setState(() {
+        for (final line in _splitLines) {
+          if (line.categoryId == category.id) {
+            line.categoryId = null;
+          }
+        }
+      });
       _showMessage(context.l10n.categoryDeleted);
     } catch (error) {
       _showMessage(error.toString());
@@ -629,6 +966,97 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       return text.substring(0, text.length - 1);
     }
     return text;
+  }
+}
+
+class _SplitLineDraft {
+  _SplitLineDraft({this.categoryId, String amountText = ''})
+    : amountController = TextEditingController(text: amountText);
+
+  String? categoryId;
+  final TextEditingController amountController;
+
+  void dispose() {
+    amountController.dispose();
+  }
+}
+
+class _SplitLineCard extends StatelessWidget {
+  const _SplitLineCard({
+    required this.title,
+    required this.line,
+    required this.categories,
+    required this.onCategoryChanged,
+    this.onRemove,
+  });
+
+  final String title;
+  final _SplitLineDraft line;
+  final List<CategoryModel> categories;
+  final ValueChanged<String?> onCategoryChanged;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.26,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (onRemove != null)
+                IconButton(
+                  onPressed: onRemove,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  tooltip: l10n.delete,
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: line.categoryId,
+            decoration: InputDecoration(labelText: l10n.splitLineCategoryLabel),
+            items: categories
+                .map(
+                  (category) => DropdownMenuItem<String>(
+                    value: category.id,
+                    child: Text(category.name),
+                  ),
+                )
+                .toList(),
+            onChanged: onCategoryChanged,
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: line.amountController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: l10n.splitLineAmountLabel,
+              prefixText: '\u09F3 ',
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

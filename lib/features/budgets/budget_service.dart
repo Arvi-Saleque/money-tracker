@@ -103,12 +103,30 @@ class BudgetService {
         continue;
       }
 
-      final transactionCategoryId = data['categoryId'] as String? ?? '';
-      if (categoryId != null && categoryId != transactionCategoryId) {
+      final transactionAmount = (data['amount'] as num?)?.toDouble() ?? 0;
+      final splitItems = (data['splitItems'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>();
+
+      if (categoryId == null) {
+        spent += transactionAmount;
         continue;
       }
 
-      spent += (data['amount'] as num?)?.toDouble() ?? 0;
+      if (splitItems.isNotEmpty) {
+        for (final item in splitItems) {
+          final splitCategoryId = item['categoryId'] as String? ?? '';
+          if (splitCategoryId != categoryId) {
+            continue;
+          }
+          spent += (item['amount'] as num?)?.toDouble() ?? 0;
+        }
+        continue;
+      }
+
+      final transactionCategoryId = data['categoryId'] as String? ?? '';
+      if (categoryId == transactionCategoryId) {
+        spent += transactionAmount;
+      }
     }
     return spent;
   }

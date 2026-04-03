@@ -86,7 +86,7 @@ class ExportService {
             languageCode,
           ),
           _transactionTypeLabel(transaction, languageCode),
-          _categoryLabel(transaction.categoryId, categoryMap, languageCode),
+          _categoryExportLabel(transaction, categoryMap, languageCode),
           transaction.amount.toStringAsFixed(2),
           _walletLabel(wallet, languageCode),
           transaction.note.replaceAll('\n', ' '),
@@ -167,11 +167,13 @@ class ExportService {
 
     final categoryTotals = <String, double>{};
     for (final transaction in expenseTransactions) {
-      categoryTotals.update(
-        transaction.categoryId,
-        (value) => value + transaction.amount,
-        ifAbsent: () => transaction.amount,
-      );
+      for (final item in transaction.normalizedSplitItems) {
+        categoryTotals.update(
+          item.categoryId,
+          (value) => value + item.amount,
+          ifAbsent: () => item.amount,
+        );
+      }
     }
 
     final categoryRows = categoryTotals.entries.toList()
@@ -340,11 +342,7 @@ class ExportService {
                   languageCode,
                 ),
                 _transactionTypeLabel(transaction, languageCode),
-                _categoryLabel(
-                  transaction.categoryId,
-                  categoryMap,
-                  languageCode,
-                ),
+                _categoryExportLabel(transaction, categoryMap, languageCode),
                 _walletLabel(walletMap[transaction.walletId], languageCode),
                 LocaleFormatters.formatCurrency(
                   transaction.amount,
@@ -395,7 +393,7 @@ class ExportService {
           }
           if (filters.categoryId != null &&
               filters.categoryId!.isNotEmpty &&
-              transaction.categoryId != filters.categoryId) {
+              !transaction.normalizedCategoryIds.contains(filters.categoryId)) {
             return false;
           }
           if (filters.walletId != null &&
@@ -455,6 +453,30 @@ class ExportService {
     }
 
     return category?.name ?? categoryId;
+  }
+
+  String _categoryExportLabel(
+    TransactionModel transaction,
+    Map<String, CategoryModel> categoryMap,
+    String languageCode,
+  ) {
+    if (transaction.isTransfer) {
+      return '';
+    }
+    final splitItems = transaction.normalizedSplitItems;
+    if (splitItems.length <= 1) {
+      return _categoryLabel(transaction.categoryId, categoryMap, languageCode);
+    }
+
+    final firstLabel = _categoryLabel(
+      splitItems.first.categoryId,
+      categoryMap,
+      languageCode,
+    );
+    final moreCount = splitItems.length - 1;
+    return languageCode == 'bn'
+        ? '$firstLabel + আরও $moreCount'
+        : '$firstLabel + $moreCount more';
   }
 
   String _walletLabel(WalletModel? wallet, String languageCode) {

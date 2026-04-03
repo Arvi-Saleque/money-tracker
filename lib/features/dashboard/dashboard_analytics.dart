@@ -260,11 +260,13 @@ PeriodAnalytics buildPeriodAnalytics({
       buckets[bucketIndex] = bucket.copyWith(
         expense: bucket.expense + transaction.amount,
       );
-      categoryTotals.update(
-        transaction.categoryId,
-        (value) => value + transaction.amount,
-        ifAbsent: () => transaction.amount,
-      );
+      for (final item in transaction.normalizedSplitItems) {
+        categoryTotals.update(
+          item.categoryId,
+          (value) => value + item.amount,
+          ifAbsent: () => item.amount,
+        );
+      }
     }
   }
 
@@ -336,10 +338,7 @@ List<AnalyticsBucket> _buildInitialBuckets(
       return List<AnalyticsBucket>.generate(daysInMonth, (index) {
         return AnalyticsBucket(
           index: index,
-          label: LocaleFormatters.localizeDigits(
-            '${index + 1}',
-            languageCode,
-          ),
+          label: LocaleFormatters.localizeDigits('${index + 1}', languageCode),
           income: 0,
           expense: 0,
         );

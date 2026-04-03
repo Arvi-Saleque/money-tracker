@@ -417,7 +417,9 @@ class TransactionHistoryController extends Notifier<TransactionHistoryState> {
           }
 
           if (filter.categoryIds.isNotEmpty &&
-              !filter.categoryIds.contains(transaction.categoryId)) {
+              !transaction.normalizedCategoryIds.any(
+                filter.categoryIds.contains,
+              )) {
             return false;
           }
 

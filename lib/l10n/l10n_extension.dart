@@ -276,6 +276,34 @@ extension AppL10nX on AppLocalizations {
   String get chooseCategoryError => isBangla
       ? 'সংরক্ষণের আগে একটি ক্যাটাগরি বেছে নিন।'
       : 'Choose a category before saving.';
+  String get splitTransactionLabel =>
+      isBangla ? 'স্প্লিট লেনদেন' : 'Split transaction';
+  String get splitTransactionHint => isBangla
+      ? 'একটি লেনদেনকে একাধিক ক্যাটাগরিতে ভাগ করুন।'
+      : 'Split one transaction across multiple categories.';
+  String get splitLinesTitle => isBangla ? 'স্প্লিট লাইনসমূহ' : 'Split lines';
+  String get addSplitLineAction =>
+      isBangla ? 'আরও লাইন যোগ করুন' : 'Add split line';
+  String get splitLineCategoryLabel =>
+      isBangla ? 'লাইন ক্যাটাগরি' : 'Line category';
+  String get splitLineAmountLabel => isBangla ? 'লাইন পরিমাণ' : 'Line amount';
+  String splitLineTitle(int index) =>
+      isBangla ? 'লাইন ${index + 1}' : 'Line ${index + 1}';
+  String get splitTotalLabel => isBangla ? 'স্প্লিট মোট' : 'Split total';
+  String get splitNeedsTwoLinesError => isBangla
+      ? 'স্প্লিট লেনদেনে অন্তত ২টি লাইন রাখুন।'
+      : 'A split transaction needs at least 2 lines.';
+  String get splitLineCategoryError => isBangla
+      ? 'প্রতিটি স্প্লিট লাইনের জন্য ক্যাটাগরি বেছে নিন।'
+      : 'Choose a category for every split line.';
+  String get splitLineAmountError => isBangla
+      ? 'প্রতিটি স্প্লিট লাইনের জন্য সঠিক পরিমাণ লিখুন।'
+      : 'Enter a valid amount for every split line.';
+  String get splitTotalMismatchError => isBangla
+      ? 'মোট পরিমাণ এবং স্প্লিট লাইনের যোগফল এক নয়।'
+      : 'The split line total does not match the transaction total.';
+  String splitMoreCategoriesLabel(int count) =>
+      isBangla ? 'আরও $count টি ক্যাটাগরি' : '$count more categories';
   String get transactionSaved =>
       isBangla ? 'লেনদেন সংরক্ষণ হয়েছে।' : 'Transaction saved.';
   String get transactionUpdated =>

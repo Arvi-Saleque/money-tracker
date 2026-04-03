@@ -49,60 +49,74 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen>
       appBar: AppBar(title: Text(l10n.debtsTitleText)),
       body: SafeArea(
         child: debtsAsync.when(
-          data: (_) => Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1040),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _DebtHeroCard(
-                      overview: overview,
-                      currency: currency,
-                      languageCode: languageCode,
-                    ),
-                    const SizedBox(height: 18),
-                    TabBar(
-                      controller: _tabController,
-                      tabs: <Widget>[
-                        Tab(text: l10n.borrowedTabLabel),
-                        Tab(text: l10n.lentTabLabel),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: <Widget>[
-                          _DebtListTab(
-                            debts: borrowed,
-                            emptyTitle: l10n.noBorrowedDebtTitle,
-                            emptySubtitle: l10n.noBorrowedDebtSubtitle,
-                            currency: currency,
-                            languageCode: languageCode,
-                            onEdit: (debt) => _openEditor(context, debt: debt),
-                            onDelete: (debt) => _deleteDebt(context, debt),
-                            onRecordPayment: (debt) =>
-                                _openPaymentPage(context, debt),
-                          ),
-                          _DebtListTab(
-                            debts: lent,
-                            emptyTitle: l10n.noLentDebtTitle,
-                            emptySubtitle: l10n.noLentDebtSubtitle,
-                            currency: currency,
-                            languageCode: languageCode,
-                            onEdit: (debt) => _openEditor(context, debt: debt),
-                            onDelete: (debt) => _deleteDebt(context, debt),
-                            onRecordPayment: (debt) =>
-                                _openPaymentPage(context, debt),
-                          ),
-                        ],
+          data: (_) => NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return <Widget>[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1040),
+                        child: _DebtHeroCard(
+                          overview: overview,
+                          currency: currency,
+                          languageCode: languageCode,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _DebtTabBarHeaderDelegate(
+                    child: Container(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      alignment: Alignment.center,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1040),
+                        child: TabBar(
+                          controller: _tabController,
+                          tabs: <Widget>[
+                            Tab(text: l10n.borrowedTabLabel),
+                            Tab(text: l10n.lentTabLabel),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: <Widget>[
+                _DebtTabViewBody(
+                  child: _DebtListTab(
+                    debts: borrowed,
+                    emptyTitle: l10n.noBorrowedDebtTitle,
+                    emptySubtitle: l10n.noBorrowedDebtSubtitle,
+                    currency: currency,
+                    languageCode: languageCode,
+                    onEdit: (debt) => _openEditor(context, debt: debt),
+                    onDelete: (debt) => _deleteDebt(context, debt),
+                    onRecordPayment: (debt) => _openPaymentPage(context, debt),
+                  ),
+                ),
+                _DebtTabViewBody(
+                  child: _DebtListTab(
+                    debts: lent,
+                    emptyTitle: l10n.noLentDebtTitle,
+                    emptySubtitle: l10n.noLentDebtSubtitle,
+                    currency: currency,
+                    languageCode: languageCode,
+                    onEdit: (debt) => _openEditor(context, debt: debt),
+                    onDelete: (debt) => _deleteDebt(context, debt),
+                    onRecordPayment: (debt) => _openPaymentPage(context, debt),
+                  ),
+                ),
+              ],
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -176,6 +190,51 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen>
         context,
       ).showSnackBar(SnackBar(content: Text(error.toString())));
     }
+  }
+}
+
+class _DebtTabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _DebtTabBarHeaderDelegate({required this.child});
+
+  final Widget child;
+
+  @override
+  double get minExtent => 60;
+
+  @override
+  double get maxExtent => 60;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _DebtTabBarHeaderDelegate oldDelegate) {
+    return child != oldDelegate.child;
+  }
+}
+
+class _DebtTabViewBody extends StatelessWidget {
+  const _DebtTabViewBody({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1040),
+          child: child,
+        ),
+      ),
+    );
   }
 }
 
@@ -356,6 +415,7 @@ class _DebtListTab extends StatelessWidget {
     }
 
     return ListView(
+      padding: const EdgeInsets.only(bottom: 110),
       children: <Widget>[
         if (active.isNotEmpty)
           ...active.map(

@@ -538,7 +538,16 @@ abstract final class FinanceCatalog {
           : 'Transfer to $walletName';
     }
 
-    return category?.localizedName(languageCode) ?? 'Category';
+    final baseLabel = category?.localizedName(languageCode) ?? 'Category';
+    if (!transaction.isSplit) {
+      return baseLabel;
+    }
+
+    final moreCount = transaction.normalizedSplitItems.length - 1;
+    if (languageCode == 'bn') {
+      return '$baseLabel + আরও $moreCount';
+    }
+    return '$baseLabel + $moreCount more';
   }
 
   static Color transactionColor(TransactionModel transaction) {

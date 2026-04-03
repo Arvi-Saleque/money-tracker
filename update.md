@@ -194,3 +194,17 @@
 
 - Debt records are currently informational and do not change wallet balances automatically when they are created or paid; they track obligations and repayments separately from the wallet transaction ledger.
 - Payments are stored inside each debt document so the full repayment history remains visible without a second collection.
+
+## Phase 13B - Split Transactions
+
+- Extended `TransactionModel` so normal income/expense entries can store multiple split lines while still keeping a primary category id for backwards-compatible list rendering.
+- Updated the transaction editor with a real split mode toggle, dynamic split-line add/remove UI, per-line category and amount entry, and validation that the split total matches the main transaction amount.
+- Updated transaction saving, editing, and deletion flows so wallet balances still use the overall amount while budget tracking applies per-category deltas from split lines.
+- Updated analytics, category filtering, and export logic so reports and CSV/PDF summaries count split amounts by their individual categories instead of attributing the whole amount to only one category.
+- Updated transaction titles to surface split transactions more clearly in lists by showing the first category plus a `+ more` style summary.
+- Reworked the Debts screen layout so the top summary card scrolls away correctly and the borrowed/lent list area stays usable on smaller phones.
+
+### Notes
+
+- Split transactions currently apply to normal income and expense entries only; transfer entries still use the dedicated transfer flow.
+- Existing older transactions without split metadata continue to behave normally and are treated as single-category entries automatically.
