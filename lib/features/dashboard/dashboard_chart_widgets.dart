@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/gradient_colors.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/widgets/premium_card.dart';
 import 'dashboard_analytics.dart';
 
@@ -107,7 +108,9 @@ class ExpenseTrendChartCard extends StatelessWidget {
           const SizedBox(height: 20),
           if (spots.every((spot) => spot.y == 0))
             _EmptyChartHint(
-              label: 'Add expenses this period to reveal the trend line.',
+              label: context.l10n.isBangla
+                  ? 'এই সময়ের খরচ যোগ করলে ট্রেন্ড লাইন দেখা যাবে।'
+                  : 'Add expenses this period to reveal the trend line.',
             )
           else
             SizedBox(
@@ -247,16 +250,23 @@ class IncomeExpenseBarChartCard extends StatelessWidget {
           Wrap(
             spacing: 12,
             runSpacing: 8,
-            children: const <Widget>[
-              _ChartLegend(label: 'Income', color: Color(0xFF2ECC9A)),
-              _ChartLegend(label: 'Expense', color: Color(0xFFE85D5D)),
+            children: <Widget>[
+              _ChartLegend(
+                label: context.l10n.incomeTypeLabel,
+                color: const Color(0xFF2ECC9A),
+              ),
+              _ChartLegend(
+                label: context.l10n.expenseTypeLabel,
+                color: const Color(0xFFE85D5D),
+              ),
             ],
           ),
           const SizedBox(height: 18),
           if (analytics.totalIncome == 0 && analytics.totalExpense == 0)
-            const _EmptyChartHint(
-              label:
-                  'Your bar chart will appear once you add transactions in this period.',
+            _EmptyChartHint(
+              label: context.l10n.isBangla
+                  ? 'এই সময়ের লেনদেন যোগ করলে বার চার্ট দেখা যাবে।'
+                  : 'Your bar chart will appear once you add transactions in this period.',
             )
           else
             SizedBox(
@@ -397,8 +407,10 @@ class CategoryBreakdownChartCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           if (items.isEmpty || total == 0)
-            const _EmptyChartHint(
-              label: 'No expense categories yet for this period.',
+            _EmptyChartHint(
+              label: context.l10n.isBangla
+                  ? 'এই সময়ে এখনো কোনো ব্যয়ের ক্যাটাগরি নেই।'
+                  : 'No expense categories yet for this period.',
             )
           else
             Column(

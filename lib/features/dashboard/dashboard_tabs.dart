@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/locale_formatters.dart';
 import '../../core/theme/gradient_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/category_model.dart';
 import '../../shared/models/goal_model.dart';
 import '../../shared/models/transaction_model.dart';
@@ -30,10 +32,10 @@ class HomeTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final gradients = theme.extension<GradientColors>()!;
     final isWide = MediaQuery.sizeOf(context).width >= 900;
-    final monthLabel = DateFormat('MMMM yyyy').format(DateTime.now());
     final walletsAsync = ref.watch(walletsProvider);
     final recentTransactionsAsync = ref.watch(recentTransactionsProvider);
     final summary = ref.watch(dashboardSummaryProvider);
@@ -58,9 +60,14 @@ class HomeTab extends ConsumerWidget {
         ? null
         : categoryMap[monthAnalytics!.topCategoryId!];
     final topCategoryLabel =
-        topCategory?.localizedName(languageCode) ?? 'No top category yet';
+        topCategory?.localizedName(languageCode) ?? l10n.noTopCategoryYet;
     final upcomingBills = ref.watch(dashboardUpcomingBillsProvider);
     final topGoal = ref.watch(topActiveGoalProvider);
+    final monthLabel = LocaleFormatters.formatDate(
+      DateTime.now(),
+      'MMMM yyyy',
+      languageCode,
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
@@ -83,7 +90,7 @@ class HomeTab extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                'Available balance',
+                                l10n.homeAvailableBalance,
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.84),
                                 ),
@@ -108,31 +115,38 @@ class HomeTab extends ConsumerWidget {
                       runSpacing: 12,
                       children: <Widget>[
                         HeroMetric(
-                          label: 'Today income',
-                          value: _formatCurrency(summary.todayIncome, currency),
+                          label: l10n.homeTodayIncome,
+                          value: _formatCurrency(
+                            summary.todayIncome,
+                            currency,
+                            languageCode,
+                          ),
                           icon: Icons.arrow_downward_rounded,
                         ),
                         HeroMetric(
-                          label: 'Today expense',
+                          label: l10n.homeTodayExpense,
                           value: _formatCurrency(
                             summary.todayExpense,
                             currency,
+                            languageCode,
                           ),
                           icon: Icons.arrow_upward_rounded,
                         ),
                         HeroMetric(
-                          label: 'Month expense',
+                          label: l10n.homeMonthExpense,
                           value: _formatCurrency(
                             monthAnalytics?.totalExpense ?? 0,
                             currency,
+                            languageCode,
                           ),
                           icon: Icons.show_chart_rounded,
                         ),
                         HeroMetric(
-                          label: 'Net today',
+                          label: l10n.homeNetToday,
                           value: _formatCurrency(
                             summary.todayIncome - summary.todayExpense,
                             currency,
+                            languageCode,
                           ),
                           icon: Icons.savings_rounded,
                         ),
@@ -146,10 +160,9 @@ class HomeTab extends ConsumerWidget {
                 const Center(child: CircularProgressIndicator())
               else if (wallets.isEmpty)
                 EmptyFinanceCard(
-                  title: 'Your wallet is getting ready',
-                  subtitle:
-                      'Starter data usually appears right after sign-in. Give it a moment and reopen the screen if needed.',
-                  actionLabel: 'Add transaction',
+                  title: l10n.walletReadyTitle,
+                  subtitle: l10n.walletReadySubtitle,
+                  actionLabel: l10n.addTransactionAction,
                   onAction: () => openTransactionEditorPage(context),
                 )
               else
@@ -157,7 +170,7 @@ class HomeTab extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Wallet balances',
+                      l10n.walletBalancesTitle,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -178,6 +191,7 @@ class HomeTab extends ConsumerWidget {
                               balance: _formatCurrency(
                                 wallet.balance,
                                 currency,
+                                languageCode,
                               ),
                               icon: FinanceCatalog.iconForKey(wallet.iconKey),
                               color: Color(wallet.colorValue),
@@ -216,9 +230,8 @@ class HomeTab extends ConsumerWidget {
                               flex: 3,
                               child: ExpenseTrendChartCard(
                                 analytics: analytics,
-                                title: 'Expense trend',
-                                subtitle:
-                                    'Daily expense movement for the current month.',
+                                title: l10n.expenseTrendTitle,
+                                subtitle: l10n.expenseTrendSubtitle,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -230,7 +243,7 @@ class HomeTab extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Text(
-                                      'This month pulse',
+                                      l10n.monthPulseTitle,
                                       style: theme.textTheme.titleLarge
                                           ?.copyWith(
                                             fontWeight: FontWeight.w700,
@@ -238,7 +251,7 @@ class HomeTab extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Your dashboard now blends live balances with category trends.',
+                                      l10n.monthPulseSubtitle,
                                       style: theme.textTheme.bodyMedium
                                           ?.copyWith(
                                             color: theme
@@ -254,18 +267,20 @@ class HomeTab extends ConsumerWidget {
                                       runSpacing: 10,
                                       children: <Widget>[
                                         _SummaryPill(
-                                          label: 'Month income',
+                                          label: l10n.monthIncomeLabel,
                                           value: _formatCurrency(
                                             analytics.totalIncome,
                                             currency,
+                                            languageCode,
                                           ),
                                           color: const Color(0xFF2ECC9A),
                                         ),
                                         _SummaryPill(
-                                          label: 'Month expense',
+                                          label: l10n.homeMonthExpense,
                                           value: _formatCurrency(
                                             analytics.totalExpense,
                                             currency,
+                                            languageCode,
                                           ),
                                           color: const Color(0xFFE85D5D),
                                         ),
@@ -277,6 +292,7 @@ class HomeTab extends ConsumerWidget {
                                       amount: _formatCurrency(
                                         analytics.topCategoryAmount,
                                         currency,
+                                        languageCode,
                                       ),
                                       color: topCategory == null
                                           ? theme.colorScheme.primary
@@ -289,10 +305,13 @@ class HomeTab extends ConsumerWidget {
                                           child: AnalyticsMetricCard(
                                             label: analytics
                                                 .period
-                                                .averageExpenseLabel,
+                                                .averageExpenseLabelFor(
+                                                  languageCode,
+                                                ),
                                             value: _formatCurrency(
                                               analytics.averageExpense,
                                               currency,
+                                              languageCode,
                                             ),
                                             toneColor:
                                                 theme.colorScheme.primary,
@@ -303,15 +322,18 @@ class HomeTab extends ConsumerWidget {
                                           child: AnalyticsMetricCard(
                                             label: analytics
                                                 .period
-                                                .peakExpenseLabel,
+                                                .peakExpenseLabelFor(
+                                                  languageCode,
+                                                ),
                                             value: _formatCurrency(
                                               analytics.peakExpenseAmount,
                                               currency,
+                                              languageCode,
                                             ),
                                             highlight:
                                                 analytics
                                                     .peakExpenseBucketLabel ??
-                                                'Waiting for spending',
+                                                l10n.waitingForSpending,
                                             toneColor: const Color(0xFFE85D5D),
                                           ),
                                         ),
@@ -328,9 +350,8 @@ class HomeTab extends ConsumerWidget {
                           children: <Widget>[
                             ExpenseTrendChartCard(
                               analytics: analytics,
-                              title: 'Expense trend',
-                              subtitle:
-                                  'Daily expense movement for the current month.',
+                              title: l10n.expenseTrendTitle,
+                              subtitle: l10n.expenseTrendSubtitle,
                             ),
                             const SizedBox(height: 16),
                             buildPremiumCard(
@@ -339,7 +360,7 @@ class HomeTab extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   Text(
-                                    'This month pulse',
+                                    l10n.monthPulseTitle,
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -350,18 +371,20 @@ class HomeTab extends ConsumerWidget {
                                     runSpacing: 10,
                                     children: <Widget>[
                                       _SummaryPill(
-                                        label: 'Month income',
+                                        label: l10n.monthIncomeLabel,
                                         value: _formatCurrency(
                                           analytics.totalIncome,
                                           currency,
+                                          languageCode,
                                         ),
                                         color: const Color(0xFF2ECC9A),
                                       ),
                                       _SummaryPill(
-                                        label: 'Month expense',
+                                        label: l10n.homeMonthExpense,
                                         value: _formatCurrency(
                                           analytics.totalExpense,
                                           currency,
+                                          languageCode,
                                         ),
                                         color: const Color(0xFFE85D5D),
                                       ),
@@ -373,6 +396,7 @@ class HomeTab extends ConsumerWidget {
                                     amount: _formatCurrency(
                                       analytics.topCategoryAmount,
                                       currency,
+                                      languageCode,
                                     ),
                                     color: topCategory == null
                                         ? theme.colorScheme.primary
@@ -394,7 +418,7 @@ class HomeTab extends ConsumerWidget {
                 error: (error, _) => Padding(
                   padding: const EdgeInsets.only(bottom: 20),
                   child: EmptyFinanceCard(
-                    title: 'Analytics are catching up',
+                    title: l10n.analyticsLoadingTitle,
                     subtitle: error.toString(),
                   ),
                 ),
@@ -482,6 +506,8 @@ class _UpcomingBillsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     return buildPremiumCard(
       context: context,
       child: Column(
@@ -490,14 +516,14 @@ class _UpcomingBillsCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final title = Text(
-                'Upcoming bills',
+                l10n.upcomingBillsTitle,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
               );
               final button = TextButton(
                 onPressed: () => context.push(AppConstants.subscriptionsRoute),
-                child: const Text('Open'),
+                child: Text(l10n.openAction),
               );
 
               if (constraints.maxWidth < 320) {
@@ -517,9 +543,7 @@ class _UpcomingBillsCard extends StatelessWidget {
           ),
           if (bills.isEmpty) ...<Widget>[
             const SizedBox(height: 12),
-            const Text(
-              'Nothing is due soon. Add a recurring bill and it will show up here.',
-            ),
+            Text(l10n.noBillsDueSoon),
           ] else ...<Widget>[
             const SizedBox(height: 12),
             ...bills.map(
@@ -558,7 +582,7 @@ class _UpcomingBillsCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _upcomingBillLabel(item),
+                            _upcomingBillLabel(context, item),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -567,7 +591,11 @@ class _UpcomingBillsCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      '$currency${item.subscription.amount.toStringAsFixed(0)}',
+                      _formatCurrency(
+                        item.subscription.amount,
+                        currency,
+                        languageCode,
+                      ),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -582,15 +610,10 @@ class _UpcomingBillsCard extends StatelessWidget {
     );
   }
 
-  String _upcomingBillLabel(UpcomingBillViewModel item) {
+  String _upcomingBillLabel(BuildContext context, UpcomingBillViewModel item) {
     final days = item.subscription.daysUntilDue;
-    final dueLabel = switch (days) {
-      < 0 => 'Overdue ${days.abs()}d',
-      0 => 'Due today',
-      1 => 'Due tomorrow',
-      _ => 'In $days days',
-    };
-    final walletName = item.wallet?.name ?? 'Wallet';
+    final dueLabel = context.l10n.dueLabel(days);
+    final walletName = item.wallet?.name ?? context.l10n.walletFilterLabel(0);
     return '$dueLabel · $walletName';
   }
 }
@@ -603,6 +626,8 @@ class _TopGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final goalData = goal;
 
     return buildPremiumCard(
@@ -613,14 +638,14 @@ class _TopGoalCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final title = Text(
-                'Top goal',
+                l10n.topGoalTitle,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
               );
               final button = TextButton(
                 onPressed: () => context.push(AppConstants.goalsRoute),
-                child: const Text('Open'),
+                child: Text(l10n.openAction),
               );
 
               if (constraints.maxWidth < 320) {
@@ -640,9 +665,7 @@ class _TopGoalCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (goalData == null)
-            const Text(
-              'No active savings goal yet. Create one to see progress here.',
-            )
+            Text(l10n.noActiveGoalYet)
           else ...<Widget>[
             Text(
               goalData.name,
@@ -669,21 +692,33 @@ class _TopGoalCard extends StatelessWidget {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    '$currency${goalData.savedAmount.toStringAsFixed(0)} of $currency${goalData.targetAmount.toStringAsFixed(0)}',
+                    l10n.goalSavedOf(
+                      _formatCurrency(
+                        goalData.savedAmount,
+                        currency,
+                        languageCode,
+                      ),
+                      _formatCurrency(
+                        goalData.targetAmount,
+                        currency,
+                        languageCode,
+                      ),
+                    ),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                Text('${(goalData.progress * 100).round()}%'),
+                Text(
+                  LocaleFormatters.localizeDigits(
+                    '${(goalData.progress * 100).round()}%',
+                    languageCode,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 6),
-            Text(
-              goalData.daysRemaining < 0
-                  ? 'Past target by ${goalData.daysRemaining.abs()} days'
-                  : '${goalData.daysRemaining} days left',
-            ),
+            Text(l10n.daysLeftLabel(goalData.daysRemaining)),
           ],
         ],
       ),
@@ -723,6 +758,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final historyState = ref.watch(transactionHistoryControllerProvider);
     final categories =
         ref.watch(allCategoriesProvider).asData?.value ??
@@ -760,7 +796,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
           activeCategoryCount: filter.categoryIds.length,
           activeWalletCount: filter.walletIds.length,
           hasDateRange: filter.startDate != null || filter.endDate != null,
-          sortLabel: filter.sort.label,
+          sortLabel: _sortLabel(context, filter.sort),
           resultCount: transactions.length,
           hasAnyFilter: filter.hasActiveFilters,
           onToggleSearch: _toggleSearch,
@@ -794,7 +830,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'History needs attention',
+                  l10n.historyNeedsAttention,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -810,13 +846,13 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                       onPressed: () => ref
                           .read(transactionHistoryControllerProvider.notifier)
                           .refresh(),
-                      child: const Text('Retry'),
+                      child: Text(l10n.retryAction),
                     ),
                     OutlinedButton(
                       onPressed: () => ref
                           .read(transactionHistoryControllerProvider.notifier)
                           .clearError(),
-                      child: const Text('Dismiss'),
+                      child: Text(l10n.dismissAction),
                     ),
                   ],
                 ),
@@ -832,13 +868,9 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
           )
         else if (transactions.isEmpty)
           EmptyFinanceCard(
-            title: filter.hasActiveFilters
-                ? 'No matching transaction'
-                : 'No transaction yet',
-            subtitle: filter.hasActiveFilters
-                ? 'Try changing the search, sort, or filters to widen the result.'
-                : 'Add your first entry and your full history will start building here.',
-            actionLabel: 'Add transaction',
+            title: l10n.transactionEmptyTitle(filter.hasActiveFilters),
+            subtitle: l10n.transactionEmptySubtitle(filter.hasActiveFilters),
+            actionLabel: l10n.addTransactionAction,
             onAction: _openEditor,
           )
         else
@@ -863,13 +895,13 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                     .read(transactionHistoryControllerProvider.notifier)
                     .loadMore(),
                 icon: const Icon(Icons.expand_more_rounded),
-                label: const Text('Load more'),
+                label: Text(l10n.loadMoreAction),
               ),
             )
           else
             Center(
               child: Text(
-                'You\'ve reached the end of your history.',
+                l10n.endOfHistoryLabel,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(
                     context,
@@ -929,18 +961,16 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete transaction'),
-          content: const Text(
-            'This will remove the transaction and update the wallet balance immediately.',
-          ),
+          title: Text(context.l10n.deleteTransactionTitle),
+          content: Text(context.l10n.deleteTransactionPrompt),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(context.l10n.delete),
             ),
           ],
         );
@@ -960,7 +990,9 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Transaction deleted.')));
+      ).showSnackBar(
+        SnackBar(content: Text(context.l10n.transactionDeleted)),
+      );
     } catch (error) {
       if (!mounted) {
         return;
@@ -1010,7 +1042,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Sort transactions',
+                  context.l10n.sortTransactionsTitle,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -1019,7 +1051,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                 ...TransactionHistorySort.values.map((sort) {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(sort.label),
+                    title: Text(_sortLabel(context, sort)),
                     trailing: currentSort == sort
                         ? Icon(
                             Icons.check_circle_rounded,
@@ -1070,7 +1102,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Filter by category',
+                      context.l10n.filterByCategoryTitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -1111,19 +1143,19 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                     Row(
                       children: <Widget>[
                         Expanded(
-                          child: OutlinedButton(
+                            child: OutlinedButton(
                             onPressed: () {
                               nextSelection.clear();
                               Navigator.of(context).pop(true);
                             },
-                            child: const Text('Clear'),
+                            child: Text(context.l10n.clearAction),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Apply'),
+                            child: Text(context.l10n.applyAction),
                           ),
                         ),
                       ],
@@ -1166,7 +1198,7 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Filter by wallet',
+                      context.l10n.filterByWalletTitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -1207,19 +1239,19 @@ class _TransactionsTabState extends ConsumerState<TransactionsTab> {
                     Row(
                       children: <Widget>[
                         Expanded(
-                          child: OutlinedButton(
+                            child: OutlinedButton(
                             onPressed: () {
                               nextSelection.clear();
                               Navigator.of(context).pop(true);
                             },
-                            child: const Text('Clear'),
+                            child: Text(context.l10n.clearAction),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Apply'),
+                            child: Text(context.l10n.applyAction),
                           ),
                         ),
                       ],
@@ -1288,7 +1320,7 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Financial report',
+                    context.l10n.reportTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -1299,7 +1331,7 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                     runSpacing: 10,
                     children: AnalyticsPeriod.values.map((period) {
                       return _FilterChip(
-                        label: period.label,
+                        label: period.labelFor(languageCode),
                         selected: _period == period,
                         onTap: () {
                           setState(() {
@@ -1321,7 +1353,7 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                     flex: 3,
                     child: IncomeExpenseBarChartCard(
                       analytics: analytics,
-                      title: 'Income vs expense',
+                      title: context.l10n.reportsIncomeVsExpenseTitle,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -1329,7 +1361,7 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                     flex: 2,
                     child: CategoryBreakdownChartCard(
                       items: breakdown,
-                      title: 'Category breakdown',
+                      title: context.l10n.reportsCategoryBreakdownTitle,
                     ),
                   ),
                 ],
@@ -1337,12 +1369,12 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
             else ...<Widget>[
               IncomeExpenseBarChartCard(
                 analytics: analytics,
-                title: 'Income vs expense',
+                title: context.l10n.reportsIncomeVsExpenseTitle,
               ),
               const SizedBox(height: 16),
               CategoryBreakdownChartCard(
                 items: breakdown,
-                title: 'Category breakdown',
+                title: context.l10n.reportsCategoryBreakdownTitle,
               ),
             ],
             const SizedBox(height: 18),
@@ -1353,60 +1385,76 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                 SizedBox(
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
-                    label: 'Total income',
-                    value: _formatCurrency(analytics.totalIncome, currency),
+                    label: context.l10n.totalIncomeLabel,
+                    value: _formatCurrency(
+                      analytics.totalIncome,
+                      currency,
+                      languageCode,
+                    ),
                     toneColor: const Color(0xFF2ECC9A),
                   ),
                 ),
                 SizedBox(
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
-                    label: 'Total expense',
-                    value: _formatCurrency(analytics.totalExpense, currency),
+                    label: context.l10n.totalExpenseLabel,
+                    value: _formatCurrency(
+                      analytics.totalExpense,
+                      currency,
+                      languageCode,
+                    ),
                     toneColor: const Color(0xFFE85D5D),
                   ),
                 ),
                 SizedBox(
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
-                    label: 'Net balance',
-                    value: _formatCurrency(analytics.net, currency),
+                    label: context.l10n.netBalanceLabel,
+                    value: _formatCurrency(analytics.net, currency, languageCode),
                     toneColor: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 SizedBox(
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
-                    label: analytics.period.averageExpenseLabel,
-                    value: _formatCurrency(analytics.averageExpense, currency),
+                    label: analytics.period.averageExpenseLabelFor(
+                      languageCode,
+                    ),
+                    value: _formatCurrency(
+                      analytics.averageExpense,
+                      currency,
+                      languageCode,
+                    ),
                     toneColor: const Color(0xFFED8F41),
                   ),
                 ),
                 SizedBox(
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
-                    label: analytics.period.peakExpenseLabel,
+                    label: analytics.period.peakExpenseLabelFor(languageCode),
                     value: _formatCurrency(
                       analytics.peakExpenseAmount,
                       currency,
+                      languageCode,
                     ),
                     highlight:
                         analytics.peakExpenseBucketLabel ??
-                        'Waiting for spending',
+                        context.l10n.waitingForSpending,
                     toneColor: const Color(0xFFE85D5D),
                   ),
                 ),
                 SizedBox(
                   width: isWide ? 250 : double.infinity,
                   child: AnalyticsMetricCard(
-                    label: 'Top category',
+                    label: context.l10n.topCategoryLabel,
                     value: _formatCurrency(
                       analytics.topCategoryAmount,
                       currency,
+                      languageCode,
                     ),
                     highlight:
                         topCategory?.localizedName(languageCode) ??
-                        'No category yet',
+                        context.l10n.noTopCategoryYet,
                     toneColor: topCategory == null
                         ? Theme.of(context).colorScheme.primary
                         : Color(topCategory.colorValue),
@@ -1422,7 +1470,7 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
         children: <Widget>[
           EmptyFinanceCard(
-            title: 'Reports are loading',
+            title: context.l10n.reportsLoadingTitle,
             subtitle: error.toString(),
           ),
         ],
@@ -1476,6 +1524,7 @@ class _TransactionHistoryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return buildPremiumCard(
@@ -1489,14 +1538,14 @@ class _TransactionHistoryHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Transaction history',
+                    l10n.transactionHistoryTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$resultCount result${resultCount == 1 ? '' : 's'} in the current view',
+                    l10n.resultCountLabel(resultCount),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.textTheme.bodySmall?.color?.withValues(
                         alpha: 0.72,
@@ -1521,7 +1570,7 @@ class _TransactionHistoryHeader extends StatelessWidget {
                   FilledButton.tonalIcon(
                     onPressed: onAddNew,
                     icon: const Icon(Icons.add_rounded),
-                    label: const Text('Add'),
+                    label: Text(l10n.addAction),
                   ),
                 ],
               );
@@ -1552,7 +1601,7 @@ class _TransactionHistoryHeader extends StatelessWidget {
               controller: searchController,
               onChanged: onSearchChanged,
               decoration: InputDecoration(
-                hintText: 'Search by note or amount',
+                hintText: l10n.searchNoteAmountHint,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: searchValue.trim().isEmpty
                     ? null
@@ -1572,17 +1621,17 @@ class _TransactionHistoryHeader extends StatelessWidget {
             runSpacing: 10,
             children: <Widget>[
               _FilterChip(
-                label: 'All',
+                label: l10n.allLabel,
                 selected: selectedType == TransactionHistoryFilter.allTypes,
                 onTap: () => onTypeSelected(TransactionHistoryFilter.allTypes),
               ),
               _FilterChip(
-                label: 'Income',
+                label: l10n.incomeTypeLabel,
                 selected: selectedType == FinanceCatalog.incomeType,
                 onTap: () => onTypeSelected(FinanceCatalog.incomeType),
               ),
               _FilterChip(
-                label: 'Expense',
+                label: l10n.expenseTypeLabel,
                 selected: selectedType == FinanceCatalog.expenseType,
                 onTap: () => onTypeSelected(FinanceCatalog.expenseType),
               ),
@@ -1594,23 +1643,19 @@ class _TransactionHistoryHeader extends StatelessWidget {
             runSpacing: 10,
             children: <Widget>[
               _HistoryFilterPill(
-                label: activeCategoryCount == 0
-                    ? 'Category'
-                    : 'Category ($activeCategoryCount)',
+                label: l10n.categoryFilterLabel(activeCategoryCount),
                 icon: Icons.category_rounded,
                 active: activeCategoryCount > 0,
                 onTap: onOpenCategoryFilter,
               ),
               _HistoryFilterPill(
-                label: activeWalletCount == 0
-                    ? 'Wallet'
-                    : 'Wallet ($activeWalletCount)',
+                label: l10n.walletFilterLabel(activeWalletCount),
                 icon: Icons.account_balance_wallet_outlined,
                 active: activeWalletCount > 0,
                 onTap: onOpenWalletFilter,
               ),
               _HistoryFilterPill(
-                label: hasDateRange ? 'Date range set' : 'Date range',
+                label: hasDateRange ? l10n.dateRangeSetLabel : l10n.dateRangeLabel,
                 icon: Icons.date_range_rounded,
                 active: hasDateRange,
                 onTap: onPickDateRange,
@@ -1618,12 +1663,12 @@ class _TransactionHistoryHeader extends StatelessWidget {
               _HistoryFilterPill(
                 label: sortLabel,
                 icon: Icons.swap_vert_rounded,
-                active: sortLabel != TransactionHistorySort.latest.label,
+                active: sortLabel != _sortLabel(context, TransactionHistorySort.latest),
                 onTap: onPickSort,
               ),
               if (hasAnyFilter)
                 _HistoryFilterPill(
-                  label: 'Clear',
+                  label: l10n.clearAction,
                   icon: Icons.restart_alt_rounded,
                   active: true,
                   onTap: onClearFilters,
@@ -1716,7 +1761,7 @@ class _TopCategoryChip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Top spending category',
+                  context.l10n.topSpendingCategoryTitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.textTheme.bodySmall?.color?.withValues(
                       alpha: 0.72,
@@ -1775,7 +1820,8 @@ List<CategoryBreakdownViewData> _buildBreakdownItems({
     final category = categoryMap[slice.categoryId];
     items.add(
       CategoryBreakdownViewData(
-        label: category?.localizedName(languageCode) ?? 'Category',
+        label: category?.localizedName(languageCode) ??
+            (languageCode == 'bn' ? 'ক্যাটাগরি' : 'Category'),
         amount: slice.amount,
         color: category == null
             ? palette[index % palette.length]
@@ -1786,14 +1832,14 @@ List<CategoryBreakdownViewData> _buildBreakdownItems({
 
   if (remainingAmount > 0) {
     items.add(
-      const CategoryBreakdownViewData(
-        label: 'Other',
+      CategoryBreakdownViewData(
+        label: languageCode == 'bn' ? 'অন্যান্য' : 'Other',
         amount: 0,
         color: Color(0xFF8B93A6),
       ),
     );
     items[items.length - 1] = CategoryBreakdownViewData(
-      label: 'Other',
+      label: languageCode == 'bn' ? 'অন্যান্য' : 'Other',
       amount: remainingAmount,
       color: const Color(0xFF8B93A6),
     );
@@ -2035,7 +2081,11 @@ List<Widget> _buildTransactionSections(
   final grouped = <String, List<TransactionModel>>{};
 
   for (final transaction in transactions) {
-    final label = _groupLabelForDate(transaction.date);
+    final label = _groupLabelForDate(
+      transaction.date,
+      languageCode: languageCode,
+      l10n: context.l10n,
+    );
     grouped.putIfAbsent(label, () => <TransactionModel>[]);
     grouped[label]!.add(transaction);
   }
@@ -2083,9 +2133,13 @@ List<Widget> _buildTransactionSections(
                     ),
                     note: transaction.note.trim(),
                     walletName: wallet?.name,
-                    timeLabel: DateFormat('hh:mm a').format(transaction.date),
+                    timeLabel: LocaleFormatters.formatDate(
+                      transaction.date,
+                      'hh:mm a',
+                      languageCode,
+                    ),
                     amount:
-                        '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency)}',
+                        '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency, languageCode)}',
                     icon: FinanceCatalog.iconForKey(
                       category?.iconKey ?? 'category',
                     ),
@@ -2105,45 +2159,67 @@ List<Widget> _buildTransactionSections(
 String _buildSubtitle({
   required TransactionModel transaction,
   required WalletModel? wallet,
+  required String languageCode,
+  required AppLocalizations l10n,
 }) {
   final pieces = <String>[];
   if (wallet != null) {
     pieces.add(wallet.name);
   }
   if (transaction.isTransfer) {
-    pieces.add('Transfer');
+    pieces.add(l10n.transferLabel);
   }
   if (transaction.note.trim().isNotEmpty) {
     pieces.add(transaction.note.trim());
   }
-  pieces.add(DateFormat('hh:mm a').format(transaction.date));
+  pieces.add(
+    LocaleFormatters.formatDate(transaction.date, 'hh:mm a', languageCode),
+  );
   return pieces.join('  •  ');
 }
 
-String _groupLabelForDate(DateTime date) {
+String _groupLabelForDate(
+  DateTime date, {
+  required String languageCode,
+  required AppLocalizations l10n,
+}) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final itemDay = DateTime(date.year, date.month, date.day);
   final difference = today.difference(itemDay).inDays;
 
   if (difference == 0) {
-    return 'Today';
+    return l10n.todayLabel;
   }
   if (difference == 1) {
-    return 'Yesterday';
+    return l10n.yesterdayLabel;
   }
   if (difference > 1 && difference < 7) {
-    return DateFormat('EEEE').format(date);
+    return LocaleFormatters.formatDate(date, 'EEEE', languageCode);
   }
-  return DateFormat('dd MMM yyyy').format(date);
+  return LocaleFormatters.formatDate(date, 'dd MMM yyyy', languageCode);
 }
 
-String _formatCurrency(double amount, String currency) {
-  return NumberFormat.currency(
-    locale: 'en_US',
-    symbol: currency,
-    decimalDigits: 0,
-  ).format(amount);
+String _formatCurrency(
+  double amount,
+  String currency, [
+  String languageCode = 'en',
+]) {
+  return LocaleFormatters.formatCurrency(amount, currency, languageCode);
+}
+
+String _sortLabel(BuildContext context, TransactionHistorySort sort) {
+  final l10n = context.l10n;
+  switch (sort) {
+    case TransactionHistorySort.latest:
+      return l10n.isBangla ? 'সর্বশেষ' : 'Latest';
+    case TransactionHistorySort.oldest:
+      return l10n.isBangla ? 'পুরোনো আগে' : 'Oldest';
+    case TransactionHistorySort.highestAmount:
+      return l10n.isBangla ? 'সর্বোচ্চ পরিমাণ' : 'Highest amount';
+    case TransactionHistorySort.lowestAmount:
+      return l10n.isBangla ? 'সর্বনিম্ন পরিমাণ' : 'Lowest amount';
+  }
 }
 
 class _DashboardBudgetCard extends StatelessWidget {
@@ -2154,6 +2230,8 @@ class _DashboardBudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final overall = overview.overallBudget;
     final spent = overall?.spent ?? overview.totalCategorySpent;
     final limit = overall?.limit ?? overview.totalCategoryLimit;
@@ -2165,7 +2243,7 @@ class _DashboardBudgetCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Budget pulse',
+            l10n.budgetPulseTitle,
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -2173,8 +2251,12 @@ class _DashboardBudgetCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             overall == null
-                ? 'Tracking category budget totals for this month.'
-                : 'Your overall monthly limit updates automatically as expenses change.',
+                ? (l10n.isBangla
+                      ? 'এই মাসের ক্যাটাগরি বাজেটের মোট খরচ ট্র্যাক করা হচ্ছে।'
+                      : 'Tracking category budget totals for this month.')
+                : (l10n.isBangla
+                      ? 'খরচ বদলালে আপনার মোট মাসিক সীমা স্বয়ংক্রিয়ভাবে আপডেট হবে।'
+                      : 'Your overall monthly limit updates automatically as expenses change.'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(
                 context,
@@ -2186,30 +2268,33 @@ class _DashboardBudgetCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Spent',
-                  value: _formatCurrency(spent, currency),
+                  label: l10n.spentLabel,
+                  value: _formatCurrency(spent, currency, languageCode),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Limit',
+                  label: l10n.limitLabel,
                   value: limit <= 0
-                      ? 'Not set'
-                      : _formatCurrency(limit, currency),
+                      ? l10n.notSetLabel
+                      : _formatCurrency(limit, currency, languageCode),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Active budgets',
-                  value: '${overview.categoryBudgets.length}',
+                  label: l10n.activeBudgetsLabel,
+                  value: LocaleFormatters.formatNumber(
+                    overview.categoryBudgets.length,
+                    languageCode,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          ProgressBarRow(label: 'Monthly progress', value: progress),
+          ProgressBarRow(label: l10n.monthlyProgressLabel, value: progress),
         ],
       ),
     );
@@ -2227,6 +2312,8 @@ class _DashboardBudgetAlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final exceeded = overview.exceededBudgets.take(2).toList(growable: false);
     final near = overview.nearLimitBudgets.take(2).toList(growable: false);
 
@@ -2236,7 +2323,7 @@ class _DashboardBudgetAlertCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            exceeded.isNotEmpty ? 'Budget alerts' : 'Budget warnings',
+            l10n.budgetAlertsTitle(exceeded.isNotEmpty),
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -2246,7 +2333,15 @@ class _DashboardBudgetAlertCard extends StatelessWidget {
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '${item.category?.name ?? 'Category'} exceeded by ${_formatCurrency(item.budget.spent - item.budget.limit, currency)}.',
+                l10n.categoryExceededLabel(
+                  item.category?.localizedName(languageCode) ??
+                      l10n.categoryFilterLabel(0),
+                  _formatCurrency(
+                    item.budget.spent - item.budget.limit,
+                    currency,
+                    languageCode,
+                  ),
+                ),
               ),
             ),
           ),
@@ -2254,7 +2349,11 @@ class _DashboardBudgetAlertCard extends StatelessWidget {
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '${item.category?.name ?? 'Category'} is at ${(item.budget.progress * 100).round()}% of its limit.',
+                l10n.categoryNearLimitLabel(
+                  item.category?.localizedName(languageCode) ??
+                      l10n.categoryFilterLabel(0),
+                  (item.budget.progress * 100).round(),
+                ),
               ),
             ),
           ),
@@ -2281,6 +2380,7 @@ class _RecentTransactionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return buildPremiumCard(
@@ -2291,14 +2391,14 @@ class _RecentTransactionsCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final title = Text(
-                'Recent transactions',
+                l10n.recentTransactionsTitle,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               );
               final button = TextButton(
                 onPressed: () => openTransactionEditorPage(context),
-                child: const Text('Add new'),
+                child: Text(l10n.addNewAction),
               );
 
               if (constraints.maxWidth < 320) {
@@ -2320,10 +2420,9 @@ class _RecentTransactionsCard extends StatelessWidget {
           if (transactions.isEmpty) ...<Widget>[
             const SizedBox(height: 8),
             EmptyFinanceCard(
-              title: 'No transactions yet',
-              subtitle:
-                  'Use the add button to save your first expense or income entry.',
-              actionLabel: 'Add transaction',
+              title: l10n.noTransactionsYetTitle,
+              subtitle: l10n.noTransactionsYetSubtitle,
+              actionLabel: l10n.addTransactionAction,
               onAction: () => openTransactionEditorPage(context),
             ),
           ] else
@@ -2347,9 +2446,11 @@ class _RecentTransactionsCard extends StatelessWidget {
                   subtitle: _buildSubtitle(
                     transaction: transaction,
                     wallet: wallet,
+                    languageCode: languageCode,
+                    l10n: l10n,
                   ),
                   amount:
-                      '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency)}',
+                      '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency, languageCode)}',
                   icon: FinanceCatalog.transactionIcon(
                     transaction,
                     category: category,
@@ -2383,6 +2484,8 @@ class _TodayPulseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final theme = Theme.of(context);
     final net = summary.todayIncome - summary.todayExpense;
 
@@ -2392,21 +2495,21 @@ class _TodayPulseCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Today\'s pulse',
+            l10n.todaysPulseTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Your home screen now reflects live transaction data from Firestore.',
+            l10n.homeLiveSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.74),
             ),
           ),
           const SizedBox(height: 18),
           ProgressBarRow(
-            label: 'Income vs expense',
+            label: l10n.incomeVsExpenseLabel,
             value: summary.todayIncome == 0 && summary.todayExpense == 0
                 ? 0
                 : (summary.todayExpense /
@@ -2419,22 +2522,25 @@ class _TodayPulseCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Today net',
-                  value: _formatCurrency(net, currency),
+                  label: l10n.todayNetLabel,
+                  value: _formatCurrency(net, currency, languageCode),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Month net',
-                  value: _formatCurrency(monthNet, currency),
+                  label: l10n.monthNetLabel,
+                  value: _formatCurrency(monthNet, currency, languageCode),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _MiniStatTile(
-                  label: 'Recent items',
-                  value: '$transactionCount',
+                  label: l10n.recentItemsLabel,
+                  value: LocaleFormatters.formatNumber(
+                    transactionCount,
+                    languageCode,
+                  ),
                 ),
               ),
             ],

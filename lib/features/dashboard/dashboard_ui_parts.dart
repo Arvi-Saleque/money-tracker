@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../l10n/l10n_extension.dart';
 import '../../shared/widgets/premium_card.dart';
 import 'dashboard_data.dart';
 
@@ -31,7 +32,7 @@ class HeroBadge extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Live',
+            context.l10n.liveLabel,
             style: theme.textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w700,
@@ -159,7 +160,7 @@ class QuickActionsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Shortcuts',
+            context.l10n.shortcutsLabel,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -185,7 +186,7 @@ class QuickActionsCard extends StatelessWidget {
                           Icon(action.icon, color: theme.colorScheme.primary),
                           const SizedBox(height: 12),
                           Text(
-                            action.label,
+                            action.label(context.l10n),
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),

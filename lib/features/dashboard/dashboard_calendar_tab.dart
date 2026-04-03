@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -165,9 +164,9 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                     focusedDay: _focusedDay,
                     calendarFormat: _calendarFormat,
                     headerVisible: false,
-                    availableCalendarFormats: const <CalendarFormat, String>{
-                      CalendarFormat.month: 'Month',
-                      CalendarFormat.week: 'Week',
+                    availableCalendarFormats: <CalendarFormat, String>{
+                      CalendarFormat.month: context.l10n.calendarMonthViewLabel,
+                      CalendarFormat.week: context.l10n.calendarWeekViewLabel,
                     },
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
@@ -293,7 +292,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
         children: <Widget>[
           EmptyFinanceCard(
-            title: 'Calendar is loading',
+            title: context.l10n.calendarLoadingTitle,
             subtitle: error.toString(),
           ),
         ],
@@ -318,7 +317,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
       firstDate: DateTime(DateTime.now().year - 5),
       lastDate: DateTime(DateTime.now().year + 5),
       initialDatePickerMode: DatePickerMode.year,
-      helpText: 'Select month',
+      helpText: context.l10n.selectMonthHelp,
     );
 
     if (selected == null) {
@@ -357,16 +356,17 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      DateFormat(
+                      LocaleFormatters.formatDate(
+                        summary.date,
                         'dd MMMM yyyy',
                         Localizations.localeOf(context).languageCode,
-                      ).format(summary.date),
+                      ),
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Income, expense, and transaction details for the selected day.',
+                      context.l10n.calendarSelectedDaySubtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(
                           context,
@@ -381,7 +381,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                         SizedBox(
                           width: 110,
                           child: _DayMetricCard(
-                            label: 'Income',
+                            label: context.l10n.incomeTypeLabel,
                             value: _formatCurrency(
                               summary.totalIncome,
                               currency,
@@ -393,7 +393,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                         SizedBox(
                           width: 110,
                           child: _DayMetricCard(
-                            label: 'Expense',
+                            label: context.l10n.expenseTypeLabel,
                             value: _formatCurrency(
                               summary.totalExpense,
                               currency,
@@ -405,7 +405,7 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                         SizedBox(
                           width: 110,
                           child: _DayMetricCard(
-                            label: 'Net',
+                            label: context.l10n.netBalanceLabel,
                             value: _formatCurrency(
                               summary.totalIncome - summary.totalExpense,
                               currency,
@@ -419,10 +419,10 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                     const SizedBox(height: 18),
                     Expanded(
                       child: summary.transactions.isEmpty
-                          ? const EmptyFinanceCard(
-                              title: 'No transaction on this day',
+                          ? EmptyFinanceCard(
+                              title: context.l10n.noTransactionsOnDayTitle,
                               subtitle:
-                                  'Pick another date or add a new entry to start building your calendar.',
+                                  context.l10n.noTransactionsOnDaySubtitle,
                             )
                           : ListView.separated(
                               controller: scrollController,
@@ -452,6 +452,8 @@ class _CalendarTabViewState extends ConsumerState<CalendarTabView> {
                                   subtitle: _buildCalendarSubtitle(
                                     transaction: transaction,
                                     wallet: wallet,
+                                    context: context,
+                                    languageCode: languageCode,
                                   ),
                                   amount:
                                       '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${_formatCurrency(transaction.amount, currency, languageCode: languageCode)}',
@@ -812,17 +814,21 @@ String _formatCurrency(
 String _buildCalendarSubtitle({
   required TransactionModel transaction,
   required WalletModel? wallet,
+  required BuildContext context,
+  required String languageCode,
 }) {
   final pieces = <String>[];
   if (wallet != null) {
     pieces.add(wallet.name);
   }
   if (transaction.isTransfer) {
-    pieces.add('Transfer');
+    pieces.add(context.l10n.transferLabel);
   }
   if (transaction.note.trim().isNotEmpty) {
     pieces.add(transaction.note.trim());
   }
-  pieces.add(DateFormat('hh:mm a').format(transaction.date));
+  pieces.add(
+    LocaleFormatters.formatDate(transaction.date, 'hh:mm a', languageCode),
+  );
   return pieces.join('  •  ');
 }

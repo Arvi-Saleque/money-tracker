@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
@@ -70,6 +71,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final walletsAsync = ref.watch(walletsProvider);
     final allCategoriesAsync = ref.watch(allCategoriesProvider);
     final categories = ref.watch(categoriesByTypeProvider(_selectedType));
@@ -100,10 +102,10 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(_isEditing ? 'Edit transaction' : 'Add transaction'),
+            Text(l10n.transactionEditorTitle(_isEditing)),
             const SizedBox(height: 2),
             Text(
-              'Create or update a transaction',
+              l10n.transactionEditorSubtitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.textTheme.bodyMedium?.color?.withValues(
                   alpha: 0.68,
@@ -141,7 +143,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          'Form',
+                          l10n.formBadge,
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w700,
@@ -238,19 +240,21 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     required bool isLoadingCategories,
     required bool hasData,
   }) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _SectionTitle('Type'),
+        _SectionTitle(l10n.typeLabel),
         const SizedBox(height: 10),
         Wrap(
           spacing: 10,
           runSpacing: 10,
           children: <Widget>[
             _TypeChip(
-              label: 'Expense',
+              label: l10n.expenseTypeLabel,
               selected: _selectedType == FinanceCatalog.expenseType,
               color: const Color(0xFFE85D5D),
               onTap: () {
@@ -261,7 +265,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
               },
             ),
             _TypeChip(
-              label: 'Income',
+              label: l10n.incomeTypeLabel,
               selected: _selectedType == FinanceCatalog.incomeType,
               color: const Color(0xFF2ECC9A),
               onTap: () {
@@ -274,7 +278,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
           ],
         ),
         const SizedBox(height: 18),
-        _SectionTitle('Amount'),
+        _SectionTitle(l10n.amountFieldLabel),
         const SizedBox(height: 10),
         TextField(
           controller: _amountController,
@@ -285,15 +289,14 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
           ),
         ),
         const SizedBox(height: 18),
-        _SectionTitle('Wallet'),
+        _SectionTitle(l10n.walletFieldLabel),
         const SizedBox(height: 10),
         if (walletsAsync.isLoading && wallets.isEmpty)
           const Center(child: CircularProgressIndicator())
         else if (wallets.isEmpty)
-          const _InlineInfoCard(
-            title: 'No wallet yet',
-            subtitle:
-                'Starter data is still loading. Reopen this sheet in a moment.',
+          _InlineInfoCard(
+            title: l10n.noWalletYetTitle,
+            subtitle: l10n.noWalletYetSubtitle,
           )
         else
           DropdownButtonFormField<String>(
@@ -330,13 +333,13 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
         const SizedBox(height: 18),
         Row(
           children: <Widget>[
-            const Expanded(child: _SectionTitle('Category')),
+            Expanded(child: _SectionTitle(l10n.categoryFieldLabel)),
             FilledButton.tonalIcon(
               onPressed: isBusy
                   ? null
                   : () => _openCategoryDialog(allCategories),
               icon: const Icon(Icons.add_circle_outline_rounded),
-              label: const Text('New category'),
+              label: Text(l10n.newCategoryAction),
             ),
           ],
         ),
@@ -344,10 +347,9 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
         if (isLoadingCategories)
           const Center(child: CircularProgressIndicator())
         else if (categories.isEmpty)
-          const _InlineInfoCard(
-            title: 'No category available',
-            subtitle:
-                'Starter categories are still syncing. You can also create one right now.',
+          _InlineInfoCard(
+            title: l10n.noCategoryAvailableTitle,
+            subtitle: l10n.noCategoryAvailableSubtitle,
           )
         else
           LayoutBuilder(
@@ -387,29 +389,35 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
         const SizedBox(height: 18),
         Row(
           children: <Widget>[
-            const Expanded(child: _SectionTitle('Date')),
+            Expanded(child: _SectionTitle(l10n.dateFieldLabel)),
             OutlinedButton.icon(
               onPressed: isBusy ? null : _pickDate,
               icon: const Icon(Icons.calendar_today_rounded),
-              label: Text(DateFormat('dd MMM yyyy').format(_selectedDate)),
+              label: Text(
+                LocaleFormatters.formatDate(
+                  _selectedDate,
+                  'dd MMM yyyy',
+                  languageCode,
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 18),
-        _SectionTitle('Note'),
+        _SectionTitle(l10n.noteFieldLabel),
         const SizedBox(height: 10),
         TextField(
           controller: _noteController,
           minLines: 2,
           maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: 'Optional note about this transaction',
+          decoration: InputDecoration(
+            hintText: l10n.optionalTransactionNoteHint,
           ),
         ),
         if (!hasData) ...<Widget>[
           const SizedBox(height: 16),
           Text(
-            'You can still stay here while starter data finishes syncing.',
+            l10n.starterDataSyncingHint,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.error,
             ),
@@ -423,7 +431,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                 child: OutlinedButton.icon(
                   onPressed: isBusy ? null : _deleteTransaction,
                   icon: const Icon(Icons.delete_outline_rounded),
-                  label: const Text('Delete'),
+                  label: Text(l10n.delete),
                 ),
               ),
               const SizedBox(width: 12),
@@ -431,14 +439,18 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
             Expanded(
               child: OutlinedButton(
                 onPressed: isBusy ? null : () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
                 onPressed: isBusy || !hasData ? null : _saveTransaction,
-                child: Text(_isEditing ? 'Update' : 'Save'),
+                child: Text(
+                  _isEditing
+                      ? l10n.updateTransactionAction
+                      : l10n.saveTransactionAction,
+                ),
               ),
             ),
           ],
@@ -487,15 +499,15 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
   Future<void> _saveTransaction() async {
     final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
     if (amount == null || amount <= 0) {
-      _showMessage('Enter a valid amount greater than 0.');
+      _showMessage(context.l10n.validAmountError);
       return;
     }
     if (_selectedWalletId == null) {
-      _showMessage('Choose a wallet before saving.');
+      _showMessage(context.l10n.chooseWalletError);
       return;
     }
     if (_selectedCategoryId == null) {
-      _showMessage('Choose a category before saving.');
+      _showMessage(context.l10n.chooseCategoryError);
       return;
     }
 
@@ -527,7 +539,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       }
       Navigator.of(context).pop();
       _showGlobalMessage(
-        _isEditing ? 'Transaction updated.' : 'Transaction saved.',
+        _isEditing ? context.l10n.transactionUpdated : context.l10n.transactionSaved,
       );
     } catch (error) {
       _showMessage(error.toString());
@@ -548,7 +560,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
         return;
       }
       Navigator.of(context).pop();
-      _showGlobalMessage('Transaction deleted.');
+      _showGlobalMessage(context.l10n.transactionDeleted);
     } catch (error) {
       _showMessage(error.toString());
     }
@@ -559,18 +571,16 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete category'),
-          content: Text(
-            'Delete "${category.name}"? Existing transactions will still keep the old category id, so only remove categories you no longer need.',
-          ),
+          title: Text(context.l10n.deleteCategoryTitle),
+          content: Text(context.l10n.deleteCategoryPrompt(category.name)),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(context.l10n.delete),
             ),
           ],
         );
@@ -593,7 +603,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
           _selectedCategoryId = null;
         });
       }
-      _showMessage('Category deleted.');
+      _showMessage(context.l10n.categoryDeleted);
     } catch (error) {
       _showMessage(error.toString());
     }
@@ -660,10 +670,11 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final state = ref.watch(categoryActionControllerProvider);
     final isIncome = widget.initialType == FinanceCatalog.incomeType;
-    final typeLabel = isIncome ? 'Income' : 'Expense';
+    final typeLabel = isIncome ? l10n.incomeTypeLabel : l10n.expenseTypeLabel;
     final accent = isIncome ? const Color(0xFF2ECC9A) : const Color(0xFFE85D5D);
     final templates = FinanceCatalog.templatesForType(widget.initialType);
 
@@ -677,7 +688,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
         children: <Widget>[
           Expanded(
             child: Text(
-              'Create $typeLabel category',
+              l10n.createCategoryTitle(typeLabel),
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -694,7 +705,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'The new category will be selected automatically after you save it.',
+                l10n.categoryAutoSelectHint,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.textTheme.bodyMedium?.color?.withValues(
                     alpha: 0.72,
@@ -704,18 +715,18 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
               const SizedBox(height: 18),
               DropdownButtonFormField<_CategoryCreationMode>(
                 initialValue: _creationMode,
-                decoration: const InputDecoration(
-                  labelText: 'Create with',
+                decoration: InputDecoration(
+                  labelText: l10n.createWithLabel,
                   prefixIcon: Icon(Icons.auto_awesome_mosaic_outlined),
                 ),
-                items: const <DropdownMenuItem<_CategoryCreationMode>>[
+                items: <DropdownMenuItem<_CategoryCreationMode>>[
                   DropdownMenuItem(
                     value: _CategoryCreationMode.template,
-                    child: Text('Template'),
+                    child: Text(l10n.templateLabel),
                   ),
                   DropdownMenuItem(
                     value: _CategoryCreationMode.manual,
-                    child: Text('Manual'),
+                    child: Text(l10n.manualLabel),
                   ),
                 ],
                 onChanged: state.isLoading
@@ -741,7 +752,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: state.isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton.icon(
           onPressed: state.isLoading ? null : _submit,
@@ -754,8 +765,8 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
               : const Icon(Icons.check_rounded),
           label: Text(
             _creationMode == _CategoryCreationMode.template
-                ? 'Use template'
-                : 'Create category',
+                ? l10n.useTemplateAction
+                : l10n.createCategoryAction,
           ),
         ),
       ],
@@ -776,8 +787,8 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
       children: <Widget>[
         DropdownButtonFormField<String>(
           initialValue: template?.id,
-          decoration: const InputDecoration(
-            labelText: 'Template',
+          decoration: InputDecoration(
+            labelText: context.l10n.categoryTemplateLabel,
             prefixIcon: Icon(Icons.bolt_outlined),
           ),
           items: templates
@@ -810,11 +821,11 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
           const SizedBox(height: 12),
           _InlineInfoCard(
             title: existingIds.contains(template.id)
-                ? 'Already available'
-                : 'Quick create',
+                ? context.l10n.alreadyAvailableTitle
+                : context.l10n.quickCreateTitle,
             subtitle: existingIds.contains(template.id)
-                ? 'This template already exists. Saving will just select it.'
-                : 'This template is ready to create instantly for faster entry.',
+                ? context.l10n.templateExistsSubtitle
+                : context.l10n.templateReadySubtitle,
           ),
         ],
       ],
@@ -822,6 +833,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
   }
 
   Widget _buildManualSection(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
 
     return Column(
@@ -832,11 +844,10 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
           onChanged: (_) {
             setState(() {});
           },
-          decoration: const InputDecoration(
-            labelText: 'Category name',
-            hintText: 'Write in English or Bangla',
-            helperText:
-                'We will fill the opposite language automatically when possible.',
+          decoration: InputDecoration(
+            labelText: l10n.categoryNameLabel,
+            hintText: l10n.categoryNameHint,
+            helperText: l10n.categoryNameHelper,
             prefixIcon: Icon(Icons.edit_outlined),
           ),
         ),
@@ -845,13 +856,13 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
           iconKey: _selectedIconKey,
           colorValue: _selectedColorValue,
           title: _nameController.text.trim().isEmpty
-              ? 'Category preview'
+              ? l10n.categoryPreviewTitle
               : _nameController.text.trim(),
-          subtitle: 'Manual category',
+          subtitle: l10n.manualCategorySubtitle,
         ),
         const SizedBox(height: 18),
         Text(
-          'Choose icon',
+          l10n.chooseIconLabel,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -900,7 +911,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
         ),
         const SizedBox(height: 18),
         Text(
-          'Choose color',
+          l10n.chooseColorLabel,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -948,7 +959,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
 
       if (_creationMode == _CategoryCreationMode.template) {
         if (_selectedTemplate == null) {
-          _showMessage('Choose a template first.');
+          _showMessage(context.l10n.chooseTemplateFirstError);
           return;
         }
         category = await controller.createFromTemplate(
@@ -957,7 +968,7 @@ class _CategoryEditorDialogState extends ConsumerState<_CategoryEditorDialog> {
         );
       } else {
         if (_nameController.text.trim().isEmpty) {
-          _showMessage('Write a category name in English or Bangla.');
+          _showMessage(context.l10n.writeCategoryNameError);
           return;
         }
         category = await controller.createManual(
@@ -999,11 +1010,15 @@ class _TopSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final theme = Theme.of(context);
     final accent = type == FinanceCatalog.incomeType
         ? const Color(0xFF2ECC9A)
         : const Color(0xFFE85D5D);
-    final label = type == FinanceCatalog.incomeType ? 'Income' : 'Expense';
+    final label = type == FinanceCatalog.incomeType
+        ? l10n.incomeTypeLabel
+        : l10n.expenseTypeLabel;
 
     return buildPremiumCard(
       context: context,
@@ -1026,14 +1041,14 @@ class _TopSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  '$label transaction',
+                  '$label ${l10n.isBangla ? 'লেনদেন' : 'transaction'}',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${DateFormat('dd MMM yyyy').format(selectedDate)}${walletName == null ? '' : '  |  $walletName'}',
+                  '${LocaleFormatters.formatDate(selectedDate, 'dd MMM yyyy', languageCode)}${walletName == null ? '' : '  |  $walletName'}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.textTheme.bodySmall?.color?.withValues(
                       alpha: 0.72,

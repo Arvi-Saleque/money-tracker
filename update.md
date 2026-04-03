@@ -160,3 +160,10 @@
 
 - The app now switches both text and typography when the saved profile language changes, and major shell/profile/auth/wallet/calendar strings respond immediately.
 - Several deeper dashboard, budget, goal, subscription, and transaction-detail labels still have room for a second localization sweep, but the localization architecture and the most user-visible flows are now in place and working.
+
+## Localization Follow-up - Full Bangla Sweep
+
+- Completed a second-pass localization sweep across the most-used finance surfaces so Bangla mode now updates Home, Reports, Transaction History, Add/Edit Transaction, Calendar day details, Wallet editor/detail screens, and Transfer flows more consistently.
+- Centralized many finance-specific Bangla/English helper strings in `l10n_extension.dart` so dashboard cards, filters, dialogs, and transactional forms can stay in sync without duplicating text logic.
+- Switched more screens from raw `DateFormat`/`NumberFormat` calls to locale-aware helpers so Bangla mode also affects dates, counts, chart buckets, and currency formatting instead of only swapping a few labels.
+- Re-ran `flutter analyze`, `flutter test`, `flutter build apk --debug`, and `flutter build web` after the sweep to confirm the broader localization pass still compiles and ships cleanly.

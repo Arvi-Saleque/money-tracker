@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/locale_formatters.dart';
@@ -329,9 +328,9 @@ class WalletDetailScreen extends ConsumerWidget {
                                 runSpacing: 10,
                                 children: <Widget>[
                                   MiniPill(
-                                    label: FinanceCatalog.walletTypeFor(
+                                    label: context.l10n.walletTypeName(
                                       wallet.type,
-                                    ).label,
+                                    ),
                                   ),
                                   if (wallet.isDefault)
                                     MiniPill(label: context.l10n.defaultLabel),
@@ -384,12 +383,14 @@ class WalletDetailScreen extends ConsumerWidget {
                           subtitle: [
                             if (transaction.note.trim().isNotEmpty)
                               transaction.note.trim(),
-                            DateFormat(
+                            LocaleFormatters.formatDate(
+                              transaction.date,
                               'dd MMM yyyy  •  hh:mm a',
-                            ).format(transaction.date),
+                              languageCode,
+                            ),
                           ].join('  '),
                           amount:
-                              '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${formatWalletCurrency(transaction.amount, currency)}',
+                              '${transaction.type == FinanceCatalog.incomeType ? '+' : '-'}${formatWalletCurrency(transaction.amount, currency, languageCode: languageCode)}',
                           icon: FinanceCatalog.transactionIcon(
                             transaction,
                             category: category,
@@ -479,7 +480,7 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit wallet' : 'Add wallet')),
+      appBar: AppBar(title: Text(context.l10n.walletEditorTitle(_isEditing))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
@@ -510,7 +511,7 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                             children: <Widget>[
                               Text(
                                 _nameController.text.trim().isEmpty
-                                    ? 'Wallet preview'
+                                    ? context.l10n.walletPreviewTitle
                                     : _nameController.text.trim(),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
@@ -518,9 +519,7 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                FinanceCatalog.walletTypeFor(
-                                  _selectedType,
-                                ).label,
+                                context.l10n.walletTypeName(_selectedType),
                               ),
                             ],
                           ),
@@ -532,17 +531,21 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                   TextField(
                     controller: _nameController,
                     onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(labelText: 'Wallet name'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.walletNameFieldLabel,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedType,
-                    decoration: const InputDecoration(labelText: 'Wallet type'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.walletTypeFieldLabel,
+                    ),
                     items: FinanceCatalog.walletTypes
                         .map(
                           (type) => DropdownMenuItem<String>(
                             value: type.type,
-                            child: Text(type.label),
+                            child: Text(context.l10n.walletTypeName(type.type)),
                           ),
                         )
                         .toList(),
@@ -567,10 +570,9 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                     TextFormField(
                       initialValue: _trimZeroes(widget.wallet!.balance),
                       readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Current balance',
-                        helperText:
-                            'Balance follows transactions and transfers automatically.',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.currentBalanceFieldLabel,
+                        helperText: context.l10n.currentBalanceFieldHint,
                       ),
                     )
                   else
@@ -579,8 +581,8 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Initial balance',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.initialBalanceFieldLabel,
                         hintText: '0.00',
                         prefixText: '\u09F3 ',
                       ),
@@ -589,14 +591,14 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
                     value: _isDefault,
-                    title: const Text('Set as default wallet'),
+                    title: Text(context.l10n.setAsDefaultWalletLabel),
                     onChanged: isBusy
                         ? null
                         : (value) => setState(() => _isDefault = value),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Choose icon',
+                    context.l10n.chooseIconLabel,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -679,7 +681,7 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                           onPressed: isBusy
                               ? null
                               : () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
+                          child: Text(context.l10n.cancel),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -687,7 +689,9 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                         child: ElevatedButton(
                           onPressed: isBusy ? null : _saveWallet,
                           child: Text(
-                            _isEditing ? 'Update wallet' : 'Create wallet',
+                            _isEditing
+                                ? context.l10n.updateWalletAction
+                                : context.l10n.createWalletAction,
                           ),
                         ),
                       ),
@@ -704,7 +708,7 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
 
   Future<void> _saveWallet() async {
     if (_nameController.text.trim().isEmpty) {
-      _showMessage('Please enter a wallet name.');
+      _showMessage(context.l10n.walletNameRequired);
       return;
     }
 
@@ -736,7 +740,9 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isEditing ? 'Wallet updated.' : 'Wallet created.'),
+          content: Text(
+            _isEditing ? context.l10n.walletUpdated : context.l10n.walletCreated,
+          ),
         ),
       );
     } catch (error) {
@@ -843,8 +849,9 @@ class _WalletCard extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: <Widget>[
-              MiniPill(label: FinanceCatalog.walletTypeFor(wallet.type).label),
-              if (wallet.isDefault) const MiniPill(label: 'Default'),
+              MiniPill(label: context.l10n.walletTypeName(wallet.type)),
+                if (wallet.isDefault)
+                  MiniPill(label: context.l10n.defaultLabel),
             ],
           ),
           const SizedBox(height: 16),

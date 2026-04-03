@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/utils/locale_formatters.dart';
+import '../../l10n/l10n_extension.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../transactions/finance_catalog.dart';
@@ -83,6 +84,8 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
     final wallets =
         ref.watch(walletsProvider).asData?.value ?? const <WalletModel>[];
     final state = ref.watch(transferActionControllerProvider);
@@ -95,7 +98,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit transfer' : 'Transfer money'),
+        title: Text(l10n.transferEditorTitle(_isEditing)),
       ),
       body: SafeArea(
         child: wallets.isEmpty
@@ -136,9 +139,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Text(
-                                      _isEditing
-                                          ? 'Update wallet transfer'
-                                          : 'Move money between wallets',
+                                      l10n.transferHeaderTitle(_isEditing),
                                       style: theme.textTheme.titleMedium
                                           ?.copyWith(
                                             fontWeight: FontWeight.w700,
@@ -146,7 +147,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Transfers update both wallet balances together and stay linked in history.',
+                                      l10n.transferHeaderSubtitle,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
                                             color: theme
@@ -165,8 +166,8 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                         const SizedBox(height: 20),
                         DropdownButtonFormField<String>(
                           initialValue: _fromWalletId,
-                          decoration: const InputDecoration(
-                            labelText: 'From wallet',
+                          decoration: InputDecoration(
+                            labelText: l10n.fromWalletLabel,
                             prefixIcon: Icon(Icons.call_made_rounded),
                           ),
                           items: wallets
@@ -185,8 +186,8 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
                           initialValue: _toWalletId,
-                          decoration: const InputDecoration(
-                            labelText: 'To wallet',
+                          decoration: InputDecoration(
+                            labelText: l10n.toWalletLabel,
                             prefixIcon: Icon(Icons.call_received_rounded),
                           ),
                           items: wallets
@@ -207,8 +208,8 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: const InputDecoration(
-                            labelText: 'Amount',
+                          decoration: InputDecoration(
+                            labelText: l10n.amountFieldLabel,
                             hintText: '0.00',
                             prefixText: '\u09F3 ',
                           ),
@@ -218,7 +219,11 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                           onPressed: isBusy ? null : _pickDate,
                           icon: const Icon(Icons.calendar_today_rounded),
                           label: Text(
-                            DateFormat('dd MMM yyyy').format(_selectedDate),
+                            LocaleFormatters.formatDate(
+                              _selectedDate,
+                              'dd MMM yyyy',
+                              languageCode,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -226,9 +231,9 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                           controller: _noteController,
                           minLines: 2,
                           maxLines: 4,
-                          decoration: const InputDecoration(
-                            labelText: 'Note',
-                            hintText: 'Optional transfer note',
+                          decoration: InputDecoration(
+                            labelText: l10n.noteFieldLabel,
+                            hintText: l10n.optionalTransferNoteHint,
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -241,7 +246,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                                   icon: const Icon(
                                     Icons.delete_outline_rounded,
                                   ),
-                                  label: const Text('Delete'),
+                                  label: Text(l10n.delete),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -251,7 +256,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                                 onPressed: isBusy
                                     ? null
                                     : () => Navigator.of(context).pop(),
-                                child: const Text('Cancel'),
+                                child: Text(l10n.cancel),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -267,7 +272,11 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
                                         ),
                                       )
                                     : const Icon(Icons.swap_horiz_rounded),
-                                label: Text(_isEditing ? 'Update' : 'Transfer'),
+                                label: Text(
+                                  _isEditing
+                                      ? l10n.updateAction
+                                      : l10n.transferAction,
+                                ),
                               ),
                             ),
                           ],
@@ -361,17 +370,18 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
   }
 
   Future<void> _saveTransfer() async {
+    final l10n = context.l10n;
     final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
     if (amount == null || amount <= 0) {
-      _showMessage('Enter a valid transfer amount.');
+      _showMessage(l10n.validTransferAmountError);
       return;
     }
     if (_fromWalletId == null || _toWalletId == null) {
-      _showMessage('Choose both wallets for this transfer.');
+      _showMessage(l10n.chooseBothWalletsError);
       return;
     }
     if (_fromWalletId == _toWalletId) {
-      _showMessage('From and to wallets must be different.');
+      _showMessage(l10n.differentWalletsError);
       return;
     }
 
@@ -379,7 +389,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
       final controller = ref.read(transferActionControllerProvider.notifier);
       if (_isEditing) {
         if (_baseTransaction == null || _linkedTransaction == null) {
-          _showMessage('Transfer details are still loading. Try again.');
+          _showMessage(l10n.transferDetailsLoadingError);
           return;
         }
         await controller.updateTransfer(
@@ -408,7 +418,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(
           content: Text(
-            _isEditing ? 'Transfer updated.' : 'Transfer completed.',
+            _isEditing ? l10n.transferUpdated : l10n.transferCompleted,
           ),
         ),
       );
@@ -418,6 +428,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
   }
 
   Future<void> _deleteTransfer() async {
+    final l10n = context.l10n;
     if (_baseTransaction == null) {
       return;
     }
@@ -435,7 +446,7 @@ class _TransferEditorPageState extends ConsumerState<TransferEditorPage> {
       Navigator.of(context).pop();
       ScaffoldMessenger.maybeOf(
         context,
-      )?.showSnackBar(const SnackBar(content: Text('Transfer deleted.')));
+      )?.showSnackBar(SnackBar(content: Text(l10n.transferDeleted)));
     } catch (error) {
       _showMessage(error.toString());
     }

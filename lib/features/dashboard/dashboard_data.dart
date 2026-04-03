@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../l10n/l10n_extension.dart';
 
 class ActionShortcut {
-  const ActionShortcut(this.label, this.icon, this.route);
+  const ActionShortcut(this._label, this.icon, this.route);
 
-  final String label;
+  final String _label;
   final IconData icon;
   final String route;
+
+  String label(AppLocalizations l10n) {
+    switch (route) {
+      case AppConstants.profileRoute:
+        return l10n.profileTitle;
+      case AppConstants.walletsRoute:
+        return l10n.walletsTitle;
+      case AppConstants.budgetsRoute:
+        return l10n.budgetsTitleText;
+      case AppConstants.goalsRoute:
+        return l10n.goalsTitleText;
+      case AppConstants.subscriptionsRoute:
+        return l10n.billsTitleText;
+      default:
+        return _label;
+    }
+  }
 }
 
 const List<ActionShortcut> actionShortcuts = <ActionShortcut>[

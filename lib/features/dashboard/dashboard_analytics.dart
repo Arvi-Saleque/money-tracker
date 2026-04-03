@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/utils/locale_formatters.dart';
 import '../../shared/models/transaction_model.dart';
+import '../profile/profile_providers.dart';
 import '../transactions/finance_catalog.dart';
 import '../transactions/transaction_providers.dart';
 
@@ -37,6 +39,46 @@ extension AnalyticsPeriodX on AnalyticsPeriod {
       case AnalyticsPeriod.yearly:
         return 'Highest spending month';
     }
+  }
+
+  String labelFor(String languageCode) {
+    if (_isBanglaCode(languageCode)) {
+      switch (this) {
+        case AnalyticsPeriod.weekly:
+          return 'এই সপ্তাহ';
+        case AnalyticsPeriod.monthly:
+          return 'এই মাস';
+        case AnalyticsPeriod.yearly:
+          return 'এই বছর';
+      }
+    }
+    return label;
+  }
+
+  String averageExpenseLabelFor(String languageCode) {
+    if (_isBanglaCode(languageCode)) {
+      switch (this) {
+        case AnalyticsPeriod.weekly:
+        case AnalyticsPeriod.monthly:
+          return 'গড় দৈনিক ব্যয়';
+        case AnalyticsPeriod.yearly:
+          return 'গড় মাসিক ব্যয়';
+      }
+    }
+    return averageExpenseLabel;
+  }
+
+  String peakExpenseLabelFor(String languageCode) {
+    if (_isBanglaCode(languageCode)) {
+      switch (this) {
+        case AnalyticsPeriod.weekly:
+        case AnalyticsPeriod.monthly:
+          return 'সর্বোচ্চ ব্যয়ের দিন';
+        case AnalyticsPeriod.yearly:
+          return 'সর্বোচ্চ ব্যয়ের মাস';
+      }
+    }
+    return peakExpenseLabel;
   }
 }
 
@@ -132,10 +174,15 @@ final periodAnalyticsProvider =
       period,
     ) {
       final transactionsAsync = ref.watch(periodTransactionsProvider(period));
+      final languageCode =
+          ref.watch(currentUserProfileProvider).asData?.value?.language ?? 'en';
 
       return transactionsAsync.whenData(
-        (transactions) =>
-            buildPeriodAnalytics(period: period, transactions: transactions),
+        (transactions) => buildPeriodAnalytics(
+          period: period,
+          transactions: transactions,
+          languageCode: languageCode,
+        ),
       );
     });
 
@@ -177,9 +224,10 @@ AnalyticsRange analyticsRangeFor(AnalyticsPeriod period) {
 PeriodAnalytics buildPeriodAnalytics({
   required AnalyticsPeriod period,
   required List<TransactionModel> transactions,
+  String languageCode = 'en',
 }) {
   final range = analyticsRangeFor(period);
-  final buckets = _buildInitialBuckets(period, range.start);
+  final buckets = _buildInitialBuckets(period, range.start, languageCode);
   final categoryTotals = <String, double>{};
 
   double totalIncome = 0;
@@ -262,14 +310,19 @@ PeriodAnalytics buildPeriodAnalytics({
 List<AnalyticsBucket> _buildInitialBuckets(
   AnalyticsPeriod period,
   DateTime rangeStart,
+  String languageCode,
 ) {
+  final locale = LocaleFormatters.localeTag(languageCode);
   switch (period) {
     case AnalyticsPeriod.weekly:
       return List<AnalyticsBucket>.generate(7, (index) {
         final day = rangeStart.add(Duration(days: index));
         return AnalyticsBucket(
           index: index,
-          label: DateFormat('E').format(day),
+          label: LocaleFormatters.localizeDigits(
+            DateFormat('E', locale).format(day),
+            languageCode,
+          ),
           income: 0,
           expense: 0,
         );
@@ -283,7 +336,10 @@ List<AnalyticsBucket> _buildInitialBuckets(
       return List<AnalyticsBucket>.generate(daysInMonth, (index) {
         return AnalyticsBucket(
           index: index,
-          label: '${index + 1}',
+          label: LocaleFormatters.localizeDigits(
+            '${index + 1}',
+            languageCode,
+          ),
           income: 0,
           expense: 0,
         );
@@ -293,13 +349,18 @@ List<AnalyticsBucket> _buildInitialBuckets(
         final month = DateTime(rangeStart.year, index + 1);
         return AnalyticsBucket(
           index: index,
-          label: DateFormat('MMM').format(month),
+          label: LocaleFormatters.localizeDigits(
+            DateFormat('MMM', locale).format(month),
+            languageCode,
+          ),
           income: 0,
           expense: 0,
         );
       });
   }
 }
+
+bool _isBanglaCode(String languageCode) => languageCode == 'bn';
 
 int? _resolveBucketIndex({
   required AnalyticsPeriod period,
