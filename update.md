@@ -105,3 +105,18 @@
 
 - Wallet balances continue to stay transaction-driven: normal transactions and transfers both update wallet balances in Firestore through batch writes.
 - Transfer history is stored as two linked entries so both source and destination wallets retain a visible audit trail.
+
+## Phase 8 - Budget System
+
+- Added `BudgetModel` plus a new Firestore-backed budget service and providers for monthly budget state.
+- Replaced the budget placeholder route with a real budget management screen, including month navigation, overall spending limits, per-category budgets, add/edit flow, and delete actions.
+- Budget creation now backfills `spent` from existing expense history for the selected month, so budgets stay accurate even when created after transactions already exist.
+- Integrated expense transaction add/edit/delete flows with budget spent updates for both category budgets and the optional overall monthly budget.
+- Added Home dashboard budget cards that show current-month budget progress plus warning/alert messaging when limits approach or exceed thresholds.
+- Kept dashboard budget state separate from the Budgets screen month picker so the home screen always reflects the actual current month.
+- Fixed the Wallets screen card overflow and reverted the Android predictive back flag after it caused navigation hangs on device.
+
+### Notes
+
+- Budget spent tracking ignores transfer entries and only reacts to real expense transactions.
+- Overall budget tracking is optional and uses a reserved internal budget category id under the hood.

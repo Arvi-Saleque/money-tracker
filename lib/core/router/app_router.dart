@@ -5,7 +5,7 @@ import '../../features/auth/auth_providers.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/sign_up_screen.dart';
-import '../../features/budgets/budgets_placeholder_screen.dart';
+import '../../features/budgets/budgets_screen.dart';
 import '../../features/calendar/calendar_placeholder_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/goals/goals_placeholder_screen.dart';
@@ -79,7 +79,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppConstants.budgetsRoute,
-        builder: (context, state) => const BudgetsPlaceholderScreen(),
+        builder: (context, state) => const BudgetsScreen(),
       ),
       GoRoute(
         path: AppConstants.goalsRoute,

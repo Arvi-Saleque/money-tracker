@@ -65,21 +65,38 @@ class WalletsScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            'Your wallets',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        FilledButton.icon(
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final title = Text(
+                          'Your wallets',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        );
+                        final button = FilledButton.icon(
                           onPressed: () => _openWalletEditor(context),
                           icon: const Icon(Icons.add_rounded),
                           label: const Text('Add wallet'),
-                        ),
-                      ],
+                        );
+
+                        if (constraints.maxWidth < 420) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              title,
+                              const SizedBox(height: 10),
+                              button,
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          children: <Widget>[
+                            Expanded(child: title),
+                            const SizedBox(width: 12),
+                            button,
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
                     if (wallets.isEmpty)
@@ -107,9 +124,9 @@ class WalletsScreen extends ConsumerWidget {
                                   crossAxisCount: crossAxisCount,
                                   mainAxisSpacing: 14,
                                   crossAxisSpacing: 14,
-                                  childAspectRatio: crossAxisCount == 1
-                                      ? 1.9
-                                      : 1.45,
+                                  mainAxisExtent: crossAxisCount == 1
+                                      ? 244
+                                      : 236,
                                 ),
                             itemCount: wallets.length,
                             itemBuilder: (context, index) {
@@ -758,8 +775,10 @@ class _WalletCard extends StatelessWidget {
     return buildPremiumInkCard(
       context: context,
       onTap: onTap,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Row(
             children: <Widget>[
@@ -773,6 +792,8 @@ class _WalletCard extends StatelessWidget {
               ),
               const Spacer(),
               PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 onSelected: (value) {
                   if (value == 'edit') {
                     onEdit();
@@ -798,7 +819,9 @@ class _WalletCard extends StatelessWidget {
             wallet.name,
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 6),
           Wrap(
@@ -809,12 +832,14 @@ class _WalletCard extends StatelessWidget {
               if (wallet.isDefault) const MiniPill(label: 'Default'),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 16),
           Text(
             formatWalletCurrency(wallet.balance, currency),
             style: Theme.of(
               context,
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

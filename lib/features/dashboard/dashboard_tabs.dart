@@ -10,6 +10,7 @@ import '../../shared/models/category_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
+import '../budgets/budget_providers.dart';
 import 'dashboard_analytics.dart';
 import 'dashboard_chart_widgets.dart';
 import '../profile/profile_providers.dart';
@@ -33,6 +34,7 @@ class HomeTab extends ConsumerWidget {
     final recentTransactionsAsync = ref.watch(recentTransactionsProvider);
     final summary = ref.watch(dashboardSummaryProvider);
     final monthlyAnalyticsAsync = ref.watch(monthlyAnalyticsProvider);
+    final budgetOverview = ref.watch(dashboardBudgetOverviewProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
     final languageCode =
@@ -180,6 +182,21 @@ class HomeTab extends ConsumerWidget {
                     ),
                   ],
                 ),
+              if (budgetOverview.overallBudget != null ||
+                  budgetOverview.categoryBudgets.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 20),
+                _DashboardBudgetCard(
+                  overview: budgetOverview,
+                  currency: currency,
+                ),
+              ],
+              if (budgetOverview.hasWarnings) ...<Widget>[
+                const SizedBox(height: 16),
+                _DashboardBudgetAlertCard(
+                  overview: budgetOverview,
+                  currency: currency,
+                ),
+              ],
               const SizedBox(height: 20),
               monthlyAnalyticsAsync.when(
                 data: (analytics) {
@@ -1890,6 +1907,124 @@ String _formatCurrency(double amount, String currency) {
     symbol: currency,
     decimalDigits: 0,
   ).format(amount);
+}
+
+class _DashboardBudgetCard extends StatelessWidget {
+  const _DashboardBudgetCard({required this.overview, required this.currency});
+
+  final BudgetOverview overview;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final overall = overview.overallBudget;
+    final spent = overall?.spent ?? overview.totalCategorySpent;
+    final limit = overall?.limit ?? overview.totalCategoryLimit;
+    final progress = limit <= 0 ? 0.0 : (spent / limit).clamp(0, 1).toDouble();
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Budget pulse',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            overall == null
+                ? 'Tracking category budget totals for this month.'
+                : 'Your overall monthly limit updates automatically as expenses change.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color?.withValues(alpha: 0.74),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _MiniStatTile(
+                  label: 'Spent',
+                  value: _formatCurrency(spent, currency),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _MiniStatTile(
+                  label: 'Limit',
+                  value: limit <= 0
+                      ? 'Not set'
+                      : _formatCurrency(limit, currency),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _MiniStatTile(
+                  label: 'Active budgets',
+                  value: '${overview.categoryBudgets.length}',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ProgressBarRow(label: 'Monthly progress', value: progress),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardBudgetAlertCard extends StatelessWidget {
+  const _DashboardBudgetAlertCard({
+    required this.overview,
+    required this.currency,
+  });
+
+  final BudgetOverview overview;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final exceeded = overview.exceededBudgets.take(2).toList(growable: false);
+    final near = overview.nearLimitBudgets.take(2).toList(growable: false);
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            exceeded.isNotEmpty ? 'Budget alerts' : 'Budget warnings',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 10),
+          ...exceeded.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '${item.category?.name ?? 'Category'} exceeded by ${_formatCurrency(item.budget.spent - item.budget.limit, currency)}.',
+              ),
+            ),
+          ),
+          ...near.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '${item.category?.name ?? 'Category'} is at ${(item.budget.progress * 100).round()}% of its limit.',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _RecentTransactionsCard extends StatelessWidget {

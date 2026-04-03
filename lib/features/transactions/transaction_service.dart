@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../shared/models/budget_model.dart';
 import '../../shared/models/transaction_model.dart';
 import 'finance_catalog.dart';
 import 'transaction_history_models.dart';
@@ -20,6 +21,10 @@ class TransactionService {
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String uid) {
     return _firestore.collection('users').doc(uid).collection('categories');
+  }
+
+  CollectionReference<Map<String, dynamic>> _budgetsRef(String uid) {
+    return _firestore.collection('users').doc(uid).collection('budgets');
   }
 
   Stream<List<TransactionModel>> watchRecentTransactions(
@@ -174,11 +179,18 @@ class TransactionService {
     final walletRef = _walletsRef(uid).doc(transaction.walletId);
     final docRef = _userRef(uid).doc();
     final batch = _firestore.batch();
+    final nextTransaction = transaction.copyWith(id: docRef.id);
 
-    batch.set(docRef, transaction.copyWith(id: docRef.id).toMap());
+    batch.set(docRef, nextTransaction.toMap());
     batch.update(walletRef, <String, dynamic>{
       'balance': FieldValue.increment(_signedAmount(transaction)),
     });
+    await _applyBudgetDelta(
+      batch,
+      uid,
+      transaction: nextTransaction,
+      deltaSign: 1,
+    );
     await batch.commit();
   }
 
@@ -211,6 +223,8 @@ class TransactionService {
     }
 
     batch.set(docRef, next.toMap());
+    await _applyBudgetDelta(batch, uid, transaction: previous, deltaSign: -1);
+    await _applyBudgetDelta(batch, uid, transaction: next, deltaSign: 1);
     await batch.commit();
   }
 
@@ -249,6 +263,12 @@ class TransactionService {
     batch.update(_walletsRef(uid).doc(transaction.walletId), <String, dynamic>{
       'balance': FieldValue.increment(-_signedAmount(transaction)),
     });
+    await _applyBudgetDelta(
+      batch,
+      uid,
+      transaction: transaction,
+      deltaSign: -1,
+    );
     await batch.commit();
   }
 
@@ -292,5 +312,50 @@ class TransactionService {
     return transaction.type == FinanceCatalog.incomeType
         ? transaction.amount
         : -transaction.amount;
+  }
+
+  Future<void> _applyBudgetDelta(
+    WriteBatch batch,
+    String uid, {
+    required TransactionModel transaction,
+    required int deltaSign,
+  }) async {
+    if (transaction.isTransfer ||
+        transaction.type != FinanceCatalog.expenseType) {
+      return;
+    }
+
+    final targets = <String>[
+      _budgetDocumentId(
+        categoryId: transaction.categoryId,
+        year: transaction.date.year,
+        month: transaction.date.month,
+      ),
+      _budgetDocumentId(
+        categoryId: BudgetModel.overallCategoryId,
+        year: transaction.date.year,
+        month: transaction.date.month,
+      ),
+    ];
+
+    for (final budgetId in targets) {
+      final budgetRef = _budgetsRef(uid).doc(budgetId);
+      final snapshot = await budgetRef.get();
+      if (!snapshot.exists) {
+        continue;
+      }
+
+      batch.update(budgetRef, <String, dynamic>{
+        'spent': FieldValue.increment(transaction.amount * deltaSign),
+      });
+    }
+  }
+
+  String _budgetDocumentId({
+    required String categoryId,
+    required int year,
+    required int month,
+  }) {
+    return '${categoryId}_${year}_${month.toString().padLeft(2, '0')}';
   }
 }
