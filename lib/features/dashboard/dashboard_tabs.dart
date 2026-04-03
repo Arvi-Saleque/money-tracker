@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -14,6 +15,7 @@ import '../budgets/budget_providers.dart';
 import 'dashboard_analytics.dart';
 import 'dashboard_chart_widgets.dart';
 import '../profile/profile_providers.dart';
+import '../subscriptions/subscription_providers.dart';
 import '../transactions/finance_catalog.dart';
 import '../transactions/transaction_editor_sheet.dart';
 import '../transactions/transaction_history_models.dart';
@@ -55,6 +57,7 @@ class HomeTab extends ConsumerWidget {
         : categoryMap[monthAnalytics!.topCategoryId!];
     final topCategoryLabel =
         topCategory?.localizedName(languageCode) ?? 'No top category yet';
+    final upcomingBills = ref.watch(dashboardUpcomingBillsProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
@@ -419,6 +422,11 @@ class HomeTab extends ConsumerWidget {
                             monthNet: monthAnalytics?.net ?? 0,
                           ),
                           const SizedBox(height: 16),
+                          _UpcomingBillsCard(
+                            bills: upcomingBills,
+                            currency: currency,
+                          ),
+                          const SizedBox(height: 16),
                           const QuickActionsCard(actions: actionShortcuts),
                         ],
                       ),
@@ -443,6 +451,11 @@ class HomeTab extends ConsumerWidget {
                       languageCode: languageCode,
                     ),
                     const SizedBox(height: 16),
+                    _UpcomingBillsCard(
+                      bills: upcomingBills,
+                      currency: currency,
+                    ),
+                    const SizedBox(height: 16),
                     const QuickActionsCard(actions: actionShortcuts),
                   ],
                 ),
@@ -451,6 +464,127 @@ class HomeTab extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _UpcomingBillsCard extends StatelessWidget {
+  const _UpcomingBillsCard({required this.bills, required this.currency});
+
+  final List<UpcomingBillViewModel> bills;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final title = Text(
+                'Upcoming bills',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              );
+              final button = TextButton(
+                onPressed: () => context.push(AppConstants.subscriptionsRoute),
+                child: const Text('Open'),
+              );
+
+              if (constraints.maxWidth < 320) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[title, const SizedBox(height: 8), button],
+                );
+              }
+
+              return Row(
+                children: <Widget>[
+                  Expanded(child: title),
+                  button,
+                ],
+              );
+            },
+          ),
+          if (bills.isEmpty) ...<Widget>[
+            const SizedBox(height: 12),
+            const Text(
+              'Nothing is due soon. Add a recurring bill and it will show up here.',
+            ),
+          ] else ...<Widget>[
+            const SizedBox(height: 12),
+            ...bills.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Color(
+                          item.category?.colorValue ?? 0xFF3D6BE4,
+                        ).withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        FinanceCatalog.iconForKey(
+                          item.category?.iconKey ?? 'subscriptions',
+                        ),
+                        color: Color(item.category?.colorValue ?? 0xFF3D6BE4),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            item.subscription.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _upcomingBillLabel(item),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '$currency${item.subscription.amount.toStringAsFixed(0)}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _upcomingBillLabel(UpcomingBillViewModel item) {
+    final days = item.subscription.daysUntilDue;
+    final dueLabel = switch (days) {
+      < 0 => 'Overdue ${days.abs()}d',
+      0 => 'Due today',
+      1 => 'Due tomorrow',
+      _ => 'In $days days',
+    };
+    final walletName = item.wallet?.name ?? 'Wallet';
+    return '$dueLabel · $walletName';
   }
 }
 

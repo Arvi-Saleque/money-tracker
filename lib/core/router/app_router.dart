@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,13 +12,16 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/goals/goals_placeholder_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reports/reports_placeholder_screen.dart';
-import '../../features/subscriptions/subscriptions_placeholder_screen.dart';
+import '../../features/subscriptions/subscriptions_screen.dart';
 import '../../features/transactions/transactions_placeholder_screen.dart';
 import '../../features/wallets/wallets_screen.dart';
 import '../constants/app_constants.dart';
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppConstants.homeRoute,
     refreshListenable: ref.watch(authRefreshListenableProvider),
     redirect: (context, state) {
@@ -87,7 +91,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppConstants.subscriptionsRoute,
-        builder: (context, state) => const SubscriptionsPlaceholderScreen(),
+        builder: (context, state) => const SubscriptionsScreen(),
       ),
     ],
   );

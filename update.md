@@ -120,3 +120,16 @@
 
 - Budget spent tracking ignores transfer entries and only reacts to real expense transactions.
 - Overall budget tracking is optional and uses a reserved internal budget category id under the hood.
+
+## Phase 9 - Recurring Transactions & Bills
+
+- Added `SubscriptionModel` plus a new Firestore-backed subscription service and providers for recurring bill state, upcoming due items, paid-this-month history, and dashboard bill summaries.
+- Replaced the subscriptions placeholder route with a real Bills screen that has `Upcoming`, `All`, and `Paid this month` tabs, recurring bill cards, swipe-to-mark-paid, delete actions, and a full-screen add/edit bill flow.
+- Marking a bill as paid now creates a real expense transaction, updates wallet balance and budget usage through the existing transaction pipeline, stores the last-paid timestamp, and automatically advances the next due date by the selected frequency.
+- Added Home dashboard integration with a live `Upcoming bills` card showing the next three due items alongside wallet and transaction insights.
+- Added local notification support with app bootstrap, bill reminder scheduling/canceling, notification tap routing back into the Bills screen, Android boot receivers, and Gradle desugaring needed for scheduled reminders.
+
+### Notes
+
+- Bill reminders currently schedule one local notification per recurring bill using the selected reminder window and the device's local timezone.
+- The reminder schedule is resynced on app startup for the signed-in user so existing bills continue to notify after reinstall/restart.

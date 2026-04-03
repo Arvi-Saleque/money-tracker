@@ -176,9 +176,19 @@ class TransactionService {
   }
 
   Future<void> addTransaction(String uid, TransactionModel transaction) async {
-    final walletRef = _walletsRef(uid).doc(transaction.walletId);
-    final docRef = _userRef(uid).doc();
     final batch = _firestore.batch();
+    await stageAddTransaction(batch, uid, transaction);
+    await batch.commit();
+  }
+
+  Future<TransactionModel> stageAddTransaction(
+    WriteBatch batch,
+    String uid,
+    TransactionModel transaction, {
+    String? documentId,
+  }) async {
+    final walletRef = _walletsRef(uid).doc(transaction.walletId);
+    final docRef = _userRef(uid).doc(documentId);
     final nextTransaction = transaction.copyWith(id: docRef.id);
 
     batch.set(docRef, nextTransaction.toMap());
@@ -191,7 +201,7 @@ class TransactionService {
       transaction: nextTransaction,
       deltaSign: 1,
     );
-    await batch.commit();
+    return nextTransaction;
   }
 
   Future<void> updateTransaction(
