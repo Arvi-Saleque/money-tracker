@@ -78,18 +78,17 @@ class ExportService {
         _pdfText(languageCode, 'Note', 'নোট'),
       ],
       ...transactions.map((transaction) {
-        final category = categoryMap[transaction.categoryId];
         final wallet = walletMap[transaction.walletId];
         return <String>[
           LocaleFormatters.formatDate(
             transaction.date,
             'yyyy-MM-dd HH:mm',
-            'en',
+            languageCode,
           ),
           _transactionTypeLabel(transaction, languageCode),
-          category?.localizedName(languageCode) ?? '',
+          _categoryLabel(transaction.categoryId, categoryMap, languageCode),
           transaction.amount.toStringAsFixed(2),
-          wallet?.name ?? '',
+          _walletLabel(wallet, languageCode),
           transaction.note.replaceAll('\n', ' '),
         ];
       }),
@@ -138,12 +137,8 @@ class ExportService {
       for (final category in categories) category.id: category,
     };
     final walletMap = {for (final wallet in wallets) wallet.id: wallet};
-    final font = languageCode == 'bn'
-        ? await PdfGoogleFonts.notoSansBengaliRegular()
-        : await PdfGoogleFonts.openSansRegular();
-    final boldFont = languageCode == 'bn'
-        ? await PdfGoogleFonts.notoSansBengaliBold()
-        : await PdfGoogleFonts.openSansBold();
+    final font = await PdfGoogleFonts.notoSansBengaliRegular();
+    final boldFont = await PdfGoogleFonts.notoSansBengaliBold();
 
     final doc = pw.Document();
     final reportTitle = period == ExportReportPeriod.monthly
@@ -186,8 +181,12 @@ class ExportService {
     final groupedTotals = <String, _RunningTotals>{};
     for (final transaction in transactions.where((item) => !item.isTransfer)) {
       final key = period == ExportReportPeriod.monthly
-          ? LocaleFormatters.formatDate(transaction.date, 'dd MMM', 'en')
-          : LocaleFormatters.formatDate(transaction.date, 'MMM', 'en');
+          ? LocaleFormatters.formatDate(
+              transaction.date,
+              'dd MMM',
+              languageCode,
+            )
+          : LocaleFormatters.formatDate(transaction.date, 'MMM', languageCode);
       final totals = groupedTotals.putIfAbsent(key, _RunningTotals.new);
       if (transaction.type == FinanceCatalog.incomeType) {
         totals.income += transaction.amount;
@@ -260,9 +259,11 @@ class ExportService {
               _pdfText(languageCode, 'Expense', 'খরচ'),
             ],
             data: categoryRows.take(8).map((entry) {
-              final label =
-                  categoryMap[entry.key]?.localizedName(languageCode) ??
-                  entry.key;
+              final label = _categoryLabel(
+                entry.key,
+                categoryMap,
+                languageCode,
+              );
               return <String>[
                 label,
                 LocaleFormatters.formatCurrency(
@@ -339,11 +340,12 @@ class ExportService {
                   languageCode,
                 ),
                 _transactionTypeLabel(transaction, languageCode),
-                categoryMap[transaction.categoryId]?.localizedName(
-                      languageCode,
-                    ) ??
-                    '',
-                walletMap[transaction.walletId]?.name ?? '',
+                _categoryLabel(
+                  transaction.categoryId,
+                  categoryMap,
+                  languageCode,
+                ),
+                _walletLabel(walletMap[transaction.walletId], languageCode),
                 LocaleFormatters.formatCurrency(
                   transaction.amount,
                   currency,
@@ -426,6 +428,61 @@ class ExportService {
       return _pdfText(languageCode, 'Income', 'আয়');
     }
     return _pdfText(languageCode, 'Expense', 'খরচ');
+  }
+
+  String _categoryLabel(
+    String categoryId,
+    Map<String, CategoryModel> categoryMap,
+    String languageCode,
+  ) {
+    final category = categoryMap[categoryId];
+    if (category != null) {
+      final localized = category.localizedName(languageCode).trim();
+      if (localized.isNotEmpty) {
+        return localized;
+      }
+    }
+
+    for (final template in <FinanceCategoryTemplate>[
+      ...FinanceCatalog.defaultCategoryTemplates,
+      ...FinanceCatalog.quickCategoryTemplates,
+    ]) {
+      if (template.id == categoryId) {
+        return languageCode == 'bn' && template.nameBn.trim().isNotEmpty
+            ? template.nameBn
+            : template.name;
+      }
+    }
+
+    return category?.name ?? categoryId;
+  }
+
+  String _walletLabel(WalletModel? wallet, String languageCode) {
+    if (wallet == null) {
+      return '';
+    }
+
+    if (languageCode != 'bn') {
+      return wallet.name;
+    }
+
+    final defaultEnglishLabel = FinanceCatalog.walletTypeFor(wallet.type).label;
+    if (wallet.name == defaultEnglishLabel || wallet.name == wallet.type) {
+      switch (wallet.type) {
+        case FinanceCatalog.walletTypeCash:
+          return 'ক্যাশ';
+        case FinanceCatalog.walletTypeBank:
+          return 'ব্যাংক';
+        case FinanceCatalog.walletTypeBkash:
+          return 'বিকাশ';
+        case FinanceCatalog.walletTypeNagad:
+          return 'নগদ';
+        case FinanceCatalog.walletTypeSavings:
+          return 'সেভিংস';
+      }
+    }
+
+    return wallet.name;
   }
 
   pw.Widget _buildSummaryTable({
