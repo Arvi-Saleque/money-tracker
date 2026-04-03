@@ -9,7 +9,7 @@ import '../../features/auth/sign_up_screen.dart';
 import '../../features/budgets/budgets_screen.dart';
 import '../../features/calendar/calendar_placeholder_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
-import '../../features/goals/goals_placeholder_screen.dart';
+import '../../features/goals/goals_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reports/reports_placeholder_screen.dart';
 import '../../features/subscriptions/subscriptions_screen.dart';
@@ -87,7 +87,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppConstants.goalsRoute,
-        builder: (context, state) => const GoalsPlaceholderScreen(),
+        builder: (context, state) => const GoalsScreen(),
       ),
       GoRoute(
         path: AppConstants.subscriptionsRoute,

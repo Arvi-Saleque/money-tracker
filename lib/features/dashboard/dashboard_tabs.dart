@@ -8,10 +8,12 @@ import 'package:intl/intl.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/gradient_colors.dart';
 import '../../shared/models/category_model.dart';
+import '../../shared/models/goal_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
 import '../budgets/budget_providers.dart';
+import '../goals/goal_providers.dart';
 import 'dashboard_analytics.dart';
 import 'dashboard_chart_widgets.dart';
 import '../profile/profile_providers.dart';
@@ -58,6 +60,7 @@ class HomeTab extends ConsumerWidget {
     final topCategoryLabel =
         topCategory?.localizedName(languageCode) ?? 'No top category yet';
     final upcomingBills = ref.watch(dashboardUpcomingBillsProvider);
+    final topGoal = ref.watch(topActiveGoalProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
@@ -427,6 +430,8 @@ class HomeTab extends ConsumerWidget {
                             currency: currency,
                           ),
                           const SizedBox(height: 16),
+                          _TopGoalCard(goal: topGoal, currency: currency),
+                          const SizedBox(height: 16),
                           const QuickActionsCard(actions: actionShortcuts),
                         ],
                       ),
@@ -455,6 +460,8 @@ class HomeTab extends ConsumerWidget {
                       bills: upcomingBills,
                       currency: currency,
                     ),
+                    const SizedBox(height: 16),
+                    _TopGoalCard(goal: topGoal, currency: currency),
                     const SizedBox(height: 16),
                     const QuickActionsCard(actions: actionShortcuts),
                   ],
@@ -585,6 +592,102 @@ class _UpcomingBillsCard extends StatelessWidget {
     };
     final walletName = item.wallet?.name ?? 'Wallet';
     return '$dueLabel · $walletName';
+  }
+}
+
+class _TopGoalCard extends StatelessWidget {
+  const _TopGoalCard({required this.goal, required this.currency});
+
+  final GoalModel? goal;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final goalData = goal;
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final title = Text(
+                'Top goal',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              );
+              final button = TextButton(
+                onPressed: () => context.push(AppConstants.goalsRoute),
+                child: const Text('Open'),
+              );
+
+              if (constraints.maxWidth < 320) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[title, const SizedBox(height: 8), button],
+                );
+              }
+
+              return Row(
+                children: <Widget>[
+                  Expanded(child: title),
+                  button,
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          if (goalData == null)
+            const Text(
+              'No active savings goal yet. Create one to see progress here.',
+            )
+          else ...<Widget>[
+            Text(
+              goalData.name,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: goalData.progress,
+                minHeight: 12,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Color(goalData.colorValue),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    '$currency${goalData.savedAmount.toStringAsFixed(0)} of $currency${goalData.targetAmount.toStringAsFixed(0)}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Text('${(goalData.progress * 100).round()}%'),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              goalData.daysRemaining < 0
+                  ? 'Past target by ${goalData.daysRemaining.abs()} days'
+                  : '${goalData.daysRemaining} days left',
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 

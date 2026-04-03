@@ -133,3 +133,17 @@
 
 - Bill reminders currently schedule one local notification per recurring bill using the selected reminder window and the device's local timezone.
 - The reminder schedule is resynced on app startup for the signed-in user so existing bills continue to notify after reinstall/restart.
+
+## Phase 10 - Savings Goals
+
+- Added `GoalModel` plus a new Firestore-backed goal service and providers for active goals, completed goals, top-goal dashboard state, and atomic contribution flows.
+- Replaced the goals placeholder route with a real Goals screen that shows active goals, progress bars, saved-vs-target amounts, target dates, collapsed completed goals, and full add/edit/delete management.
+- Added a full-screen contribution flow that lets users contribute from a selected wallet, creates a real expense transaction, and updates the goal's saved amount in the same batch write.
+- Added goal completion handling so fully funded goals move into the completed section and show a simple completion dialog the first time they are finished.
+- Added Home dashboard integration with a live `Top goal` card so the most important active savings target is visible alongside budgets and bills.
+- Added a dedicated default expense category for savings-goal contributions so these entries stay readable in transaction history and analytics.
+
+### Notes
+
+- Goal contributions currently use the reserved `Savings Goal` expense category under the hood and include the goal name in the transaction note.
+- Editing a goal recalculates completion state from the current saved amount and target amount so completed/archive state stays consistent after target changes.

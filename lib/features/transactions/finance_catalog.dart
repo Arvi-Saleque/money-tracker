@@ -97,6 +97,7 @@ abstract final class FinanceCatalog {
   static const String incomeType = 'income';
   static const String expenseType = 'expense';
   static const String transferType = 'transfer';
+  static const String goalContributionCategoryId = 'expense_savings_goal';
   static const String walletTypeCash = 'cash';
   static const String walletTypeBank = 'bank';
   static const String walletTypeBkash = 'bkash';
@@ -313,6 +314,16 @@ abstract final class FinanceCatalog {
       nameBn: '\u09AD\u09BE\u09DC\u09BE',
       iconKey: 'home',
       colorValue: 0xFF64748B,
+      type: expenseType,
+      isDefault: true,
+    ),
+    FinanceCategoryTemplate(
+      id: goalContributionCategoryId,
+      name: 'Savings Goal',
+      nameBn:
+          '\u09B8\u099E\u09CD\u099A\u09AF\u09BC \u09B2\u0995\u09CD\u09B7\u09CD\u09AF',
+      iconKey: 'savings',
+      colorValue: 0xFF8B5CF6,
       type: expenseType,
       isDefault: true,
     ),
