@@ -222,3 +222,16 @@
 
 - Smart insights are intentionally comparative summaries, not predictions: they explain how the current period differs from the previous matching period using the user’s live Firestore data.
 - When there is not enough previous-period activity, the insight card gracefully falls back to neutral onboarding-style messages instead of showing misleading spikes or trend claims.
+
+## Phase 13D - Net Worth
+
+- Added a new net-worth analytics layer that combines live wallet balances with optional debt impact, so the dashboard can show assets-only or assets-minus-liabilities views without hardcoded math in the UI.
+- Built period-aware net-worth trend generation for weekly, monthly, and yearly ranges by reconstructing the starting position for the selected range, then replaying wallet and debt changes bucket by bucket.
+- Added a live `Net worth` summary card to Home so users can see their current position, total assets, debt impact, and period change alongside the rest of the financial overview.
+- Added a dedicated net-worth trend chart plus an assets-only / include-debts toggle in Reports so users can inspect how their overall financial position moves over time.
+- Added localized English/Bangla labels for net worth, assets, receivables, liabilities, debt-inclusive mode, and period-change messaging.
+
+### Notes
+
+- Wallet balance history is reconstructed from current balances and period transaction deltas, so transfers remain neutral while income and expense entries shape the trend.
+- Debt impact is estimated from the debt start date and recorded repayment history, which gives a practical live net-worth view without requiring a separate historical balance collection.

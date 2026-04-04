@@ -214,6 +214,164 @@ class ExpenseTrendChartCard extends StatelessWidget {
   }
 }
 
+class NetWorthTrendChartCard extends StatelessWidget {
+  const NetWorthTrendChartCard({
+    super.key,
+    required this.trend,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final NetWorthTrend trend;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final gradients = theme.extension<GradientColors>()!;
+    final values = trend.buckets
+        .map((bucket) => bucket.netWorth)
+        .toList(growable: false);
+    final spots = trend.buckets
+        .map((bucket) => FlSpot(bucket.index.toDouble(), bucket.netWorth))
+        .toList(growable: false);
+    final minY = _roundedMinY(values);
+    final maxY = _roundedMaxY(values);
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.74),
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (spots.isEmpty || spots.every((spot) => spot.y.abs() <= 0.009))
+            _EmptyChartHint(
+              label: context.l10n.isBangla
+                  ? 'নেট ওয়ার্থের ট্রেন্ড দেখতে আরও কিছু আর্থিক কার্যকলাপ যোগ করুন।'
+                  : 'Add more financial activity to reveal your net worth trend.',
+            )
+          else
+            SizedBox(
+              height: 220,
+              child: LineChart(
+                LineChartData(
+                  minX: 0,
+                  maxX: (spots.length - 1).toDouble(),
+                  minY: minY,
+                  maxY: maxY,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: ((maxY - minY).abs() / 4).clamp(
+                      1,
+                      double.infinity,
+                    ),
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: theme.dividerColor.withValues(alpha: 0.6),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 42,
+                        interval: ((maxY - minY).abs() / 4).clamp(
+                          1,
+                          double.infinity,
+                        ),
+                        getTitlesWidget: (value, meta) {
+                          if ((value - minY).abs() <= 0.009 && minY != 0) {
+                            return const SizedBox.shrink();
+                          }
+                          return Text(
+                            value.round().toString(),
+                            style: theme.textTheme.labelSmall,
+                          );
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.round();
+                          if (index < 0 || index >= trend.buckets.length) {
+                            return const SizedBox.shrink();
+                          }
+                          if (!_shouldShowXAxisLabel(
+                            index,
+                            trend.buckets.length,
+                          )) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              trend.buckets[index].label,
+                              style: theme.textTheme.labelSmall,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  lineTouchData: const LineTouchData(enabled: false),
+                  lineBarsData: <LineChartBarData>[
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      barWidth: 3.2,
+                      color: const Color(0xFF54A7FF),
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: <Color>[
+                            gradients.chartGradient.colors.first.withValues(
+                              alpha: 0.34,
+                            ),
+                            gradients.chartGradient.colors.last.withValues(
+                              alpha: 0.05,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class IncomeExpenseBarChartCard extends StatelessWidget {
   const IncomeExpenseBarChartCard({
     super.key,
@@ -532,6 +690,25 @@ class _EmptyChartHint extends StatelessWidget {
       ),
     );
   }
+}
+
+double _roundedMinY(List<double> values) {
+  if (values.isEmpty) {
+    return 0;
+  }
+  final min = values.reduce((a, b) => a < b ? a : b);
+  if (min >= 0) {
+    return 0;
+  }
+  final magnitude = min.abs();
+  final base = magnitude <= 250
+      ? 50
+      : magnitude <= 1000
+      ? 100
+      : magnitude <= 5000
+      ? 500
+      : 1000;
+  return -((magnitude / base).ceil() * base).toDouble();
 }
 
 bool _shouldShowXAxisLabel(int index, int total) {

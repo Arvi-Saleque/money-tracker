@@ -2,7 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/utils/locale_formatters.dart';
+import '../../shared/models/debt_record_model.dart';
 import '../../shared/models/transaction_model.dart';
+import '../../shared/models/wallet_model.dart';
+import '../debts/debt_providers.dart';
 import '../profile/profile_providers.dart';
 import '../transactions/finance_catalog.dart';
 import '../transactions/transaction_providers.dart';
@@ -177,6 +180,62 @@ class SmartInsights {
       previous.totalIncome > 0 || previous.totalExpense > 0;
 }
 
+class NetWorthBucket {
+  const NetWorthBucket({
+    required this.index,
+    required this.label,
+    required this.assets,
+    required this.netWorth,
+  });
+
+  final int index;
+  final String label;
+  final double assets;
+  final double netWorth;
+}
+
+class NetWorthTrend {
+  const NetWorthTrend({
+    required this.period,
+    required this.includeDebts,
+    required this.currentAssets,
+    required this.receivables,
+    required this.liabilities,
+    required this.currentNetWorth,
+    required this.startNetWorth,
+    required this.buckets,
+  });
+
+  final AnalyticsPeriod period;
+  final bool includeDebts;
+  final double currentAssets;
+  final double receivables;
+  final double liabilities;
+  final double currentNetWorth;
+  final double startNetWorth;
+  final List<NetWorthBucket> buckets;
+
+  double get currentDebtImpact => receivables - liabilities;
+  double get changeAmount => currentNetWorth - startNetWorth;
+}
+
+class NetWorthRequest {
+  const NetWorthRequest({required this.period, required this.includeDebts});
+
+  final AnalyticsPeriod period;
+  final bool includeDebts;
+
+  @override
+  bool operator ==(Object other) {
+    return other is NetWorthRequest &&
+        other.period == period &&
+        other.includeDebts == includeDebts;
+  }
+
+  @override
+  int get hashCode => Object.hash(period, includeDebts);
+}
+
 final periodTransactionsProvider =
     StreamProvider.family<List<TransactionModel>, AnalyticsPeriod>((
       ref,
@@ -276,6 +335,53 @@ final smartInsightsProvider =
           period: period,
           current: currentAnalyticsAsync.asData!.value,
           previous: previousAnalytics,
+        ),
+      );
+    });
+
+final netWorthTrendProvider =
+    Provider.family<AsyncValue<NetWorthTrend>, NetWorthRequest>((ref, request) {
+      final walletsAsync = ref.watch(walletsProvider);
+      final debtsAsync = ref.watch(debtsProvider);
+      final transactionsAsync = ref.watch(
+        periodTransactionsProvider(request.period),
+      );
+      final languageCode =
+          ref.watch(currentUserProfileProvider).asData?.value?.language ?? 'en';
+
+      if (walletsAsync.isLoading ||
+          debtsAsync.isLoading ||
+          transactionsAsync.isLoading) {
+        return const AsyncLoading<NetWorthTrend>();
+      }
+      if (walletsAsync.hasError) {
+        return AsyncError<NetWorthTrend>(
+          walletsAsync.error!,
+          walletsAsync.stackTrace ?? StackTrace.current,
+        );
+      }
+      if (debtsAsync.hasError) {
+        return AsyncError<NetWorthTrend>(
+          debtsAsync.error!,
+          debtsAsync.stackTrace ?? StackTrace.current,
+        );
+      }
+      if (transactionsAsync.hasError) {
+        return AsyncError<NetWorthTrend>(
+          transactionsAsync.error!,
+          transactionsAsync.stackTrace ?? StackTrace.current,
+        );
+      }
+
+      return AsyncData(
+        buildNetWorthTrend(
+          period: request.period,
+          includeDebts: request.includeDebts,
+          wallets: walletsAsync.asData?.value ?? const <WalletModel>[],
+          debts: debtsAsync.asData?.value ?? const <DebtRecordModel>[],
+          transactions:
+              transactionsAsync.asData?.value ?? const <TransactionModel>[],
+          languageCode: languageCode,
         ),
       );
     });
@@ -441,6 +547,130 @@ SmartInsights buildSmartInsights({
     noSpendBucketCount: noSpendBucketCount,
     risingCategoryId: risingCategoryId,
     risingCategoryDelta: risingCategoryDelta,
+  );
+}
+
+NetWorthTrend buildNetWorthTrend({
+  required AnalyticsPeriod period,
+  required bool includeDebts,
+  required List<WalletModel> wallets,
+  required List<DebtRecordModel> debts,
+  required List<TransactionModel> transactions,
+  required String languageCode,
+}) {
+  final range = analyticsRangeFor(period);
+  final labels = _buildInitialBuckets(period, range.start, languageCode);
+  final assetDeltas = List<double>.filled(labels.length, 0);
+  final debtDeltas = List<double>.filled(labels.length, 0);
+
+  var currentAssets = 0.0;
+  for (final wallet in wallets) {
+    currentAssets += wallet.balance;
+  }
+
+  var receivables = 0.0;
+  var liabilities = 0.0;
+  for (final debt in debts) {
+    if (debt.isLent) {
+      receivables += debt.remainingAmount;
+    } else if (debt.isBorrowed) {
+      liabilities += debt.remainingAmount;
+    }
+
+    final debtStartIndex = _resolveBucketIndex(
+      period: period,
+      rangeStart: range.start,
+      date: debt.startDate,
+    );
+    if (debtStartIndex != null &&
+        debtStartIndex >= 0 &&
+        debtStartIndex < debtDeltas.length) {
+      debtDeltas[debtStartIndex] += debt.isLent
+          ? debt.totalAmount
+          : -debt.totalAmount;
+    }
+
+    for (final payment in debt.payments) {
+      final paymentIndex = _resolveBucketIndex(
+        period: period,
+        rangeStart: range.start,
+        date: payment.date,
+      );
+      if (paymentIndex == null ||
+          paymentIndex < 0 ||
+          paymentIndex >= debtDeltas.length) {
+        continue;
+      }
+      debtDeltas[paymentIndex] += debt.isBorrowed
+          ? payment.amount
+          : -payment.amount;
+    }
+  }
+
+  for (final transaction in transactions) {
+    if (transaction.isTransfer) {
+      continue;
+    }
+    final index = _resolveBucketIndex(
+      period: period,
+      rangeStart: range.start,
+      date: transaction.date,
+    );
+    if (index == null || index < 0 || index >= assetDeltas.length) {
+      continue;
+    }
+    assetDeltas[index] += transaction.type == FinanceCatalog.incomeType
+        ? transaction.amount
+        : -transaction.amount;
+  }
+
+  final totalAssetDelta = assetDeltas.fold<double>(
+    0,
+    (sum, value) => sum + value,
+  );
+  final currentDebtImpact = receivables - liabilities;
+  final totalDebtDelta = debtDeltas.fold<double>(
+    0,
+    (sum, value) => sum + value,
+  );
+  final startingAssets = currentAssets - totalAssetDelta;
+  final startingDebtImpact = currentDebtImpact - totalDebtDelta;
+
+  var runningAssets = startingAssets;
+  var runningDebtImpact = startingDebtImpact;
+  final buckets = <NetWorthBucket>[];
+
+  for (var index = 0; index < labels.length; index++) {
+    runningAssets += assetDeltas[index];
+    runningDebtImpact += debtDeltas[index];
+    buckets.add(
+      NetWorthBucket(
+        index: index,
+        label: labels[index].label,
+        assets: runningAssets,
+        netWorth: includeDebts
+            ? runningAssets + runningDebtImpact
+            : runningAssets,
+      ),
+    );
+  }
+
+  final currentNetWorth = includeDebts
+      ? currentAssets + currentDebtImpact
+      : currentAssets;
+  final startNetWorth = includeDebts
+      ? startingAssets + startingDebtImpact
+      : startingAssets;
+
+  return NetWorthTrend(
+    period: period,
+    includeDebts: includeDebts,
+    currentAssets: currentAssets,
+    receivables: receivables,
+    liabilities: liabilities,
+    currentNetWorth: currentNetWorth,
+    startNetWorth: startNetWorth,
+    buckets: List<NetWorthBucket>.unmodifiable(buckets),
   );
 }
 

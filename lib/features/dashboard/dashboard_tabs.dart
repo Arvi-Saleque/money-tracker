@@ -44,6 +44,14 @@ class HomeTab extends ConsumerWidget {
     final monthlyInsightsAsync = ref.watch(
       smartInsightsProvider(AnalyticsPeriod.monthly),
     );
+    final netWorthAsync = ref.watch(
+      netWorthTrendProvider(
+        const NetWorthRequest(
+          period: AnalyticsPeriod.monthly,
+          includeDebts: true,
+        ),
+      ),
+    );
     final budgetOverview = ref.watch(dashboardBudgetOverviewProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
@@ -434,6 +442,21 @@ class HomeTab extends ConsumerWidget {
                       currency: currency,
                       languageCode: languageCode,
                       categoryMap: categoryMap,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
+              netWorthAsync.when(
+                data: (trend) => Column(
+                  children: <Widget>[
+                    _NetWorthSummaryCard(
+                      trend: trend,
+                      currency: currency,
+                      title: l10n.netWorthTitle,
+                      subtitle: l10n.netWorthHomeSubtitle,
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -889,6 +912,104 @@ class _DashboardMetricPill extends StatelessWidget {
             style: Theme.of(
               context,
             ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NetWorthSummaryCard extends StatelessWidget {
+  const _NetWorthSummaryCard({
+    required this.trend,
+    required this.currency,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final NetWorthTrend trend;
+  final String currency;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final changeColor = trend.changeAmount >= 0
+        ? const Color(0xFF2ECC9A)
+        : const Color(0xFFE85D5D);
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Text(subtitle),
+          const SizedBox(height: 16),
+          Text(
+            _formatCurrency(trend.currentNetWorth, currency, languageCode),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.netWorthChangeHighlight(trend.changeAmount),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: changeColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: <Widget>[
+              _DashboardMetricPill(
+                label: l10n.totalAssetsLabel,
+                value: _formatCurrency(
+                  trend.currentAssets,
+                  currency,
+                  languageCode,
+                ),
+              ),
+              if (trend.includeDebts)
+                _DashboardMetricPill(
+                  label: l10n.receivablesLabel,
+                  value: _formatCurrency(
+                    trend.receivables,
+                    currency,
+                    languageCode,
+                  ),
+                ),
+              if (trend.includeDebts)
+                _DashboardMetricPill(
+                  label: l10n.liabilitiesLabel,
+                  value: _formatCurrency(
+                    trend.liabilities,
+                    currency,
+                    languageCode,
+                  ),
+                ),
+              _DashboardMetricPill(
+                label: l10n.periodNetWorthChangeLabel(
+                  trend.period.labelFor(languageCode),
+                ),
+                value: _formatCurrency(
+                  trend.changeAmount,
+                  currency,
+                  languageCode,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1703,6 +1824,7 @@ class ReportsTab extends ConsumerStatefulWidget {
 
 class _ReportsTabState extends ConsumerState<ReportsTab> {
   AnalyticsPeriod _period = AnalyticsPeriod.monthly;
+  bool _includeDebtsInNetWorth = true;
 
   @override
   Widget build(BuildContext context) {
@@ -1717,6 +1839,11 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
         Localizations.localeOf(context).languageCode;
     final analyticsAsync = ref.watch(periodAnalyticsProvider(_period));
     final insightsAsync = ref.watch(smartInsightsProvider(_period));
+    final netWorthAsync = ref.watch(
+      netWorthTrendProvider(
+        NetWorthRequest(period: _period, includeDebts: _includeDebtsInNetWorth),
+      ),
+    );
     final isWide = MediaQuery.sizeOf(context).width >= 960;
 
     return analyticsAsync.when(
@@ -1763,10 +1890,58 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                       );
                     }).toList(),
                   ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: <Widget>[
+                      _FilterChip(
+                        label: context.l10n.assetsOnlyLabel,
+                        selected: !_includeDebtsInNetWorth,
+                        onTap: () {
+                          setState(() {
+                            _includeDebtsInNetWorth = false;
+                          });
+                        },
+                      ),
+                      _FilterChip(
+                        label: context.l10n.includeDebtsLabel,
+                        selected: _includeDebtsInNetWorth,
+                        onTap: () {
+                          setState(() {
+                            _includeDebtsInNetWorth = true;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 18),
+            netWorthAsync.when(
+              data: (trend) => Column(
+                children: <Widget>[
+                  NetWorthTrendChartCard(
+                    trend: trend,
+                    title: context.l10n.netWorthTrendTitle,
+                    subtitle: context.l10n.netWorthTrendSubtitle(
+                      _period.labelFor(languageCode),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _NetWorthSummaryCard(
+                    trend: trend,
+                    currency: currency,
+                    title: context.l10n.netWorthTitle,
+                    subtitle: context.l10n.netWorthSubtitle,
+                  ),
+                  const SizedBox(height: 18),
+                ],
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
+            ),
             if (isWide)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

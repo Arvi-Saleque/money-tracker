@@ -169,6 +169,34 @@ extension AppL10nX on AppLocalizations {
   String get reportTitle => isBangla ? 'আর্থিক রিপোর্ট' : 'Financial report';
   String get totalExpenseLabel => isBangla ? 'মোট ব্যয়' : 'Total expense';
   String get netBalanceLabel => isBangla ? 'নেট ব্যালেন্স' : 'Net balance';
+  String get netWorthTitle => isBangla ? 'নেট ওয়ার্থ' : 'Net worth';
+  String get netWorthSubtitle => isBangla
+      ? 'ওয়ালেট, পাওনা ও দেনার উপর ভিত্তি করে আপনার সামগ্রিক আর্থিক অবস্থান।'
+      : 'Your overall position based on wallets, receivables, and liabilities.';
+  String get netWorthTrendTitle =>
+      isBangla ? 'নেট ওয়ার্থ ট্রেন্ড' : 'Net worth trend';
+  String netWorthTrendSubtitle(String periodLabel) => isBangla
+      ? '$periodLabel জুড়ে সম্পদ ও দায়ের পরিবর্তনের ধারাবাহিকতা।'
+      : 'How your assets and obligations moved across $periodLabel.';
+  String get assetsOnlyLabel => isBangla ? 'শুধু সম্পদ' : 'Assets only';
+  String get includeDebtsLabel => isBangla ? 'দেনা সহ' : 'Include debts';
+  String get totalAssetsLabel => isBangla ? 'মোট সম্পদ' : 'Total assets';
+  String get receivablesLabel => isBangla ? 'মোট পাওনা' : 'Receivables';
+  String get liabilitiesLabel => isBangla ? 'মোট দেনা' : 'Liabilities';
+  String periodNetWorthChangeLabel(String periodLabel) =>
+      isBangla ? '$periodLabel পরিবর্তন' : '$periodLabel change';
+  String netWorthChangeHighlight(double change) {
+    if (change.abs() <= 0.009) {
+      return isBangla ? 'প্রায় অপরিবর্তিত' : 'Almost unchanged';
+    }
+    return change > 0
+        ? (isBangla ? 'উন্নতির পথে' : 'Moving up')
+        : (isBangla ? 'কমেছে' : 'Trending down');
+  }
+
+  String get netWorthHomeSubtitle => isBangla
+      ? 'এ মাসের নেট ওয়ার্থ অবস্থান এবং দেনা যোগ করলে প্রকৃত ছবি।'
+      : 'Your live monthly net worth view, with debts folded in for the real picture.';
   String get topCategoryLabel => isBangla ? 'সেরা ক্যাটাগরি' : 'Top category';
   String get reportsLoadingTitle =>
       isBangla ? 'রিপোর্ট লোড হচ্ছে' : 'Reports are loading';
