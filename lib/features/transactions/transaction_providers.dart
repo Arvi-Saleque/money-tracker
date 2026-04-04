@@ -467,15 +467,37 @@ class TransactionHistoryController extends Notifier<TransactionHistoryState> {
     items.sort((a, b) {
       switch (filter.sort) {
         case TransactionHistorySort.latest:
-          return b.date.compareTo(a.date);
+          final dateCompare = b.date.compareTo(a.date);
+          if (dateCompare != 0) {
+            return dateCompare;
+          }
+          return b.createdAt.compareTo(a.createdAt);
         case TransactionHistorySort.oldest:
-          return a.date.compareTo(b.date);
+          final dateCompare = a.date.compareTo(b.date);
+          if (dateCompare != 0) {
+            return dateCompare;
+          }
+          return a.createdAt.compareTo(b.createdAt);
         case TransactionHistorySort.highestAmount:
           final amountCompare = b.amount.compareTo(a.amount);
-          return amountCompare != 0 ? amountCompare : b.date.compareTo(a.date);
+          if (amountCompare != 0) {
+            return amountCompare;
+          }
+          final recentCompare = b.date.compareTo(a.date);
+          if (recentCompare != 0) {
+            return recentCompare;
+          }
+          return b.createdAt.compareTo(a.createdAt);
         case TransactionHistorySort.lowestAmount:
           final amountCompare = a.amount.compareTo(b.amount);
-          return amountCompare != 0 ? amountCompare : b.date.compareTo(a.date);
+          if (amountCompare != 0) {
+            return amountCompare;
+          }
+          final olderCompare = a.date.compareTo(b.date);
+          if (olderCompare != 0) {
+            return olderCompare;
+          }
+          return a.createdAt.compareTo(b.createdAt);
       }
     });
 

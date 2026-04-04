@@ -31,14 +31,15 @@ class TransactionService {
     String uid, {
     int limit = 10,
   }) {
-    return _userRef(uid)
-        .orderBy('date', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map(TransactionModel.fromDocument).toList(),
-        );
+    return _userRef(
+      uid,
+    ).orderBy('date', descending: true).limit(limit).snapshots().map((
+      snapshot,
+    ) {
+      final items = snapshot.docs.map(TransactionModel.fromDocument).toList();
+      items.sort(_compareMostRecentFirst);
+      return items;
+    });
   }
 
   Stream<List<TransactionModel>> watchTodayTransactions(String uid) {
@@ -51,10 +52,13 @@ class TransactionService {
         .where('date', isLessThan: Timestamp.fromDate(end))
         .orderBy('date', descending: true)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map(TransactionModel.fromDocument).toList(),
-        );
+        .map((snapshot) {
+          final items = snapshot.docs
+              .map(TransactionModel.fromDocument)
+              .toList();
+          items.sort(_compareMostRecentFirst);
+          return items;
+        });
   }
 
   Stream<List<TransactionModel>> watchTransactionsInRange(
@@ -83,10 +87,13 @@ class TransactionService {
         .orderBy('date', descending: true)
         .limit(limit)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map(TransactionModel.fromDocument).toList(),
-        );
+        .map((snapshot) {
+          final items = snapshot.docs
+              .map(TransactionModel.fromDocument)
+              .toList();
+          items.sort(_compareMostRecentFirst);
+          return items;
+        });
   }
 
   Future<TransactionModel?> getTransaction(
@@ -159,6 +166,14 @@ class TransactionService {
 
     final snapshot = await query.limit(effectiveLimit).get();
     final items = snapshot.docs.map(TransactionModel.fromDocument).toList();
+    if (filter.sort == TransactionHistorySort.latest ||
+        filter.sort == TransactionHistorySort.oldest) {
+      items.sort(
+        filter.sort == TransactionHistorySort.latest
+            ? _compareMostRecentFirst
+            : _compareOldestFirst,
+      );
+    }
 
     return TransactionHistoryPage(
       items: items,
@@ -345,6 +360,22 @@ class TransactionService {
     return transaction.type == FinanceCatalog.incomeType
         ? transaction.amount
         : -transaction.amount;
+  }
+
+  int _compareMostRecentFirst(TransactionModel a, TransactionModel b) {
+    final dateCompare = b.date.compareTo(a.date);
+    if (dateCompare != 0) {
+      return dateCompare;
+    }
+    return b.createdAt.compareTo(a.createdAt);
+  }
+
+  int _compareOldestFirst(TransactionModel a, TransactionModel b) {
+    final dateCompare = a.date.compareTo(b.date);
+    if (dateCompare != 0) {
+      return dateCompare;
+    }
+    return a.createdAt.compareTo(b.createdAt);
   }
 
   Future<void> _applyBudgetDelta(

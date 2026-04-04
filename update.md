@@ -208,3 +208,17 @@
 
 - Split transactions currently apply to normal income and expense entries only; transfer entries still use the dedicated transfer flow.
 - Existing older transactions without split metadata continue to behave normally and are treated as single-category entries automatically.
+
+## Phase 13C - Smart Insights
+
+- Added a new smart-insights layer on top of the analytics engine so the app now compares the current week, month, or year with the previous equivalent period instead of only showing raw totals.
+- Added derived insight signals for spending change, net movement, rising categories, and quiet no-spend stretches, with split transactions included correctly in the category comparison math.
+- Added a new `Smart insights` card to Home so monthly trends are visible alongside balances, budgets, goals, bills, and debts without opening Reports first.
+- Added the same insight surface to Reports so the selected period now shows quick narrative explanations in addition to charts and metric cards.
+- Improved recent-transaction ordering across Home, wallet activity, and history views so ties on the same date now fall back to creation time and the newest real entry appears first.
+- Tightened responsive layout in the split-transaction editor so the split section actions no longer overflow on narrow phones.
+
+### Notes
+
+- Smart insights are intentionally comparative summaries, not predictions: they explain how the current period differs from the previous matching period using the user’s live Firestore data.
+- When there is not enough previous-period activity, the insight card gracefully falls back to neutral onboarding-style messages instead of showing misleading spikes or trend claims.

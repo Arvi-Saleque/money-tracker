@@ -174,6 +174,70 @@ extension AppL10nX on AppLocalizations {
       isBangla ? 'রিপোর্ট লোড হচ্ছে' : 'Reports are loading';
   String get noTopCategoryYet =>
       isBangla ? 'এখনও সেরা ক্যাটাগরি নেই' : 'No top category yet';
+  String get smartInsightsTitle =>
+      isBangla ? 'স্মার্ট ইনসাইট' : 'Smart insights';
+  String get smartInsightsSubtitle => isBangla
+      ? 'সাম্প্রতিক প্রবণতা বুঝতে দ্রুত তুলনামূলক সংকেত।'
+      : 'Quick signals to understand how this period is trending.';
+  String get spendingChangeTitle =>
+      isBangla ? 'খরচের পরিবর্তন' : 'Spending change';
+  String get netChangeTitle => isBangla ? 'নেট পরিবর্তন' : 'Net movement';
+  String get categoryWatchTitle =>
+      isBangla ? 'ক্যাটাগরি নজরদারি' : 'Category watch';
+  String get quietPeriodTitle => isBangla ? 'শান্ত সময়' : 'Quiet stretch';
+  String previousPeriodLabel(String key) {
+    switch (key) {
+      case 'weekly':
+        return isBangla ? 'গত সপ্তাহ' : 'last week';
+      case 'monthly':
+        return isBangla ? 'গত মাস' : 'last month';
+      case 'yearly':
+        return isBangla ? 'গত বছর' : 'last year';
+      default:
+        return isBangla ? 'আগের সময়কাল' : 'previous period';
+    }
+  }
+
+  String quietUnitLabel(String key, int count) {
+    switch (key) {
+      case 'yearly':
+        return isBangla
+            ? (count == 1 ? 'মাস' : 'মাস')
+            : (count == 1 ? 'month' : 'months');
+      default:
+        return isBangla
+            ? (count == 1 ? 'দিন' : 'দিন')
+            : (count == 1 ? 'day' : 'days');
+    }
+  }
+
+  String spentMoreInsight(String amount, String previousLabel) => isBangla
+      ? '$previousLabelের তুলনায় $amount বেশি খরচ হয়েছে।'
+      : 'Spent $amount more than $previousLabel.';
+  String spentLessInsight(String amount, String previousLabel) => isBangla
+      ? '$previousLabelের তুলনায় $amount কম খরচ হয়েছে।'
+      : 'Spent $amount less than $previousLabel.';
+  String spendingFlatInsight(String previousLabel) => isBangla
+      ? '$previousLabelের তুলনায় খরচ প্রায় একই আছে।'
+      : 'Spending is almost flat compared with $previousLabel.';
+  String netImprovedInsight(String amount, String previousLabel) => isBangla
+      ? '$previousLabelের তুলনায় নেট $amount উন্নত হয়েছে।'
+      : 'Net improved by $amount versus $previousLabel.';
+  String netDroppedInsight(String amount, String previousLabel) => isBangla
+      ? '$previousLabelের তুলনায় নেট $amount কমেছে।'
+      : 'Net dropped by $amount versus $previousLabel.';
+  String netFlatInsight(String previousLabel) => isBangla
+      ? '$previousLabelের তুলনায় নেট প্রায় একই আছে।'
+      : 'Net is almost flat compared with $previousLabel.';
+  String categorySpikeInsight(String category, String amount) => isBangla
+      ? '$category ক্যাটাগরিতে $amount বেশি খরচ হয়েছে।'
+      : '$amount more was spent in $category.';
+  String quietPeriodInsight(String count, String unitLabel) => isBangla
+      ? '$count $unitLabelে কোনো খরচ হয়নি।'
+      : 'No spending on $count $unitLabel.';
+  String get noInsightDataYet => isBangla
+      ? 'আরও লেনদেন হলে এখানে তুলনামূলক ইনসাইট দেখা যাবে।'
+      : 'Add more activity to unlock comparison insights here.';
 
   String analyticsPeriodLabel(String key) {
     switch (key) {

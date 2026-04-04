@@ -152,6 +152,31 @@ class PeriodAnalytics {
   final double peakExpenseAmount;
 }
 
+class SmartInsights {
+  const SmartInsights({
+    required this.period,
+    required this.current,
+    required this.previous,
+    required this.expenseDelta,
+    required this.netDelta,
+    required this.noSpendBucketCount,
+    this.risingCategoryId,
+    this.risingCategoryDelta = 0,
+  });
+
+  final AnalyticsPeriod period;
+  final PeriodAnalytics current;
+  final PeriodAnalytics previous;
+  final double expenseDelta;
+  final double netDelta;
+  final int noSpendBucketCount;
+  final String? risingCategoryId;
+  final double risingCategoryDelta;
+
+  bool get hasPreviousActivity =>
+      previous.totalIncome > 0 || previous.totalExpense > 0;
+}
+
 final periodTransactionsProvider =
     StreamProvider.family<List<TransactionModel>, AnalyticsPeriod>((
       ref,
@@ -198,6 +223,63 @@ final yearlyAnalyticsProvider = Provider<AsyncValue<PeriodAnalytics>>((ref) {
   return ref.watch(periodAnalyticsProvider(AnalyticsPeriod.yearly));
 });
 
+final previousPeriodTransactionsProvider =
+    StreamProvider.family<List<TransactionModel>, AnalyticsPeriod>((
+      ref,
+      period,
+    ) {
+      final uid = ref.watch(currentUserIdProvider);
+      if (uid == null) {
+        return Stream<List<TransactionModel>>.value(const <TransactionModel>[]);
+      }
+
+      final range = previousAnalyticsRangeFor(period);
+      return ref
+          .watch(transactionServiceProvider)
+          .watchTransactionsInRange(uid, start: range.start, end: range.end);
+    });
+
+final smartInsightsProvider =
+    Provider.family<AsyncValue<SmartInsights>, AnalyticsPeriod>((ref, period) {
+      final currentAnalyticsAsync = ref.watch(periodAnalyticsProvider(period));
+      final previousTransactionsAsync = ref.watch(
+        previousPeriodTransactionsProvider(period),
+      );
+      final languageCode =
+          ref.watch(currentUserProfileProvider).asData?.value?.language ?? 'en';
+
+      if (currentAnalyticsAsync.isLoading ||
+          previousTransactionsAsync.isLoading) {
+        return const AsyncLoading<SmartInsights>();
+      }
+      if (currentAnalyticsAsync.hasError) {
+        return AsyncError<SmartInsights>(
+          currentAnalyticsAsync.error!,
+          currentAnalyticsAsync.stackTrace ?? StackTrace.current,
+        );
+      }
+      if (previousTransactionsAsync.hasError) {
+        return AsyncError<SmartInsights>(
+          previousTransactionsAsync.error!,
+          previousTransactionsAsync.stackTrace ?? StackTrace.current,
+        );
+      }
+
+      final previousAnalytics = buildPeriodAnalytics(
+        period: period,
+        transactions: previousTransactionsAsync.asData?.value ?? const [],
+        languageCode: languageCode,
+      );
+
+      return AsyncData(
+        buildSmartInsights(
+          period: period,
+          current: currentAnalyticsAsync.asData!.value,
+          previous: previousAnalytics,
+        ),
+      );
+    });
+
 AnalyticsRange analyticsRangeFor(AnalyticsPeriod period) {
   final now = DateTime.now();
 
@@ -218,6 +300,21 @@ AnalyticsRange analyticsRangeFor(AnalyticsPeriod period) {
     case AnalyticsPeriod.yearly:
       final start = DateTime(now.year);
       return AnalyticsRange(start: start, end: DateTime(now.year + 1));
+  }
+}
+
+AnalyticsRange previousAnalyticsRangeFor(AnalyticsPeriod period) {
+  final current = analyticsRangeFor(period);
+  switch (period) {
+    case AnalyticsPeriod.weekly:
+      final start = current.start.subtract(const Duration(days: 7));
+      return AnalyticsRange(start: start, end: current.start);
+    case AnalyticsPeriod.monthly:
+      final start = DateTime(current.start.year, current.start.month - 1);
+      return AnalyticsRange(start: start, end: current.start);
+    case AnalyticsPeriod.yearly:
+      final start = DateTime(current.start.year - 1);
+      return AnalyticsRange(start: start, end: current.start);
   }
 }
 
@@ -306,6 +403,44 @@ PeriodAnalytics buildPeriodAnalytics({
         ? peakBucket.label
         : null,
     peakExpenseAmount: peakBucket?.expense ?? 0,
+  );
+}
+
+SmartInsights buildSmartInsights({
+  required AnalyticsPeriod period,
+  required PeriodAnalytics current,
+  required PeriodAnalytics previous,
+}) {
+  final currentCategoryTotals = <String, double>{
+    for (final item in current.expenseByCategory) item.categoryId: item.amount,
+  };
+  final previousCategoryTotals = <String, double>{
+    for (final item in previous.expenseByCategory) item.categoryId: item.amount,
+  };
+
+  String? risingCategoryId;
+  var risingCategoryDelta = 0.0;
+  for (final entry in currentCategoryTotals.entries) {
+    final delta = entry.value - (previousCategoryTotals[entry.key] ?? 0);
+    if (delta > risingCategoryDelta) {
+      risingCategoryDelta = delta;
+      risingCategoryId = entry.key;
+    }
+  }
+
+  final noSpendBucketCount = current.buckets
+      .where((bucket) => bucket.expense <= 0.009)
+      .length;
+
+  return SmartInsights(
+    period: period,
+    current: current,
+    previous: previous,
+    expenseDelta: current.totalExpense - previous.totalExpense,
+    netDelta: current.net - previous.net,
+    noSpendBucketCount: noSpendBucketCount,
+    risingCategoryId: risingCategoryId,
+    risingCategoryDelta: risingCategoryDelta,
   );
 }
 

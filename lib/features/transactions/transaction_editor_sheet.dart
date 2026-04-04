@@ -546,10 +546,9 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(child: _SectionTitle(l10n.splitLinesTitle)),
-            FilledButton.tonalIcon(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final addLineButton = FilledButton.tonalIcon(
               onPressed: isBusy || categories.isEmpty
                   ? null
                   : () {
@@ -559,16 +558,39 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                     },
               icon: const Icon(Icons.add_rounded),
               label: Text(l10n.addSplitLineAction),
-            ),
-            const SizedBox(width: 8),
-            FilledButton.tonalIcon(
+            );
+            final newCategoryButton = FilledButton.tonalIcon(
               onPressed: isBusy
                   ? null
                   : () => _openCategoryDialog(allCategories),
               icon: const Icon(Icons.add_circle_outline_rounded),
               label: Text(l10n.newCategoryAction),
-            ),
-          ],
+            );
+
+            if (constraints.maxWidth < 430) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _SectionTitle(l10n.splitLinesTitle),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: <Widget>[addLineButton, newCategoryButton],
+                  ),
+                ],
+              );
+            }
+
+            return Row(
+              children: <Widget>[
+                Expanded(child: _SectionTitle(l10n.splitLinesTitle)),
+                addLineButton,
+                const SizedBox(width: 8),
+                newCategoryButton,
+              ],
+            );
+          },
         ),
         const SizedBox(height: 10),
         if (isLoadingCategories)

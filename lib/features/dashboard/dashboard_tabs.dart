@@ -41,6 +41,9 @@ class HomeTab extends ConsumerWidget {
     final recentTransactionsAsync = ref.watch(recentTransactionsProvider);
     final summary = ref.watch(dashboardSummaryProvider);
     final monthlyAnalyticsAsync = ref.watch(monthlyAnalyticsProvider);
+    final monthlyInsightsAsync = ref.watch(
+      smartInsightsProvider(AnalyticsPeriod.monthly),
+    );
     final budgetOverview = ref.watch(dashboardBudgetOverviewProvider);
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
@@ -422,6 +425,21 @@ class HomeTab extends ConsumerWidget {
                     subtitle: error.toString(),
                   ),
                 ),
+              ),
+              monthlyInsightsAsync.when(
+                data: (insights) => Column(
+                  children: <Widget>[
+                    _SmartInsightsCard(
+                      insights: insights,
+                      currency: currency,
+                      languageCode: languageCode,
+                      categoryMap: categoryMap,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
               if (isWide)
                 Row(
@@ -929,6 +947,205 @@ class _DashboardTagChip extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _SmartInsightsCard extends StatelessWidget {
+  const _SmartInsightsCard({
+    required this.insights,
+    required this.currency,
+    required this.languageCode,
+    required this.categoryMap,
+  });
+
+  final SmartInsights insights;
+  final String currency;
+  final String languageCode;
+  final Map<String, CategoryModel> categoryMap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final previousLabel = l10n.previousPeriodLabel(
+      _analyticsPeriodKey(insights.period),
+    );
+    final items = <_InsightEntry>[
+      _InsightEntry(
+        title: l10n.spendingChangeTitle,
+        subtitle: _buildExpenseSubtitle(context, previousLabel),
+        icon: insights.expenseDelta > 0
+            ? Icons.trending_up_rounded
+            : insights.expenseDelta < 0
+            ? Icons.trending_down_rounded
+            : Icons.horizontal_rule_rounded,
+        color: insights.expenseDelta > 0
+            ? const Color(0xFFE85D5D)
+            : insights.expenseDelta < 0
+            ? const Color(0xFF2ECC9A)
+            : Theme.of(context).colorScheme.primary,
+      ),
+      _InsightEntry(
+        title: l10n.netChangeTitle,
+        subtitle: _buildNetSubtitle(context, previousLabel),
+        icon: insights.netDelta >= 0
+            ? Icons.savings_rounded
+            : Icons.trending_down_rounded,
+        color: insights.netDelta >= 0
+            ? const Color(0xFF2ECC9A)
+            : const Color(0xFFE85D5D),
+      ),
+      _InsightEntry(
+        title:
+            insights.risingCategoryId != null &&
+                insights.risingCategoryDelta > 0
+            ? l10n.categoryWatchTitle
+            : l10n.quietPeriodTitle,
+        subtitle: _buildThirdSubtitle(context),
+        icon:
+            insights.risingCategoryId != null &&
+                insights.risingCategoryDelta > 0
+            ? Icons.local_fire_department_rounded
+            : Icons.self_improvement_rounded,
+        color:
+            insights.risingCategoryId != null &&
+                insights.risingCategoryDelta > 0
+            ? const Color(0xFFED8F41)
+            : Theme.of(context).colorScheme.primary,
+      ),
+    ];
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            l10n.smartInsightsTitle,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Text(l10n.smartInsightsSubtitle),
+          const SizedBox(height: 16),
+          ...items.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: index == items.length - 1 ? 0 : 12,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: item.color.withValues(alpha: 0.14),
+                    foregroundColor: item.color,
+                    child: Icon(item.icon, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          item.title,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(item.subtitle),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  String _buildExpenseSubtitle(BuildContext context, String previousLabel) {
+    final l10n = context.l10n;
+    if (!insights.hasPreviousActivity || insights.expenseDelta.abs() <= 0.009) {
+      return l10n.spendingFlatInsight(previousLabel);
+    }
+    final amount = _formatCurrency(
+      insights.expenseDelta.abs(),
+      currency,
+      languageCode,
+    );
+    return insights.expenseDelta > 0
+        ? l10n.spentMoreInsight(amount, previousLabel)
+        : l10n.spentLessInsight(amount, previousLabel);
+  }
+
+  String _buildNetSubtitle(BuildContext context, String previousLabel) {
+    final l10n = context.l10n;
+    final amount = _formatCurrency(
+      insights.netDelta.abs(),
+      currency,
+      languageCode,
+    );
+    if (insights.netDelta.abs() <= 0.009) {
+      return l10n.netFlatInsight(previousLabel);
+    }
+    return insights.netDelta >= 0
+        ? l10n.netImprovedInsight(amount, previousLabel)
+        : l10n.netDroppedInsight(amount, previousLabel);
+  }
+
+  String _buildThirdSubtitle(BuildContext context) {
+    final l10n = context.l10n;
+    if (insights.risingCategoryId != null && insights.risingCategoryDelta > 0) {
+      final category =
+          categoryMap[insights.risingCategoryId!]?.localizedName(
+            languageCode,
+          ) ??
+          l10n.noTopCategoryYet;
+      return l10n.categorySpikeInsight(
+        category,
+        _formatCurrency(insights.risingCategoryDelta, currency, languageCode),
+      );
+    }
+    if (!insights.hasPreviousActivity && insights.current.totalExpense <= 0) {
+      return l10n.noInsightDataYet;
+    }
+    return l10n.quietPeriodInsight(
+      LocaleFormatters.formatNumber(insights.noSpendBucketCount, languageCode),
+      l10n.quietUnitLabel(
+        _analyticsPeriodKey(insights.period),
+        insights.noSpendBucketCount,
+      ),
+    );
+  }
+}
+
+class _InsightEntry {
+  const _InsightEntry({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+}
+
+String _analyticsPeriodKey(AnalyticsPeriod period) {
+  switch (period) {
+    case AnalyticsPeriod.weekly:
+      return 'weekly';
+    case AnalyticsPeriod.monthly:
+      return 'monthly';
+    case AnalyticsPeriod.yearly:
+      return 'yearly';
   }
 }
 
@@ -1499,6 +1716,7 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
         ref.watch(currentUserProfileProvider).asData?.value?.language ??
         Localizations.localeOf(context).languageCode;
     final analyticsAsync = ref.watch(periodAnalyticsProvider(_period));
+    final insightsAsync = ref.watch(smartInsightsProvider(_period));
     final isWide = MediaQuery.sizeOf(context).width >= 960;
 
     return analyticsAsync.when(
@@ -1669,6 +1887,17 @@ class _ReportsTabState extends ConsumerState<ReportsTab> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 18),
+            insightsAsync.when(
+              data: (insights) => _SmartInsightsCard(
+                insights: insights,
+                currency: currency,
+                languageCode: languageCode,
+                categoryMap: categoryMap,
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
             ),
           ],
         );
@@ -2385,8 +2614,21 @@ String _buildSubtitle({
   if (transaction.note.trim().isNotEmpty) {
     pieces.add(transaction.note.trim());
   }
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final transactionDay = DateTime(
+    transaction.date.year,
+    transaction.date.month,
+    transaction.date.day,
+  );
   pieces.add(
-    LocaleFormatters.formatDate(transaction.date, 'hh:mm a', languageCode),
+    transactionDay == today
+        ? LocaleFormatters.formatDate(transaction.date, 'hh:mm a', languageCode)
+        : LocaleFormatters.formatDate(
+            transaction.date,
+            'dd MMM  •  hh:mm a',
+            languageCode,
+          ),
   );
   return pieces.join('  •  ');
 }
