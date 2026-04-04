@@ -9,6 +9,7 @@ abstract final class AppConstants {
   static const String localePreferenceKey = 'selected_locale';
   static const String appLockEnabledPreferenceKey = 'app_lock_enabled';
   static const String appLockPinPreferenceKey = 'app_lock_pin';
+  static const String onboardingSeenPrefix = 'onboarding_seen_';
   static const String defaultLanguageCode = 'en';
   static const String defaultCurrency = '\u09F3';
   static const String googleWebClientId =
@@ -19,6 +20,7 @@ abstract final class AppConstants {
   static const String signUpRoute = '/auth/signup';
   static const String forgotPasswordRoute = '/auth/forgot-password';
   static const String profileRoute = '/profile';
+  static const String onboardingRoute = '/onboarding';
   static const String transactionsRoute = '/transactions';
   static const String calendarRoute = '/calendar';
   static const String reportsRoute = '/reports';

@@ -261,3 +261,15 @@
 
 - The extra theme work ships together with a follow-up stability fix for the app-lock flow by moving PIN setup away from the problematic modal dialog path.
 - Bangla/English typography behavior remains unchanged across all theme variants; only color, atmosphere, and contrast styling change.
+
+## Phase 13G - Onboarding
+
+- Added a first-run onboarding flow for signed-in users with a dedicated route, three intro pages, skip/next/get-started actions, and simple visual guidance around wallets, transactions, and reports.
+- Added a per-user onboarding completion flag backed by shared preferences so the intro shows only once on the current device for each signed-in account.
+- Wired the router redirect so newly signed-in users are sent to onboarding before the dashboard, while returning users go straight into the app normally.
+- Added localized English/Bangla onboarding copy and supportive hint chips so the intro matches the rest of the app’s bilingual experience.
+
+### Notes
+
+- Onboarding completion is stored locally on the device, which keeps the flow lightweight and avoids adding more Firestore profile fields for a purely device-side intro state.
+- Users can skip the onboarding immediately, and completing or skipping it both unlock the main app for subsequent launches on that device.

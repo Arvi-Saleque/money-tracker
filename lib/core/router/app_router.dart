@@ -12,6 +12,8 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/debts/debts_screen.dart';
 import '../../features/exports/export_screen.dart';
 import '../../features/goals/goals_screen.dart';
+import '../../features/onboarding/onboarding_providers.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reports/reports_placeholder_screen.dart';
 import '../../features/subscriptions/subscriptions_screen.dart';
@@ -32,9 +34,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation.startsWith(
         AppConstants.authRoute,
       );
+      final isOnboardingRoute =
+          state.matchedLocation == AppConstants.onboardingRoute;
+      final hasSeenOnboarding = ref.read(onboardingSeenProvider);
 
       if (!isAuthenticated && !isAuthRoute) {
         return AppConstants.authRoute;
+      }
+
+      if (isAuthenticated && !hasSeenOnboarding && !isOnboardingRoute) {
+        return AppConstants.onboardingRoute;
+      }
+
+      if (isAuthenticated && hasSeenOnboarding && isOnboardingRoute) {
+        return AppConstants.homeRoute;
       }
 
       if (isAuthenticated &&
@@ -66,6 +79,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppConstants.profileRoute,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.onboardingRoute,
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: AppConstants.transactionsRoute,

@@ -47,6 +47,10 @@ extension AppL10nX on AppLocalizations {
   String get saveAction => isBangla ? 'সংরক্ষণ করুন' : 'Save';
   String get updateAction => isBangla ? 'আপডেট করুন' : 'Update';
   String get disableAction => isBangla ? 'বন্ধ করুন' : 'Disable';
+  String get skipAction => isBangla ? 'স্কিপ' : 'Skip';
+  String get nextAction => isBangla ? 'পরেরটি' : 'Next';
+  String get backAction => isBangla ? 'পেছনে' : 'Back';
+  String get getStartedAction => isBangla ? 'শুরু করুন' : 'Get started';
   String get allLabel => isBangla ? 'সব' : 'All';
   String get otherLabel => isBangla ? 'অন্যান্য' : 'Other';
   String get liveLabel => isBangla ? 'লাইভ' : 'Live';
@@ -93,6 +97,27 @@ extension AppL10nX on AppLocalizations {
       : 'Enter your 4-digit PIN to continue.';
   String get incorrectPinError =>
       isBangla ? 'পিনটি সঠিক নয়।' : 'That PIN is not correct.';
+  String get onboardingEyebrow => isBangla ? 'স্বাগতম' : 'Welcome';
+  String get onboardingWalletsTitle =>
+      isBangla ? 'ওয়ালেট দিয়ে শুরু করুন' : 'Start with your wallets';
+  String get onboardingWalletsSubtitle => isBangla
+      ? 'ক্যাশ, ব্যাংক, বিকাশ বা অন্য যেকোনো উৎস আলাদা রাখুন যাতে মোট ব্যালেন্স এবং নেট ওয়ার্থ পরিষ্কার থাকে।'
+      : 'Separate cash, bank, bKash, and other sources so balances and net worth stay clear from day one.';
+  String get onboardingTransactionsTitle =>
+      isBangla ? 'প্রতিদিনের খরচ ধরুন' : 'Capture daily spending';
+  String get onboardingTransactionsSubtitle => isBangla
+      ? 'দ্রুত আয়, ব্যয়, ট্রান্সফার এবং স্প্লিট ট্রানজ্যাকশন যোগ করুন যাতে হিস্ট্রি, বাজেট ও ক্যাটাগরি সব একসাথে ঠিক থাকে।'
+      : 'Add income, expenses, transfers, and split transactions quickly so history, budgets, and categories stay in sync.';
+  String get onboardingReportsTitle =>
+      isBangla ? 'রিপোর্টে অভ্যাস বুঝুন' : 'See habits in reports';
+  String get onboardingReportsSubtitle => isBangla
+      ? 'ক্যালেন্ডার, রিপোর্ট, স্মার্ট ইনসাইট এবং নেট ওয়ার্থ ট্রেন্ড দেখে বুঝুন টাকা কোথায় যাচ্ছে এবং কী উন্নতি হচ্ছে।'
+      : 'Use calendar, reports, smart insights, and net worth trends to understand where money is going and what is improving.';
+  String get onboardingHintQuick => isBangla ? 'দ্রুত এন্ট্রি' : 'Quick entry';
+  String get onboardingHintTrack =>
+      isBangla ? 'লাইভ ট্র্যাকিং' : 'Live tracking';
+  String get onboardingHintGrow =>
+      isBangla ? 'ভাল সিদ্ধান্ত' : 'Better decisions';
 
   String get homeAvailableBalance =>
       isBangla ? 'মোট ব্যালেন্স' : 'Available balance';
