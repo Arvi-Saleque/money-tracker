@@ -235,3 +235,16 @@
 
 - Wallet balance history is reconstructed from current balances and period transaction deltas, so transfers remain neutral while income and expense entries shape the trend.
 - Debt impact is estimated from the debt start date and recorded repayment history, which gives a practical live net-worth view without requiring a separate historical balance collection.
+
+## Phase 13E - Security Lock
+
+- Added a device-local app-lock state layer backed by shared preferences, with enable/disable, PIN update, lock/unlock state, and app-resume protection logic.
+- Added a global lock overlay above the router so every signed-in screen is protected consistently instead of relying on per-page navigation checks.
+- Added lifecycle-based relocking so the app asks for the PIN again after returning from background.
+- Added Profile controls to enable a new 4-digit PIN, change the PIN later, or disable app lock entirely.
+- Added localized English/Bangla wording for the app-lock flow, unlock overlay, and profile security card.
+
+### Notes
+
+- The PIN is currently stored locally on the device via shared preferences, so this phase is a practical privacy lock for shared devices rather than a hardened cryptographic vault.
+- This checkpoint focuses on PIN lock first; biometric unlock can be layered in later as an enhancement without replacing the existing lock flow.

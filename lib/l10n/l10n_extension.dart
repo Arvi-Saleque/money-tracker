@@ -42,6 +42,7 @@ extension AppL10nX on AppLocalizations {
   String get editAction => isBangla ? 'সম্পাদনা' : 'Edit';
   String get saveAction => isBangla ? 'সংরক্ষণ করুন' : 'Save';
   String get updateAction => isBangla ? 'আপডেট করুন' : 'Update';
+  String get disableAction => isBangla ? 'বন্ধ করুন' : 'Disable';
   String get allLabel => isBangla ? 'সব' : 'All';
   String get otherLabel => isBangla ? 'অন্যান্য' : 'Other';
   String get liveLabel => isBangla ? 'লাইভ' : 'Live';
@@ -51,6 +52,43 @@ extension AppL10nX on AppLocalizations {
   String get transferLabel => isBangla ? 'ট্রান্সফার' : 'Transfer';
   String get incomeTypeLabel => isBangla ? 'আয়' : 'Income';
   String get expenseTypeLabel => isBangla ? 'ব্যয়' : 'Expense';
+  String get securityLockTitle => isBangla ? 'অ্যাপ লক' : 'App lock';
+  String get securityLockSubtitle => isBangla
+      ? 'অ্যাপ ব্যাকগ্রাউন্ড থেকে খুললে ৪ সংখ্যার পিন চাইবে।'
+      : 'Require a 4-digit PIN when reopening the app from background.';
+  String get appLockEnabledLabel =>
+      isBangla ? 'পিন লক চালু আছে' : 'PIN lock is enabled';
+  String get appLockDisabledLabel =>
+      isBangla ? 'পিন লক বন্ধ আছে' : 'PIN lock is off';
+  String get enablePinLockAction =>
+      isBangla ? 'পিন লক চালু করুন' : 'Enable PIN lock';
+  String get changePinAction => isBangla ? 'পিন পরিবর্তন' : 'Change PIN';
+  String get disablePinLockAction =>
+      isBangla ? 'পিন লক বন্ধ করুন' : 'Disable PIN lock';
+  String get createPinTitle => isBangla ? 'নতুন পিন সেট করুন' : 'Set a new PIN';
+  String get changePinTitle => isBangla ? 'পিন পরিবর্তন করুন' : 'Change PIN';
+  String get pinFieldLabel => isBangla ? '৪ সংখ্যার পিন' : '4-digit PIN';
+  String get confirmPinFieldLabel =>
+      isBangla ? 'পিন আবার লিখুন' : 'Re-enter PIN';
+  String get pinHelperText => isBangla
+      ? 'এই পিন শুধু এই ডিভাইসে সংরক্ষিত থাকবে।'
+      : 'This PIN stays only on this device.';
+  String get pinLengthError =>
+      isBangla ? '৪ সংখ্যার পিন দিন।' : 'Enter a 4-digit PIN.';
+  String get pinMismatchError =>
+      isBangla ? 'দুইটি পিন মিলছে না।' : 'The PINs do not match.';
+  String get lockEnabledMessage =>
+      isBangla ? 'অ্যাপ লক চালু হয়েছে।' : 'App lock enabled.';
+  String get lockDisabledMessage =>
+      isBangla ? 'অ্যাপ লক বন্ধ হয়েছে।' : 'App lock disabled.';
+  String get pinChangedMessage =>
+      isBangla ? 'পিন আপডেট হয়েছে।' : 'PIN updated.';
+  String get appLockTitle => isBangla ? 'অ্যাপ লকড' : 'App locked';
+  String get appLockSubtitle => isBangla
+      ? 'চালিয়ে যেতে আপনার ৪ সংখ্যার পিন দিন।'
+      : 'Enter your 4-digit PIN to continue.';
+  String get incorrectPinError =>
+      isBangla ? 'পিনটি সঠিক নয়।' : 'That PIN is not correct.';
 
   String get homeAvailableBalance =>
       isBangla ? 'মোট ব্যালেন্স' : 'Available balance';

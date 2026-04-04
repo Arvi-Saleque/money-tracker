@@ -5,6 +5,8 @@ abstract final class AppConstants {
   static const String sapphireLightTheme = 'sapphire_light';
   static const String themePreferenceKey = 'selected_theme';
   static const String localePreferenceKey = 'selected_locale';
+  static const String appLockEnabledPreferenceKey = 'app_lock_enabled';
+  static const String appLockPinPreferenceKey = 'app_lock_pin';
   static const String defaultLanguageCode = 'en';
   static const String defaultCurrency = '\u09F3';
   static const String googleWebClientId =

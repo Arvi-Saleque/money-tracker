@@ -11,6 +11,7 @@ import '../../shared/widgets/premium_card.dart';
 import '../auth/auth_providers.dart';
 import '../auth/auth_ui_helpers.dart';
 import 'profile_providers.dart';
+import '../security/app_lock_providers.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -39,6 +40,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profileAsync = ref.watch(currentUserProfileProvider);
     final bootstrapAsync = ref.watch(authProfileBootstrapProvider);
     final isSaving = ref.watch(profileControllerProvider).isLoading;
+    final appLockState = ref.watch(appLockProvider);
     final currentTheme = ref.watch(themeProvider);
     final currentLocale = ref.watch(localeProvider);
 
@@ -233,6 +235,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
+                              l10n.securityLockTitle,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(l10n.securityLockSubtitle),
+                            const SizedBox(height: 14),
+                            Text(
+                              appLockState.enabled
+                                  ? l10n.appLockEnabledLabel
+                                  : l10n.appLockDisabledLabel,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 14),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: <Widget>[
+                                if (!appLockState.enabled)
+                                  FilledButton.tonalIcon(
+                                    onPressed: isSaving ? null : _enablePinLock,
+                                    icon: const Icon(
+                                      Icons.lock_outline_rounded,
+                                    ),
+                                    label: Text(l10n.enablePinLockAction),
+                                  )
+                                else ...<Widget>[
+                                  FilledButton.tonalIcon(
+                                    onPressed: isSaving ? null : _changePin,
+                                    icon: const Icon(Icons.password_rounded),
+                                    label: Text(l10n.changePinAction),
+                                  ),
+                                  OutlinedButton.icon(
+                                    onPressed: isSaving
+                                        ? null
+                                        : _disablePinLock,
+                                    icon: const Icon(Icons.lock_open_rounded),
+                                    label: Text(l10n.disablePinLockAction),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      buildPremiumCard(
+                        context: context,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
                               l10n.exportSectionInProfile,
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w700),
@@ -317,6 +372,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _signOut() async {
     try {
+      ref.read(appLockProvider.notifier).unlockWithoutPrompt();
       await ref.read(authControllerProvider.notifier).signOut();
     } catch (error) {
       if (!mounted) {
@@ -337,5 +393,132 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
     return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
         .toUpperCase();
+  }
+
+  Future<void> _enablePinLock() async {
+    final pin = await _showPinDialog(
+      title: context.l10n.createPinTitle,
+      confirmTitle: context.l10n.confirmPinFieldLabel,
+    );
+    if (pin == null || !mounted) {
+      return;
+    }
+
+    await ref.read(appLockProvider.notifier).setPin(pin);
+    if (!mounted) {
+      return;
+    }
+    showAppSnackBar(context, context.l10n.lockEnabledMessage);
+  }
+
+  Future<void> _changePin() async {
+    final pin = await _showPinDialog(
+      title: context.l10n.changePinTitle,
+      confirmTitle: context.l10n.confirmPinFieldLabel,
+    );
+    if (pin == null || !mounted) {
+      return;
+    }
+
+    await ref.read(appLockProvider.notifier).setPin(pin);
+    if (!mounted) {
+      return;
+    }
+    showAppSnackBar(context, context.l10n.pinChangedMessage);
+  }
+
+  Future<void> _disablePinLock() async {
+    await ref.read(appLockProvider.notifier).disable();
+    if (!mounted) {
+      return;
+    }
+    showAppSnackBar(context, context.l10n.lockDisabledMessage);
+  }
+
+  Future<String?> _showPinDialog({
+    required String title,
+    required String confirmTitle,
+  }) async {
+    final pinController = TextEditingController();
+    final confirmController = TextEditingController();
+    String? errorText;
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setLocalState) {
+            return AlertDialog(
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: pinController,
+                    autofocus: true,
+                    obscureText: true,
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.pinFieldLabel,
+                      helperText: context.l10n.pinHelperText,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: confirmController,
+                    obscureText: true,
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    decoration: InputDecoration(labelText: confirmTitle),
+                  ),
+                  if (errorText != null) ...<Widget>[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorText!,
+                      style: Theme.of(dialogContext).textTheme.bodyMedium
+                          ?.copyWith(
+                            color: Theme.of(dialogContext).colorScheme.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(context.l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final pin = pinController.text.trim();
+                    final confirm = confirmController.text.trim();
+                    if (pin.length != 4 || int.tryParse(pin) == null) {
+                      setLocalState(() {
+                        errorText = context.l10n.pinLengthError;
+                      });
+                      return;
+                    }
+                    if (pin != confirm) {
+                      setLocalState(() {
+                        errorText = context.l10n.pinMismatchError;
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(pin);
+                  },
+                  child: Text(context.l10n.saveAction),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    pinController.dispose();
+    confirmController.dispose();
+    return result;
   }
 }

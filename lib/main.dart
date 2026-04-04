@@ -8,6 +8,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/auth_providers.dart';
 import 'features/profile/profile_providers.dart';
+import 'features/security/app_lock_gate.dart';
 import 'features/subscriptions/subscription_providers.dart';
 import 'features/transactions/transaction_providers.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -49,14 +50,13 @@ class MoneyTrackerApp extends ConsumerWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      theme: AppTheme.getTheme(
-        themeName,
-        languageCode: locale.languageCode,
-      ),
+      theme: AppTheme.getTheme(themeName, languageCode: locale.languageCode),
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      builder: (context, child) =>
+          AppLockGate(child: child ?? const SizedBox.shrink()),
     );
   }
 }
