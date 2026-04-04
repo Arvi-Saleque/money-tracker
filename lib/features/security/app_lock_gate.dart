@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,17 +19,35 @@ class AppLockGate extends ConsumerStatefulWidget {
 class _AppLockGateState extends ConsumerState<AppLockGate>
     with WidgetsBindingObserver {
   bool _shouldLockOnResume = false;
-  String? _handledUserId;
+  late final ProviderSubscription<AsyncValue<User?>> _authSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _authSubscription = ref.listenManual(authStateProvider, (previous, next) {
+      final previousUserId = previous?.value?.uid;
+      final nextUserId = next.value?.uid;
+      if (previousUserId == nextUserId) {
+        return;
+      }
+
+      if (nextUserId == null) {
+        ref.read(appLockProvider.notifier).unlockWithoutPrompt();
+        return;
+      }
+
+      final lockState = ref.read(appLockProvider);
+      if (lockState.enabled && lockState.hasPin) {
+        ref.read(appLockProvider.notifier).lock();
+      }
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _authSubscription.close();
     super.dispose();
   }
 
@@ -54,39 +73,8 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authStateProvider, (previous, next) {
-      final previousUserId = previous?.value?.uid;
-      final nextUserId = next.value?.uid;
-      if (previousUserId != nextUserId) {
-        if (nextUserId == null) {
-          _handledUserId = null;
-          ref.read(appLockProvider.notifier).unlockWithoutPrompt();
-        } else {
-          _handledUserId = nextUserId;
-          final lockState = ref.read(appLockProvider);
-          if (lockState.enabled && lockState.hasPin) {
-            ref.read(appLockProvider.notifier).lock();
-          }
-        }
-      }
-    });
-
     final authUser = ref.watch(authStateProvider).value;
     final lockState = ref.watch(appLockProvider);
-
-    if (authUser != null &&
-        lockState.enabled &&
-        lockState.hasPin &&
-        _handledUserId != authUser.uid &&
-        !lockState.isLocked) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-        _handledUserId = authUser.uid;
-        ref.read(appLockProvider.notifier).lock();
-      });
-    }
 
     final showLock =
         authUser != null &&

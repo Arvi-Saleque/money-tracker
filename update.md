@@ -248,3 +248,16 @@
 
 - The PIN is currently stored locally on the device via shared preferences, so this phase is a practical privacy lock for shared devices rather than a hardened cryptographic vault.
 - This checkpoint focuses on PIN lock first; biometric unlock can be layered in later as an enhancement without replacing the existing lock flow.
+
+## Phase 13F - Extra Themes
+
+- Added a second visual theme family with warm Ember dark and Ember light variants, while keeping the existing Sapphire pair as the default family.
+- Extended the theme constants and theme controller so the quick app-bar theme toggle now flips within the active family instead of always forcing Sapphire dark/light.
+- Expanded the app theme builder with the new Ember palettes so all existing screens automatically inherit the new look without separate screen-by-screen styling forks.
+- Updated theme naming/localization so the new theme options appear properly in both English and Bangla.
+- Added a lightweight theme preview card to Profile so users can see the selected palette before saving.
+
+### Notes
+
+- The extra theme work ships together with a follow-up stability fix for the app-lock flow by moving PIN setup away from the problematic modal dialog path.
+- Bangla/English typography behavior remains unchanged across all theme variants; only color, atmosphere, and contrast styling change.

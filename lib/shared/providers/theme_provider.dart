@@ -21,9 +21,7 @@ class ThemeController extends Notifier<String> {
   }
 
   Future<void> toggleTheme() async {
-    final nextTheme = state == AppConstants.sapphireDarkTheme
-        ? AppConstants.sapphireLightTheme
-        : AppConstants.sapphireDarkTheme;
+    final nextTheme = AppConstants.togglePairFor(state);
     await setTheme(nextTheme);
   }
 

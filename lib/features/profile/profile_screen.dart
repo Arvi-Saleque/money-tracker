@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 import '../../l10n/l10n_extension.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/providers/locale_provider.dart';
@@ -228,6 +229,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 });
                               },
                       ),
+                      const SizedBox(height: 14),
+                      _ThemePreviewCard(
+                        themeName: _selectedTheme ?? safeTheme,
+                        languageCode: safeLanguage,
+                      ),
                       const SizedBox(height: 20),
                       buildPremiumCard(
                         context: context,
@@ -439,86 +445,276 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String title,
     required String confirmTitle,
   }) async {
-    final pinController = TextEditingController();
-    final confirmController = TextEditingController();
-    String? errorText;
+    return Navigator.of(context).push<String>(
+      MaterialPageRoute<String>(
+        builder: (_) => _PinSetupPage(title: title, confirmTitle: confirmTitle),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+}
 
-    final result = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setLocalState) {
-            return AlertDialog(
-              title: Text(title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
+class _PinSetupPage extends StatefulWidget {
+  const _PinSetupPage({required this.title, required this.confirmTitle});
+
+  final String title;
+  final String confirmTitle;
+
+  @override
+  State<_PinSetupPage> createState() => _PinSetupPageState();
+}
+
+class _PinSetupPageState extends State<_PinSetupPage> {
+  final _pinController = TextEditingController();
+  final _confirmController = TextEditingController();
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  TextField(
-                    controller: pinController,
-                    autofocus: true,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.pinFieldLabel,
-                      helperText: context.l10n.pinHelperText,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: confirmController,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    decoration: InputDecoration(labelText: confirmTitle),
-                  ),
-                  if (errorText != null) ...<Widget>[
-                    const SizedBox(height: 8),
-                    Text(
-                      errorText!,
-                      style: Theme.of(dialogContext).textTheme.bodyMedium
-                          ?.copyWith(
-                            color: Theme.of(dialogContext).colorScheme.error,
-                            fontWeight: FontWeight.w600,
+                  buildPremiumCard(
+                    context: context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        TextField(
+                          controller: _pinController,
+                          autofocus: true,
+                          obscureText: true,
+                          keyboardType: TextInputType.number,
+                          maxLength: 4,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.pinFieldLabel,
+                            helperText: context.l10n.pinHelperText,
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _confirmController,
+                          obscureText: true,
+                          keyboardType: TextInputType.number,
+                          maxLength: 4,
+                          decoration: InputDecoration(
+                            labelText: widget.confirmTitle,
+                          ),
+                        ),
+                        if (_errorText != null) ...<Widget>[
+                          const SizedBox(height: 8),
+                          Text(
+                            _errorText!,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(context.l10n.cancel),
+                            ),
+                            FilledButton(
+                              onPressed: _save,
+                              child: Text(context.l10n.saveAction),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ],
               ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: Text(context.l10n.cancel),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _save() {
+    final pin = _pinController.text.trim();
+    final confirm = _confirmController.text.trim();
+    if (pin.length != 4 || int.tryParse(pin) == null) {
+      setState(() {
+        _errorText = context.l10n.pinLengthError;
+      });
+      return;
+    }
+    if (pin != confirm) {
+      setState(() {
+        _errorText = context.l10n.pinMismatchError;
+      });
+      return;
+    }
+    Navigator.of(context).pop(pin);
+  }
+}
+
+class _ThemePreviewCard extends StatelessWidget {
+  const _ThemePreviewCard({
+    required this.themeName,
+    required this.languageCode,
+  });
+
+  final String themeName;
+  final String languageCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final previewTheme = Theme.of(context).copyWith(
+      colorScheme: AppTheme.getTheme(
+        themeName,
+        languageCode: languageCode,
+      ).colorScheme,
+      scaffoldBackgroundColor: AppTheme.getTheme(
+        themeName,
+        languageCode: languageCode,
+      ).scaffoldBackgroundColor,
+    );
+    final colors = _ThemePreviewPalette.fromThemeName(themeName);
+
+    return buildPremiumCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            context.l10n.themeName(themeName),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: <Color>[colors.primary, colors.secondary],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Aa',
+                  style: previewTheme.textTheme.headlineMedium?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                FilledButton(
-                  onPressed: () {
-                    final pin = pinController.text.trim();
-                    final confirm = confirmController.text.trim();
-                    if (pin.length != 4 || int.tryParse(pin) == null) {
-                      setLocalState(() {
-                        errorText = context.l10n.pinLengthError;
-                      });
-                      return;
-                    }
-                    if (pin != confirm) {
-                      setLocalState(() {
-                        errorText = context.l10n.pinMismatchError;
-                      });
-                      return;
-                    }
-                    Navigator.of(dialogContext).pop(pin);
-                  },
-                  child: Text(context.l10n.saveAction),
+                const SizedBox(height: 12),
+                Row(
+                  children: <Widget>[
+                    _ThemeColorDot(color: colors.primary),
+                    const SizedBox(width: 8),
+                    _ThemeColorDot(color: colors.income),
+                    const SizedBox(width: 8),
+                    _ThemeColorDot(color: colors.expense),
+                  ],
                 ),
               ],
-            );
-          },
-        );
-      },
+            ),
+          ),
+        ],
+      ),
     );
+  }
+}
 
-    pinController.dispose();
-    confirmController.dispose();
-    return result;
+class _ThemeColorDot extends StatelessWidget {
+  const _ThemeColorDot({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+      ),
+    );
+  }
+}
+
+class _ThemePreviewPalette {
+  const _ThemePreviewPalette({
+    required this.primary,
+    required this.secondary,
+    required this.income,
+    required this.expense,
+    required this.onSurface,
+  });
+
+  final Color primary;
+  final Color secondary;
+  final Color income;
+  final Color expense;
+  final Color onSurface;
+
+  factory _ThemePreviewPalette.fromThemeName(String themeName) {
+    switch (themeName) {
+      case AppConstants.emberDarkTheme:
+        return const _ThemePreviewPalette(
+          primary: Color(0xFFFF8A5B),
+          secondary: Color(0xFF5B2B1F),
+          income: Color(0xFF41C49A),
+          expense: Color(0xFFFF6B6B),
+          onSurface: Color(0xFFFFF3EE),
+        );
+      case AppConstants.emberLightTheme:
+        return const _ThemePreviewPalette(
+          primary: Color(0xFFDB6A39),
+          secondary: Color(0xFFFFC8AE),
+          income: Color(0xFF1F9D73),
+          expense: Color(0xFFD94E4E),
+          onSurface: Color(0xFF2F1A14),
+        );
+      case AppConstants.sapphireLightTheme:
+        return const _ThemePreviewPalette(
+          primary: Color(0xFF3D6BE4),
+          secondary: Color(0xFFCFE0FF),
+          income: Color(0xFF1EB386),
+          expense: Color(0xFFD64545),
+          onSurface: Color(0xFF14213D),
+        );
+      case AppConstants.sapphireDarkTheme:
+      default:
+        return const _ThemePreviewPalette(
+          primary: Color(0xFF3D6BE4),
+          secondary: Color(0xFF202B53),
+          income: Color(0xFF2ECC9A),
+          expense: Color(0xFFE85D5D),
+          onSurface: Color(0xFFF8FAFC),
+        );
+    }
   }
 }

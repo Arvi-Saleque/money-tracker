@@ -9,6 +9,34 @@ import 'premium_card_style.dart';
 abstract final class AppTheme {
   static ThemeData getTheme(String themeName, {String languageCode = 'en'}) {
     switch (themeName) {
+      case AppConstants.emberLightTheme:
+        return _buildTheme(
+          languageCode: languageCode,
+          brightness: Brightness.light,
+          background: AppColors.emberLightBackground,
+          surface: AppColors.emberLightSurface,
+          surfaceSecondary: AppColors.emberLightSurfaceSecondary,
+          primary: AppColors.emberLightPrimary,
+          income: AppColors.emberLightIncome,
+          expense: AppColors.emberLightExpense,
+          textPrimary: AppColors.emberLightTextPrimary,
+          textSecondary: AppColors.emberLightTextSecondary,
+          border: AppColors.emberLightBorder,
+        );
+      case AppConstants.emberDarkTheme:
+        return _buildTheme(
+          languageCode: languageCode,
+          brightness: Brightness.dark,
+          background: AppColors.emberDarkBackground,
+          surface: AppColors.emberDarkSurface,
+          surfaceSecondary: AppColors.emberDarkSurfaceSecondary,
+          primary: AppColors.emberDarkPrimary,
+          income: AppColors.emberDarkIncome,
+          expense: AppColors.emberDarkExpense,
+          textPrimary: AppColors.emberDarkTextPrimary,
+          textSecondary: AppColors.emberDarkTextSecondary,
+          border: AppColors.emberDarkBorder,
+        );
       case AppConstants.sapphireLightTheme:
         return _buildTheme(
           languageCode: languageCode,

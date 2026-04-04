@@ -83,7 +83,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               tooltip: context.l10n.toggleThemeTooltip,
               onPressed: themeController.toggleTheme,
               icon: Icon(
-                currentTheme == AppConstants.sapphireDarkTheme
+                AppConstants.isDarkThemeName(currentTheme)
                     ? Icons.light_mode_rounded
                     : Icons.dark_mode_rounded,
               ),

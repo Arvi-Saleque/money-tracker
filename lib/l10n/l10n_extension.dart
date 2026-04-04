@@ -14,6 +14,10 @@ extension AppL10nX on AppLocalizations {
     switch (themeName) {
       case AppConstants.sapphireLightTheme:
         return lightThemeLabel;
+      case AppConstants.emberDarkTheme:
+        return isBangla ? 'এম্বার ডার্ক' : 'Ember Dark';
+      case AppConstants.emberLightTheme:
+        return isBangla ? 'এম্বার লাইট' : 'Ember Light';
       case AppConstants.sapphireDarkTheme:
       default:
         return darkThemeLabel;

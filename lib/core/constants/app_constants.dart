@@ -3,6 +3,8 @@ abstract final class AppConstants {
 
   static const String sapphireDarkTheme = 'sapphire_dark';
   static const String sapphireLightTheme = 'sapphire_light';
+  static const String emberDarkTheme = 'ember_dark';
+  static const String emberLightTheme = 'ember_light';
   static const String themePreferenceKey = 'selected_theme';
   static const String localePreferenceKey = 'selected_locale';
   static const String appLockEnabledPreferenceKey = 'app_lock_enabled';
@@ -30,6 +32,8 @@ abstract final class AppConstants {
   static const List<String> availableThemes = <String>[
     sapphireDarkTheme,
     sapphireLightTheme,
+    emberDarkTheme,
+    emberLightTheme,
   ];
 
   static const List<String> supportedLanguageCodes = <String>['en', 'bn'];
@@ -65,9 +69,37 @@ abstract final class AppConstants {
     switch (themeName) {
       case sapphireLightTheme:
         return 'Sapphire Light';
+      case emberDarkTheme:
+        return 'Ember Dark';
+      case emberLightTheme:
+        return 'Ember Light';
       case sapphireDarkTheme:
       default:
         return 'Sapphire Dark';
+    }
+  }
+
+  static bool isDarkThemeName(String themeName) {
+    switch (themeName) {
+      case sapphireDarkTheme:
+      case emberDarkTheme:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  static String togglePairFor(String themeName) {
+    switch (themeName) {
+      case sapphireLightTheme:
+        return sapphireDarkTheme;
+      case emberDarkTheme:
+        return emberLightTheme;
+      case emberLightTheme:
+        return emberDarkTheme;
+      case sapphireDarkTheme:
+      default:
+        return sapphireLightTheme;
     }
   }
 }
