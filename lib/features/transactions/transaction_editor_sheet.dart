@@ -97,7 +97,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     final isBusy = transactionState.isLoading || categoryState.isLoading;
     final allCategories =
         allCategoriesAsync.asData?.value ?? const <CategoryModel>[];
-    final hasData = wallets.isNotEmpty && categories.isNotEmpty;
+    final hasWalletData = wallets.isNotEmpty;
     final isLoadingCategories =
         allCategoriesAsync.isLoading && allCategories.isEmpty;
 
@@ -192,7 +192,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                 walletsAsync: walletsAsync,
                 isBusy: isBusy,
                 isLoadingCategories: isLoadingCategories,
-                hasData: hasData,
+                hasWalletData: hasWalletData,
               ),
             ],
           ),
@@ -251,7 +251,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
     required AsyncValue<List<WalletModel>> walletsAsync,
     required bool isBusy,
     required bool isLoadingCategories,
-    required bool hasData,
+    required bool hasWalletData,
   }) {
     final l10n = context.l10n;
     final languageCode = Localizations.localeOf(context).languageCode;
@@ -340,7 +340,15 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
         const SizedBox(height: 10),
         TextField(
           controller: _amountController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.done,
+          onEditingComplete: () {
+            _applyEvaluatedAmount(_amountController);
+            FocusScope.of(context).unfocus();
+          },
+          onTapOutside: (_) {
+            _applyEvaluatedAmount(_amountController);
+          },
           decoration: const InputDecoration(
             hintText: '0.00',
             prefixText: '\u09F3 ',
@@ -488,7 +496,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
             hintText: l10n.optionalTransactionNoteHint,
           ),
         ),
-        if (!hasData) ...<Widget>[
+        if (!hasWalletData) ...<Widget>[
           const SizedBox(height: 16),
           Text(
             l10n.starterDataSyncingHint,
@@ -519,7 +527,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: isBusy || !hasData ? null : _saveTransaction,
+                onPressed: isBusy || !hasWalletData ? null : _saveTransaction,
                 child: Text(
                   _isEditing
                       ? l10n.updateTransactionAction
@@ -619,6 +627,11 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
                       setState(() {
                         _splitLines[index].categoryId = value;
                       });
+                    },
+                    onAmountEditingComplete: () {
+                      _applyEvaluatedAmount(
+                        _splitLines[index].amountController,
+                      );
                     },
                     onRemove: _splitLines.length <= 2
                         ? null
@@ -754,7 +767,82 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
   }
 
   double _parseAmount(String raw) {
-    return double.tryParse(raw.replaceAll(',', '').trim()) ?? 0;
+    return _evaluateAmount(raw) ?? 0;
+  }
+
+  double? _evaluateAmount(String raw) {
+    final normalized = raw
+        .replaceAll(',', '')
+        .replaceAll('\u09F3', '')
+        .replaceAll(' ', '')
+        .trim();
+    if (normalized.isEmpty) {
+      return null;
+    }
+
+    final direct = double.tryParse(normalized);
+    if (direct != null) {
+      return direct;
+    }
+
+    const expressionPattern = r'^\d+(?:\.\d+)?(?:[+\-*/]\d+(?:\.\d+)?)*$';
+    if (!RegExp(expressionPattern).hasMatch(normalized)) {
+      return null;
+    }
+
+    final numbers = normalized
+        .split(RegExp(r'[+\-*/]'))
+        .map(double.parse)
+        .toList(growable: true);
+    final operators = normalized
+        .split(RegExp(r'\d+(?:\.\d+)?'))
+        .where((part) => part.isNotEmpty)
+        .join()
+        .split('')
+        .toList(growable: true);
+
+    for (var index = 0; index < operators.length;) {
+      final operator = operators[index];
+      if (operator != '*' && operator != '/') {
+        index++;
+        continue;
+      }
+
+      final left = numbers[index];
+      final right = numbers[index + 1];
+      if (operator == '/' && right == 0) {
+        return null;
+      }
+
+      numbers[index] = operator == '*' ? left * right : left / right;
+      numbers.removeAt(index + 1);
+      operators.removeAt(index);
+    }
+
+    var total = numbers.first;
+    for (var index = 0; index < operators.length; index++) {
+      final right = numbers[index + 1];
+      total = operators[index] == '+' ? total + right : total - right;
+    }
+    return total;
+  }
+
+  void _applyEvaluatedAmount(TextEditingController controller) {
+    final value = _evaluateAmount(controller.text);
+    if (value == null) {
+      return;
+    }
+
+    final nextText = _trimZeroes(value);
+    if (controller.text.trim() == nextText) {
+      return;
+    }
+
+    controller.value = controller.value.copyWith(
+      text: nextText,
+      selection: TextSelection.collapsed(offset: nextText.length),
+      composing: TextRange.empty,
+    );
   }
 
   Future<void> _pickDate() async {
@@ -803,7 +891,8 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
   }
 
   Future<void> _saveTransaction() async {
-    final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
+    _applyEvaluatedAmount(_amountController);
+    final amount = _evaluateAmount(_amountController.text);
     if (amount == null || amount <= 0) {
       _showMessage(context.l10n.validAmountError);
       return;
@@ -828,6 +917,7 @@ class _TransactionEditorPageState extends ConsumerState<TransactionEditorPage> {
           _showMessage(context.l10n.splitLineCategoryError);
           return;
         }
+        _applyEvaluatedAmount(line.amountController);
         final lineAmount = _parseAmount(line.amountController.text);
         if (lineAmount <= 0) {
           _showMessage(context.l10n.splitLineAmountError);
@@ -1009,6 +1099,7 @@ class _SplitLineCard extends StatelessWidget {
     required this.line,
     required this.categories,
     required this.onCategoryChanged,
+    this.onAmountEditingComplete,
     this.onRemove,
   });
 
@@ -1016,6 +1107,7 @@ class _SplitLineCard extends StatelessWidget {
   final _SplitLineDraft line;
   final List<CategoryModel> categories;
   final ValueChanged<String?> onCategoryChanged;
+  final VoidCallback? onAmountEditingComplete;
   final VoidCallback? onRemove;
 
   @override
@@ -1070,7 +1162,15 @@ class _SplitLineCard extends StatelessWidget {
           const SizedBox(height: 10),
           TextField(
             controller: line.amountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.done,
+            onEditingComplete: () {
+              onAmountEditingComplete?.call();
+              FocusScope.of(context).unfocus();
+            },
+            onTapOutside: (_) {
+              onAmountEditingComplete?.call();
+            },
             decoration: InputDecoration(
               labelText: l10n.splitLineAmountLabel,
               prefixText: '\u09F3 ',

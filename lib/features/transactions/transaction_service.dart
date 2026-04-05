@@ -19,10 +19,6 @@ class TransactionService {
     return _firestore.collection('users').doc(uid).collection('wallets');
   }
 
-  CollectionReference<Map<String, dynamic>> _categoriesRef(String uid) {
-    return _firestore.collection('users').doc(uid).collection('categories');
-  }
-
   CollectionReference<Map<String, dynamic>> _budgetsRef(String uid) {
     return _firestore.collection('users').doc(uid).collection('budgets');
   }
@@ -335,23 +331,6 @@ class TransactionService {
         createdAt: DateTime.fromMillisecondsSinceEpoch(index * 1000),
       );
       batch.set(_walletsRef(uid).doc(wallet.id), wallet.toMap());
-    }
-
-    for (
-      var index = 0;
-      index < FinanceCatalog.defaultCategoryTemplates.length;
-      index++
-    ) {
-      final template = FinanceCatalog.defaultCategoryTemplates[index];
-      final category = template.toCategoryModel(
-        isDefault: true,
-        createdAt: DateTime.fromMillisecondsSinceEpoch(index * 1000),
-      );
-      batch.set(
-        _categoriesRef(uid).doc(category.id),
-        category.toMap(),
-        SetOptions(merge: true),
-      );
     }
     await batch.commit();
   }

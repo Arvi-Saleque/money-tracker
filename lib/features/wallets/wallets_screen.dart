@@ -5,11 +5,17 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/locale_formatters.dart';
 import '../../l10n/l10n_extension.dart';
 import '../../shared/models/category_model.dart';
+import '../../shared/models/shared_wallet_invite_model.dart';
+import '../../shared/models/shared_wallet_model.dart';
 import '../../shared/models/transaction_model.dart';
 import '../../shared/models/wallet_model.dart';
 import '../../shared/widgets/premium_card.dart';
 import '../dashboard/dashboard_ui_parts.dart';
 import '../profile/profile_providers.dart';
+import '../shared_wallets/shared_wallet_detail_screen.dart';
+import '../shared_wallets/shared_wallet_editor_page.dart';
+import '../shared_wallets/shared_wallet_helpers.dart';
+import '../shared_wallets/shared_wallet_providers.dart';
 import '../transactions/finance_catalog.dart';
 import '../transactions/transaction_editor_sheet.dart';
 import '../transactions/transaction_providers.dart';
@@ -22,12 +28,25 @@ class WalletsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final walletsAsync = ref.watch(walletsProvider);
+    final sharedWalletsAsync = ref.watch(sharedWalletsProvider);
+    final invitesAsync = ref.watch(sharedWalletInvitesProvider);
+    final sharedWalletActionState = ref.watch(
+      sharedWalletActionControllerProvider,
+    );
     final profile = ref.watch(currentUserProfileProvider).asData?.value;
     final currency = profile?.currency ?? AppConstants.defaultCurrency;
     final languageCode =
         profile?.language ?? Localizations.localeOf(context).languageCode;
     final wallets = walletsAsync.asData?.value ?? const <WalletModel>[];
+    final sharedWallets =
+        sharedWalletsAsync.asData?.value ?? const <SharedWalletModel>[];
+    final invites =
+        invitesAsync.asData?.value ?? const <SharedWalletInviteModel>[];
     final total = wallets.fold<double>(
+      0,
+      (sum, wallet) => sum + wallet.balance,
+    );
+    final sharedTotal = sharedWallets.fold<double>(
       0,
       (sum, wallet) => sum + wallet.balance,
     );
@@ -36,6 +55,15 @@ class WalletsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.walletsTitle),
         actions: <Widget>[
+          IconButton(
+            onPressed: () => openCreateSharedWalletPage(context),
+            icon: const Icon(Icons.groups_rounded),
+            tooltip: sharedWalletText(
+              context,
+              'Create shared wallet',
+              'শেয়ার্ড ওয়ালেট তৈরি করুন',
+            ),
+          ),
           IconButton(
             onPressed: () => openTransferEditorPage(context),
             icon: const Icon(Icons.swap_horiz_rounded),
@@ -68,6 +96,15 @@ class WalletsScreen extends ConsumerWidget {
                             ),
                             style: Theme.of(context).textTheme.displaySmall
                                 ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            sharedWalletText(
+                              context,
+                              'Shared wallet balances: ${formatWalletCurrency(sharedTotal, currency, languageCode: languageCode)}',
+                              'শেয়ার্ড ওয়ালেট ব্যালেন্স: ${formatWalletCurrency(sharedTotal, currency, languageCode: languageCode)}',
+                            ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
@@ -155,6 +192,25 @@ class WalletsScreen extends ConsumerWidget {
                           );
                         },
                       ),
+                    const SizedBox(height: 24),
+                    _SharedWalletSection(
+                      sharedWallets: sharedWallets,
+                      invites: invites,
+                      currency: currency,
+                      languageCode: languageCode,
+                      isBusy: sharedWalletActionState.isLoading,
+                      onCreateSharedWallet: () =>
+                          openCreateSharedWalletPage(context),
+                      onOpenSharedWallet: (wallet) =>
+                          openSharedWalletDetailScreen(
+                            context,
+                            walletId: wallet.id,
+                          ),
+                      onAcceptInvite: (invite) =>
+                          _acceptInvite(context, ref, invite),
+                      onDeclineInvite: (invite) =>
+                          _declineInvite(context, ref, invite),
+                    ),
                   ],
                 ),
               ),
@@ -231,6 +287,72 @@ class WalletsScreen extends ConsumerWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.walletDeleted)));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
+  Future<void> _acceptInvite(
+    BuildContext context,
+    WidgetRef ref,
+    SharedWalletInviteModel invite,
+  ) async {
+    try {
+      await ref
+          .read(sharedWalletActionControllerProvider.notifier)
+          .acceptInvite(invite);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            sharedWalletText(
+              context,
+              'Joined shared wallet.',
+              'শেয়ার্ড ওয়ালেটে যোগ দেওয়া হয়েছে।',
+            ),
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
+  Future<void> _declineInvite(
+    BuildContext context,
+    WidgetRef ref,
+    SharedWalletInviteModel invite,
+  ) async {
+    try {
+      await ref
+          .read(sharedWalletActionControllerProvider.notifier)
+          .declineInvite(invite);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            sharedWalletText(
+              context,
+              'Invitation removed.',
+              'আমন্ত্রণটি সরানো হয়েছে।',
+            ),
+          ),
+        ),
+      );
     } catch (error) {
       if (!context.mounted) {
         return;
@@ -422,6 +544,196 @@ class WalletDetailScreen extends ConsumerWidget {
   }
 }
 
+class _SharedWalletSection extends StatelessWidget {
+  const _SharedWalletSection({
+    required this.sharedWallets,
+    required this.invites,
+    required this.currency,
+    required this.languageCode,
+    required this.isBusy,
+    required this.onCreateSharedWallet,
+    required this.onOpenSharedWallet,
+    required this.onAcceptInvite,
+    required this.onDeclineInvite,
+  });
+
+  final List<SharedWalletModel> sharedWallets;
+  final List<SharedWalletInviteModel> invites;
+  final String currency;
+  final String languageCode;
+  final bool isBusy;
+  final VoidCallback onCreateSharedWallet;
+  final ValueChanged<SharedWalletModel> onOpenSharedWallet;
+  final ValueChanged<SharedWalletInviteModel> onAcceptInvite;
+  final ValueChanged<SharedWalletInviteModel> onDeclineInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final title = Text(
+              sharedWalletText(context, 'Shared wallets', 'শেয়ার্ড ওয়ালেট'),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            );
+            final button = FilledButton.icon(
+              onPressed: isBusy ? null : onCreateSharedWallet,
+              icon: const Icon(Icons.groups_rounded),
+              label: Text(
+                sharedWalletText(context, 'Create shared', 'শেয়ার্ড তৈরি করুন'),
+              ),
+            );
+
+            if (constraints.maxWidth < 420) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[title, const SizedBox(height: 10), button],
+              );
+            }
+
+            return Row(
+              children: <Widget>[
+                Expanded(child: title),
+                const SizedBox(width: 12),
+                button,
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        if (sharedWallets.isEmpty)
+          EmptyFinanceCard(
+            title: sharedWalletText(
+              context,
+              'No shared wallet yet',
+              'এখনও কোনো শেয়ার্ড ওয়ালেট নেই',
+            ),
+            subtitle: sharedWalletText(
+              context,
+              'Create one for family, roommates, or any shared budget.',
+              'পরিবার, রুমমেট বা যে কোনো শেয়ার্ড বাজেটের জন্য একটি তৈরি করুন।',
+            ),
+            actionLabel: sharedWalletText(
+              context,
+              'Create shared wallet',
+              'শেয়ার্ড ওয়ালেট তৈরি করুন',
+            ),
+            onAction: onCreateSharedWallet,
+          )
+        else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth > 880
+                  ? 3
+                  : constraints.maxWidth > 580
+                  ? 2
+                  : 1;
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  mainAxisExtent: crossAxisCount == 1 ? 224 : 216,
+                ),
+                itemCount: sharedWallets.length,
+                itemBuilder: (context, index) {
+                  final wallet = sharedWallets[index];
+                  return _SharedWalletCard(
+                    wallet: wallet,
+                    currency: currency,
+                    languageCode: languageCode,
+                    onTap: () => onOpenSharedWallet(wallet),
+                  );
+                },
+              );
+            },
+          ),
+        if (invites.isNotEmpty) ...<Widget>[
+          const SizedBox(height: 24),
+          Text(
+            sharedWalletText(
+              context,
+              'Pending invitations',
+              'অপেক্ষমাণ আমন্ত্রণ',
+            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          ...invites.map(
+            (invite) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: buildPremiumCard(
+                context: context,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      invite.walletName,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      sharedWalletText(
+                        context,
+                        'Invited by ${invite.inviterName}',
+                        '${invite.inviterName} আপনাকে আমন্ত্রণ জানিয়েছেন',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: isBusy
+                                ? null
+                                : () => onDeclineInvite(invite),
+                            child: Text(
+                              sharedWalletText(
+                                context,
+                                'Decline',
+                                'না, ধন্যবাদ',
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isBusy
+                                ? null
+                                : () => onAcceptInvite(invite),
+                            child: Text(
+                              sharedWalletText(
+                                context,
+                                'Join wallet',
+                                'ওয়ালেটে যোগ দিন',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class WalletEditorPage extends ConsumerStatefulWidget {
   const WalletEditorPage({super.key, this.wallet});
 
@@ -518,9 +830,7 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                context.l10n.walletTypeName(_selectedType),
-                              ),
+                              Text(context.l10n.walletTypeName(_selectedType)),
                             ],
                           ),
                         ),
@@ -741,7 +1051,9 @@ class _WalletEditorPageState extends ConsumerState<WalletEditorPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _isEditing ? context.l10n.walletUpdated : context.l10n.walletCreated,
+            _isEditing
+                ? context.l10n.walletUpdated
+                : context.l10n.walletCreated,
           ),
         ),
       );
@@ -850,13 +1162,93 @@ class _WalletCard extends StatelessWidget {
             runSpacing: 10,
             children: <Widget>[
               MiniPill(label: context.l10n.walletTypeName(wallet.type)),
-                if (wallet.isDefault)
-                  MiniPill(label: context.l10n.defaultLabel),
+              if (wallet.isDefault) MiniPill(label: context.l10n.defaultLabel),
             ],
           ),
           const SizedBox(height: 16),
           Text(
             formatWalletCurrency(wallet.balance, currency),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SharedWalletCard extends StatelessWidget {
+  const _SharedWalletCard({
+    required this.wallet,
+    required this.currency,
+    required this.languageCode,
+    required this.onTap,
+  });
+
+  final SharedWalletModel wallet;
+  final String currency;
+  final String languageCode;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return buildPremiumInkCard(
+      context: context,
+      onTap: onTap,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: Color(
+                  wallet.colorValue,
+                ).withValues(alpha: 0.14),
+                foregroundColor: Color(wallet.colorValue),
+                child: Icon(FinanceCatalog.iconForKey(wallet.iconKey)),
+              ),
+              const Spacer(),
+              MiniPill(
+                label: sharedWalletText(
+                  context,
+                  '${wallet.memberIds.length} members',
+                  '${wallet.memberIds.length} জন',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            wallet.name,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            sharedWalletText(
+              context,
+              'Owner: ${wallet.ownerName}',
+              'মালিক: ${wallet.ownerName}',
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            formatWalletCurrency(
+              wallet.balance,
+              currency,
+              languageCode: languageCode,
+            ),
             style: Theme.of(
               context,
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),

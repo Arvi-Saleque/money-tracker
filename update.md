@@ -273,3 +273,16 @@
 
 - Onboarding completion is stored locally on the device, which keeps the flow lightweight and avoids adding more Firestore profile fields for a purely device-side intro state.
 - Users can skip the onboarding immediately, and completing or skipping it both unlock the main app for subsequent launches on that device.
+
+## Phase 13H - Shared / Family Wallet
+
+- Added a dedicated shared-wallet data model separate from personal wallets so family-style balances and activity can exist without disturbing the original single-user wallet structure.
+- Added shared wallet creation, email-based invite inboxes, join/decline actions, and shared activity entries with their own balance updates.
+- Extended the Wallets screen so it now shows personal wallets, shared wallets, and pending invitations together in one place.
+- Added a shared wallet detail page with member visibility and a shared entry ledger, plus a simple entry editor for group income/expense records.
+- Updated Firestore rules for shared wallets, shared entries, and per-email invite inboxes so access is limited to members, owners, and the invited email account.
+
+### Notes
+
+- Shared wallet activity is intentionally kept in its own ledger instead of mixing directly into the personal transaction engine, which makes the feature safer to add on top of the existing app.
+- Invitations are delivered to an email-specific inbox path, so the invited user needs to sign in with that same email address to see and accept the invite.

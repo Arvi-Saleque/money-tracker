@@ -243,7 +243,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _finish() async {
-    await ref.read(onboardingControllerProvider).complete();
+    await ref.read(onboardingSeenProvider.notifier).complete();
     if (!mounted) {
       return;
     }

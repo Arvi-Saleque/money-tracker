@@ -24,6 +24,8 @@ import '../constants/app_constants.dart';
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final hasSeenOnboarding = ref.watch(onboardingSeenProvider);
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppConstants.homeRoute,
@@ -36,7 +38,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       );
       final isOnboardingRoute =
           state.matchedLocation == AppConstants.onboardingRoute;
-      final hasSeenOnboarding = ref.read(onboardingSeenProvider);
 
       if (!isAuthenticated && !isAuthRoute) {
         return AppConstants.authRoute;
