@@ -145,15 +145,17 @@ flutter build web
 
 ## Firebase Setup
 
-This app expects Firebase to be configured for your target platforms.
+This repository follows the safer open-source setup: real Firebase project files stay local and are not meant to be committed.
 
 Typical setup includes:
 
-- add `google-services.json` to `android/app`
+- add your own `google-services.json` to `android/app`
+- add your own `GoogleService-Info.plist` to `ios/Runner` if you use iOS
 - configure Firebase Auth providers
 - create a Firestore database
 - publish Firestore rules
 - deploy required Firestore indexes when using advanced filters/reports
+- provide web Firebase values through `--dart-define` when running or building for web
 
 Relevant config files:
 
@@ -161,6 +163,18 @@ Relevant config files:
 - [firestore.rules](D:\work\app development\money tracker codex\firestore.rules)
 - [firestore.indexes.json](D:\work\app development\money tracker codex\firestore.indexes.json)
 - [lib/firebase_options.dart](D:\work\app development\money tracker codex\lib\firebase_options.dart)
+
+Example web run:
+
+```powershell
+flutter run -d chrome `
+  --dart-define=FIREBASE_WEB_API_KEY=your_key `
+  --dart-define=FIREBASE_WEB_APP_ID=your_app_id `
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=your_sender_id `
+  --dart-define=FIREBASE_PROJECT_ID=your_project_id `
+  --dart-define=FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com `
+  --dart-define=FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+```
 
 ## Localization
 
